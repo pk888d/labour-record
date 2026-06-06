@@ -529,7 +529,7 @@ export function FormEntryClient({
                   const row = attendance[emp.employeeId]
                   let daysWorked = 0, leaveDays = 0, absentDays = 0
                   for (const m of row.marks) {
-                    if (m === 'P' || m === 'OT' || m === 'H') daysWorked++
+                    if (m === 'P' || m === 'OT') daysWorked++
                     else if (m === 'L') leaveDays++
                     else if (m === 'A') absentDays++
                   }

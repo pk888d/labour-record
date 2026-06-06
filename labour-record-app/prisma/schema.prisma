@@ -16,6 +16,7 @@ model Establishment {
   regCertNo         String
   type              EstablishmentType
   wageFormulaConfig String            @default("{}") // JSON string
+  workWeekDays      Int               @default(6)
   isActive          Boolean           @default(true)
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt

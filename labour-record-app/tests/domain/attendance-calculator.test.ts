@@ -16,10 +16,10 @@ describe('calculateAttendanceTotals', () => {
     expect(r.wageDays).toBe(2)
   })
 
-  it('counts H (holiday) as daysWorked', () => {
+  it('H (holiday/weekly off) does not count as daysWorked or wageDays', () => {
     const r = calculateAttendanceTotals(['H'])
-    expect(r.daysWorked).toBe(1)
-    expect(r.wageDays).toBe(1)
+    expect(r.daysWorked).toBe(0)
+    expect(r.wageDays).toBe(0)
   })
 
   it('counts L as leaveDays (not daysWorked)', () => {
@@ -41,12 +41,12 @@ describe('calculateAttendanceTotals', () => {
     expect(r.absentDays).toBe(0)
   })
 
-  it('wageDays = daysWorked + leaveDays (A does not contribute)', () => {
+  it('wageDays = daysWorked + leaveDays; H and A do not contribute', () => {
     const r = calculateAttendanceTotals(['P', 'P', 'L', 'A', 'H'])
-    expect(r.daysWorked).toBe(3)
+    expect(r.daysWorked).toBe(2)
     expect(r.leaveDays).toBe(1)
     expect(r.absentDays).toBe(1)
-    expect(r.wageDays).toBe(4)
+    expect(r.wageDays).toBe(3)
   })
 
   it('handles empty array', () => {
@@ -86,6 +86,28 @@ describe('applyAttendanceDefaults', () => {
     const marks = new Array(30).fill('')
     const result = applyAttendanceDefaults(marks, 2026, 6, new Set([7]))
     expect(result[6]).toBe('H') // holiday takes priority over A
+  })
+
+  it('5-day week: marks Saturday as H', () => {
+    // June 2026: day 6 = Saturday (dow=6)
+    const marks = new Array(30).fill('')
+    const result = applyAttendanceDefaults(marks, 2026, 6, new Set(), 5)
+    expect(result[5]).toBe('H') // June 6 = Saturday → weekly off for 5-day week
+    expect(result[0]).toBe('P') // June 1 = Monday → still working day
+  })
+
+  it('7-day week: Sunday is P (no weekly off)', () => {
+    // June 2026: day 7 = Sunday (dow=0)
+    const marks = new Array(30).fill('')
+    const result = applyAttendanceDefaults(marks, 2026, 6, new Set(), 7)
+    expect(result[6]).toBe('P') // June 7 = Sunday → working day for 7-day week
+    expect(result[5]).toBe('P') // June 6 = Saturday → also working
+  })
+
+  it('6-day week: Saturday is P (default behaviour)', () => {
+    const marks = new Array(30).fill('')
+    const result = applyAttendanceDefaults(marks, 2026, 6, new Set(), 6)
+    expect(result[5]).toBe('P') // June 6 = Saturday → working day for 6-day week
   })
 
   it('does not overwrite existing non-empty marks', () => {

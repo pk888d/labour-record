@@ -41,6 +41,7 @@ export async function POST(request: Request) {
         managerName: b.managerName.trim(),
         regCertNo: b.regCertNo.trim(),
         type: b.type as EstablishmentType,
+        workWeekDays: b.workWeekDays === 5 ? 5 : 6,
         wageFormulaConfig: b.wageFormulaConfig
           ? JSON.stringify(b.wageFormulaConfig)
           : '{}',

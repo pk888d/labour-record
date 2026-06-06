@@ -25,9 +25,7 @@ export default async function FormEntryPage({
     include: {
       cycle: {
         include: {
-          establishment: {
-            select: { id: true, name: true, type: true, wageFormulaConfig: true },
-          },
+          establishment: true,
           cycleEmployees: {
             include: {
               employee: {
@@ -120,7 +118,7 @@ export default async function FormEntryPage({
       const raw = storedMarks.length >= daysInMonth
         ? storedMarks.slice(0, daysInMonth)
         : [...storedMarks, ...Array(daysInMonth - storedMarks.length).fill('')]
-      return [emp.employeeId, applyAttendanceDefaults(raw, cycle.year, cycle.month, holidayDaySet)]
+      return [emp.employeeId, applyAttendanceDefaults(raw, cycle.year, cycle.month, holidayDaySet, establishment.workWeekDays)]
     })
   )
 

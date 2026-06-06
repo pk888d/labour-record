@@ -28,6 +28,7 @@ export function EstablishmentForm({ establishment }: Props) {
     managerName: establishment?.managerName ?? '',
     regCertNo: establishment?.regCertNo ?? '',
     type: establishment?.type ?? 'HOSPITAL',
+    workWeekDays: establishment?.workWeekDays ?? 6,
     isActive: establishment?.isActive ?? true,
     wageFormulaConfig: establishment?.wageFormulaConfig
       ? (JSON.parse(establishment.wageFormulaConfig) as WageFormulaConfig)
@@ -145,6 +146,18 @@ export function EstablishmentForm({ establishment }: Props) {
             }}>
             <option value="HOSPITAL">Hospital</option>
             <option value="SHOP">Shop</option>
+          </select>
+        </div>
+        <div>
+          <label className={labelClass}>
+            Working Days per Week *
+            <Info text="7 days: all days working (no weekly off). 6 days: Mon–Sat (Sunday off). 5 days: Mon–Fri (Sat+Sun off). Government holidays are always marked H regardless." />
+          </label>
+          <select className={inputClass} aria-label="Work Week Days" value={form.workWeekDays}
+            onChange={(e) => set('workWeekDays', parseInt(e.target.value))}>
+            <option value={7}>7 days (all days)</option>
+            <option value={6}>6 days (Mon–Sat)</option>
+            <option value={5}>5 days (Mon–Fri)</option>
           </select>
         </div>
       </div>

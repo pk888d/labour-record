@@ -36,8 +36,8 @@
 
 ## EXECUTION STATUS
 
-- Current state: Task 1 code review fixes complete
-- Next action: Task 2 — Define Prisma schema and run migration
+- Current state: QA testing complete — 42/42 tests passing after fixes
+- Next action: Continue with Task 2 — Define Prisma schema and run migration (or next user-directed task)
 
 ---
 
@@ -58,3 +58,12 @@
 - Metrics impact: +1 file (src/lib/prisma.ts), added @prisma/adapter-better-sqlite3 and better-sqlite3 to dependencies
 - Validation: `npx tsc --noEmit` passes cleanly; `npx prisma generate` succeeds; git commit 1396c85
 - Next step: Task 2 — Define Prisma schema (Establishment + Employee models) and run migration
+
+### Task Update — 2026-06-06 10:00 IST
+- Task: QA testing — full user guide walkthrough
+- Status: completed
+- Scope: Playwright-automated QA across all 14 app sections; 5 doc fixes in user_guide.md; root-cause identified for fines React onChange issue; 1 accessibility finding logged
+- Files changed: man/user_guide.md
+- Metrics impact: none (no source code changed; doc fixes only)
+- Validation: 42/42 automated test assertions passing; all 7 print forms render correct data; salary slips show wage proration
+- Next step: User to decide next development task

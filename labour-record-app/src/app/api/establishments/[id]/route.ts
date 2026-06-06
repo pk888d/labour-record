@@ -49,6 +49,7 @@ export async function PUT(request: Request, { params }: Params) {
         managerName: b.managerName.trim(),
         regCertNo: b.regCertNo.trim(),
         type: b.type as EstablishmentType,
+        workWeekDays: b.workWeekDays === 5 ? 5 : 6,
         isActive: b.isActive ?? previous.isActive,
         wageFormulaConfig: b.wageFormulaConfig
           ? JSON.stringify(b.wageFormulaConfig)

@@ -10,7 +10,7 @@
 7. [Monthly Cycles](#monthly-cycles)
 8. [Form Data Entry](#form-data-entry)
    - [Attendance Tab](#attendance-tab)
-   - [Wages Tab](#wages-tab)
+   - [Wage Data Tab](#wage-data-tab)
    - [Overtime Tab](#overtime-tab)
    - [Fines Tab](#fines-tab)
    - [Deductions Tab](#deductions-tab)
@@ -72,6 +72,7 @@ An establishment is a hospital or shop registered under Tamil Nadu law. Everythi
    - **Manager / In-Charge** — Person responsible. Appears on Form I, Form V etc.
    - **Registration Certificate No.** — Certificate number under the applicable act (e.g. `REG/TN/2024/1234`).
    - **Establishment Type** — `Hospital` (Clinical Establishments Act) or `Shop` (Shops & Establishments Act). This controls which set of government forms is generated.
+   - **Working Days per Week** — `7 days (all days)`, `6 days (Mon–Sat)`, or `5 days (Mon–Fri)`. Controls which days are auto-marked as Holiday (H) in the attendance grid when a form task is first opened. For 6-day weeks, Sundays are H. For 5-day weeks, Saturdays and Sundays are H. For 7-day weeks, no day is automatically marked H (only government holidays still apply).
 3. **Wage Formula Configuration** (auto-filled based on type):
    - **Preset** — Read-only; set by the Type field.
    - **Fixed Allowance** — Monthly allowance beyond Basic+DA (hospitals only, e.g. ₹360/month per TN notification).
@@ -108,7 +109,7 @@ Employees are always linked to one establishment.
 |---|---|
 | Employee ID | Unique within the establishment (e.g. `H001`, `S001`) |
 | Full Name | As per identity document |
-| Sex | M / F / Other |
+| Sex | M / F |
 | Date of Birth | Must be ≥ 14 years before Date of Entry |
 | Father / Spouse Name | Appears on Form XI |
 | Present Address | Current residential address |
@@ -280,7 +281,7 @@ The attendance grid shows every employee as a row and every day of the month as 
 | L | Leave |
 
 **How to change a mark:**
-- Click any cell to cycle through: P → A → H → OT → L → P → …
+- Click any cell to cycle through: P → A → L → H → OT → (blank) → P → …
 - Changes are saved per row when you click **Save Attendance**.
 
 **Totals (auto-calculated):**
@@ -291,7 +292,7 @@ The attendance grid shows every employee as a row and every day of the month as 
 
 ---
 
-### Wages Tab
+### Wage Data Tab
 
 Wages are auto-populated from the employee's wage defaults, prorated by wage days.
 
@@ -314,7 +315,7 @@ ESI            = Gross Wages   × ESI Employee %
 
 Gross wages and net wages are calculated automatically.
 
-Click **Save Wages** to save. Pre-flight validation checks that days worked is within range and no values are negative.
+Click **Save Wage Data** to save. Pre-flight validation checks that days worked is within range and no values are negative.
 
 ---
 
@@ -375,7 +376,7 @@ Enter leave balances per employee for the month.
 | Medical Leave | Medical leave days this month |
 | Other Leave | Any other leave type |
 
-Click **Save Leave**.
+Click **Save Leave Data**.
 
 ---
 
