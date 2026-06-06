@@ -1,0 +1,323 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Establishment {
+  id                String            @id @default(cuid())
+  name              String
+  address           String
+  employerName      String
+  managerName       String
+  regCertNo         String
+  type              EstablishmentType
+  wageFormulaConfig String            @default("{}") // JSON string
+  isActive          Boolean           @default(true)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  employees     Employee[]
+  monthlyCycles MonthlyCycle[]
+  wageRules     WageRule[]
+}
+
+enum EstablishmentType {
+  HOSPITAL
+  SHOP
+}
+
+model Employee {
+  id                  String         @id @default(cuid())
+  empId               String
+  name                String
+  sex                 String
+  fatherSpouseName    String
+  dob                 DateTime?
+  dateOfEntry         DateTime
+  designation         String
+  department          String?
+  presentAddress      String
+  permanentAddress    String
+  uan                 String?
+  esiNo               String?
+  aadhaar             String?
+  bankAccount         String?
+  ifsc                String?
+  bankName            String?
+  mobile              String?
+  email               String?
+  photoPath           String?
+  completionOf480Days DateTime?
+  dateMadePermanent   DateTime?
+  periodOfSuspension  String?
+  specimenSignature   String?
+  status              EmployeeStatus @default(ACTIVE)
+  exitDate            DateTime?
+  exitReason          String?
+  remarks             String?
+  basicWage           Float          @default(0)
+  daWage              Float          @default(0)
+  hraWage             Float          @default(0)
+  pfAmount            Float          @default(0)
+  esiAmount           Float          @default(0)
+  lwfAmount           Float          @default(0)
+  establishmentId     String
+  establishment       Establishment  @relation(fields: [establishmentId], references: [id])
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  cycleEmployees    CycleEmployee[]
+  attendanceRecords AttendanceRecord[]
+  wageRecords       WageRecord[]
+  leaveRecords      LeaveRecord[]
+  overtimeRecords   OvertimeRecord[]
+  fineRecords       FineRecord[]
+  deductionRecords  DeductionRecord[]
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  SUSPENDED
+  EXITED
+}
+
+model MonthlyCycle {
+  id              String        @id @default(cuid())
+  establishmentId String
+  establishment   Establishment @relation(fields: [establishmentId], references: [id])
+  month           Int
+  year            Int
+  wagePeriodDays  Int           @default(26)
+  status          CycleStatus   @default(OPEN)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  cycleEmployees    CycleEmployee[]
+  formTasks         FormTask[]
+  attendanceRecords AttendanceRecord[]
+  wageRecords       WageRecord[]
+  leaveRecords      LeaveRecord[]
+  overtimeRecords   OvertimeRecord[]
+  fineRecords       FineRecord[]
+  deductionRecords  DeductionRecord[]
+
+  @@unique([establishmentId, month, year])
+}
+
+enum CycleStatus {
+  OPEN
+  LOCKED
+}
+
+model CycleEmployee {
+  id              String       @id @default(cuid())
+  cycleId         String
+  cycle           MonthlyCycle @relation(fields: [cycleId], references: [id])
+  employeeId      String
+  employee        Employee     @relation(fields: [employeeId], references: [id])
+  empDataSnapshot String       @default("{}")
+
+  @@unique([cycleId, employeeId])
+}
+
+model FormTask {
+  id               String         @id @default(cuid())
+  cycleId          String
+  cycle            MonthlyCycle   @relation(fields: [cycleId], references: [id])
+  formCode         String
+  status           FormTaskStatus @default(NOT_STARTED)
+  assignedTo       String?
+  dueDate          DateTime?
+  validationErrors String?
+  lastComment      String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  statusHistory      FormTaskStatusHistory[]
+  generatedDocuments GeneratedDocument[]
+}
+
+enum FormTaskStatus {
+  NOT_STARTED
+  DATA_ENTRY
+  READY_FOR_REVIEW
+  NEEDS_CORRECTION
+  APPROVED
+  EXPORTED
+}
+
+model FormTaskStatusHistory {
+  id         String         @id @default(cuid())
+  formTaskId String
+  formTask   FormTask       @relation(fields: [formTaskId], references: [id])
+  fromStatus FormTaskStatus
+  toStatus   FormTaskStatus
+  comment    String?
+  changedAt  DateTime       @default(now())
+}
+
+model AttendanceRecord {
+  id            String       @id @default(cuid())
+  cycleId       String
+  cycle         MonthlyCycle @relation(fields: [cycleId], references: [id])
+  employeeId    String
+  employee      Employee     @relation(fields: [employeeId], references: [id])
+  workStartTime String?
+  workEndTime   String?
+  restInterval  String?
+  dailyMarks    String       @default("[]")
+  daysWorked    Int          @default(0)
+  leaveDays     Int          @default(0)
+  absentDays    Int          @default(0)
+  wageDays      Int          @default(0)
+  remarks       String?
+
+  @@unique([cycleId, employeeId])
+}
+
+model WageRecord {
+  id                  String       @id @default(cuid())
+  cycleId             String
+  cycle               MonthlyCycle @relation(fields: [cycleId], references: [id])
+  employeeId          String
+  employee            Employee     @relation(fields: [employeeId], references: [id])
+  daysWorked          Int          @default(0)
+  basic               Float        @default(0)
+  da                  Float        @default(0)
+  hra                 Float        @default(0)
+  otherAllowances     String       @default("[]")
+  totalNormalWages    Float        @default(0)
+  totalEarnings       Float        @default(0)
+  overtimeEarnings    Float        @default(0)
+  grossWages          Float        @default(0)
+  pf                  Float        @default(0)
+  esi                 Float        @default(0)
+  lwf                 Float        @default(0)
+  advanceRecovered    Float        @default(0)
+  fineDeduction       Float        @default(0)
+  otherDeductions     Float        @default(0)
+  totalDeductions     Float        @default(0)
+  netWages            Float        @default(0)
+  holidayBonus        Float        @default(0)
+  paymentDate         DateTime?
+  unpaidAccumulations Float        @default(0)
+  receiptRef          String?
+
+  @@unique([cycleId, employeeId])
+}
+
+model LeaveRecord {
+  id                 String       @id @default(cuid())
+  cycleId            String
+  cycle              MonthlyCycle @relation(fields: [cycleId], references: [id])
+  employeeId         String
+  employee           Employee     @relation(fields: [employeeId], references: [id])
+  earnedLeaveOpening Int          @default(0)
+  earnedDuring       Int          @default(0)
+  earnedAvailed      Int          @default(0)
+  earnedClosing      Int          @default(0)
+  medicalLeave       Int          @default(0)
+  otherLeave         Int          @default(0)
+  maternityInfo      String?
+  gratuityInfo       String?
+  nominationInfo     String?
+  remarks            String?
+
+  @@unique([cycleId, employeeId])
+}
+
+model OvertimeRecord {
+  id              String       @id @default(cuid())
+  cycleId         String
+  cycle           MonthlyCycle @relation(fields: [cycleId], references: [id])
+  employeeId      String
+  employee        Employee     @relation(fields: [employeeId], references: [id])
+  dailyOt         String       @default("[]")
+  totalOtHours    Float        @default(0)
+  normalHoursRate Float        @default(0)
+  otRate          Float        @default(0)
+  normalEarnings  Float        @default(0)
+  otEarnings      Float        @default(0)
+  totalEarnings   Float        @default(0)
+  paymentDate     DateTime?
+
+  @@unique([cycleId, employeeId])
+}
+
+model FineRecord {
+  id                 String       @id @default(cuid())
+  cycleId            String
+  cycle              MonthlyCycle @relation(fields: [cycleId], references: [id])
+  employeeId         String
+  employee           Employee     @relation(fields: [employeeId], references: [id])
+  offenceDate        DateTime
+  offenceDescription String
+  showCauseDate      DateTime?
+  wagePeriod         String?
+  wagesOnDate        Float        @default(0)
+  fineAmount         Float        @default(0)
+  recovered          Float        @default(0)
+  pendingRecovery    Float        @default(0)
+  remarks            String?
+}
+
+model DeductionRecord {
+  id              String       @id @default(cuid())
+  cycleId         String
+  cycle           MonthlyCycle @relation(fields: [cycleId], references: [id])
+  employeeId      String
+  employee        Employee     @relation(fields: [employeeId], references: [id])
+  damageDate      DateTime
+  description     String
+  damageAmount    Float        @default(0)
+  deductionAmount Float        @default(0)
+  recovered       Float        @default(0)
+  pendingRecovery Float        @default(0)
+  remarks         String?
+}
+
+model GeneratedDocument {
+  id              String   @id @default(cuid())
+  formTaskId      String
+  formTask        FormTask @relation(fields: [formTaskId], references: [id])
+  formCode        String
+  docxPath        String?
+  pdfPath         String?
+  templateVersion String
+  versionNo       Int      @default(1)
+  generatedAt     DateTime @default(now())
+  fileName        String
+}
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  entityType    String
+  entityId      String
+  action        String
+  previousValue String?
+  newValue      String?
+  changedAt     DateTime @default(now())
+}
+
+model GovtHoliday {
+  id        String   @id @default(cuid())
+  date      DateTime @unique
+  name      String
+  year      Int
+  createdAt DateTime @default(now())
+}
+
+model WageRule {
+  id              String        @id @default(cuid())
+  establishmentId String
+  establishment   Establishment @relation(fields: [establishmentId], references: [id])
+  ruleKey         String
+  ruleValue       Float
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([establishmentId, ruleKey])
+}
