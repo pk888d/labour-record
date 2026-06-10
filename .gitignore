@@ -41,3 +41,6 @@ npm-debug.log*
 
 # Superpowers tooling cache (local)
 .superpowers/
+
+# Microsoft Office lock/temp files
+~$*
