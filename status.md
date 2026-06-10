@@ -148,3 +148,45 @@
 - Files changed: src/app/cycles/[id]/salary-slips/[employeeId]/page.tsx, src/app/print/[cycleId]/[formCode]/page.tsx, src/app/establishments/[id]/employees/page.tsx
 - Validation: Playwright 7/7 + 13/13 browser checks pass, 0 page errors; tsc clean; 141 unit tests pass. (DOCX→PDF step needs LibreOffice/soffice installed — env only, DOCX itself works.)
 - Next step: optional — install LibreOffice for DOCX→PDF auto-conversion; verify exported form column alignment in Word.
+
+### Task Update — 2026-06-10 — Form output corrected vs forms-template
+- Task: Match print/DOCX output to forms-template (list every employee, "Nil" empty cells)
+- Status: completed
+- Scope:
+  - Fines (Form I) & Deductions (Form II): were per-record with a hiding "No fines recorded" empty state. Refactored getFinesData/getDeductionsData to return ONE ROW PER EMPLOYEE (all employees), with template columns (Name, Father's/Husband's, Age&Sex, Department, offence/deduction cols…) and "Nil" wherever there is no entry; merges real fines/deductions where present. Rewrote hospital-form-i.tsx & hospital-form-ii.tsx to the 12-column statutory layout with (1)-(12) numbering. Same data feeds DOCX (tags already aligned) — verified export lists all 6 employees + Nil.
+  - Fixed pre-existing wages crash: WageRecord.otherAllowances held corrupt JSON (["[]"]) → reduce concatenated into a string → fmt n.toFixed crashed Form XII/XVII (and shop W/T). Added defensive sumNumeric() in form-data.ts + slip-data.ts (coerce each element to number), and hardened fmt() in all 5 wage components.
+- Files changed: src/lib/export/form-data.ts, src/app/cycles/[id]/salary-slips/slip-data.ts, src/app/print/[cycleId]/[formCode]/{hospital-form-i,hospital-form-ii,hospital-form-iv,hospital-form-xii,hospital-form-xvii,shop-form-w,shop-form-t}.tsx
+- Validation: browser sweep of all 7 hospital forms → 0 page errors; Fines/Deductions list all 6 employees with Nil (HTML + DOCX); Form XII renders all employees + TOTAL; tsc clean; 141 tests pass.
+- Next step: commit; (other registers already listed all employees — no change needed).
+
+### Task Update — 2026-06-10 — Date of Entry shows date only
+- Task: Form XI (and all forms) Date of Entry must show date only, no time
+- Status: completed
+- Scope: empDataSnapshot stored dateOfEntry as a full ISO datetime, so registers showed "…T00:00:00.000Z". Added dateOnly() helper in form-data.ts and applied it in getCycleContext snapshot mapper (single source feeding all forms, HTML + DOCX).
+- Files changed: src/lib/export/form-data.ts
+- Validation: Form XI HTML print → Date of Entry "2020-01-01" (no time); DOCX export → no "T00:00", dates "2020-01-01"; tsc clean; 141 tests pass.
+
+### Task Update — 2026-06-10 — Salary Setup: more control
+- Task: Give more control over the employee Salary Setup section
+- Status: completed
+- Scope (per user: editable components + live preview, auto-fill-then-editable):
+  - computeSalaryBreakdown extended: editable DA (overridable), HRA, Other Allowances, LWF; Basic = max(0, total − DA − HRA − Other); LWF added to deductions. 5 new TDD tests.
+  - Employee form Salary Setup now has editable DA (defaults to firm rate, with ↺ reset-to-firm button), HRA, Other Allowances, Overtime/Double-Wages, PF Mode (+ Fixed PF amount input in FIXED mode, PF%/ceiling in PERCENT mode), ESI toggle.
+  - Live Breakdown Preview table (Basic/DA/HRA/Other/Overtime/PF/ESI/LWF + Gross/Deductions/Net) recomputes as you type.
+  - "Apply to wage defaults" fills Basic/DA/HRA/PF/ESI into the editable Monthly Wage Defaults (still hand-editable).
+- Files changed: src/domain/calculations/salary-breakdown.ts, tests/domain/salary-breakdown.test.ts, src/components/employee-form.tsx
+- Validation: browser — all inputs present, live preview updates (20000 − DA5000 − HRA2000 − Other1000 = Basic 12000; Net 19840), both PF modes compute ₹1800, 0 page errors; tsc clean; 146 tests pass.
+
+### Task Update — 2026-06-10 — Salary Setup: ESI control
+- Task: Add ESI control to Salary Setup
+- Status: completed
+- Scope: editable ESI Employee % (default 0.75) and ESI Threshold ₹ (default 21000), shown when ESI Applicable is ticked; wired into the live preview + computeSalaryBreakdown (which already accepted the params). 2 new tests (custom % and custom threshold).
+- Files changed: src/components/employee-form.tsx, tests/domain/salary-breakdown.test.ts
+- Validation: browser — ESI 90 @0.75%/12000; 120 @1%; 0 over ₹21k threshold; 187.50 when threshold raised to 30k; hides + 0 when unticked; 0 page errors; tsc clean; 148 tests pass.
+
+### Task Update — 2026-06-10 — Salary Setup: LWF control
+- Task: Add LWF control to Salary Setup
+- Status: completed
+- Scope: editable LWF (₹) input in Salary Setup, bound to form.lwfAmount (same value as Monthly Wage Defaults LWF, kept in sync), feeding the live preview + net. Salary Setup now controls DA, HRA, Other Allowances, Overtime, LWF, PF (Percent/Fixed + ceiling), ESI (% + threshold).
+- Files changed: src/components/employee-form.tsx
+- Validation: browser — LWF=20 drops Net by exactly ₹20 (10110→10090); value syncs; 0 page errors; tsc clean; 148 tests pass.

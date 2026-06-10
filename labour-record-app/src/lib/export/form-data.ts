@@ -96,29 +96,37 @@ export type OvertimeRow = {
   otEarnings: number
 }
 
+// Registers list EVERY employee; columns with no entry read "Nil" (per the
+// statutory template). All fields are display strings.
 export type FineRow = {
-  id: string
-  employeeId: string
+  sno: number
   empId: string
   name: string
-  offenceDate: string
-  offenceDescription: string
-  fineAmount: number
-  recovered: number
-  pendingRecovery: number
+  fatherSpouseName: string
+  sex: string
+  department: string
+  offenceDescription: string // Nature & date of offence
+  showCause: string          // Whether show-cause notice served
+  heard: string              // Whether workman showed cause
+  rate: string               // Rate of wages
+  fineAmount: string         // Date & amount of fine imposed
+  dateRealised: string       // Date fine realised
   remarks: string
 }
 
 export type DeductionRow = {
-  id: string
-  employeeId: string
+  sno: number
   empId: string
   name: string
-  damageDate: string
-  description: string
-  deductionAmount: number
-  recovered: number
-  pendingRecovery: number
+  fatherSpouseName: string
+  sex: string
+  department: string
+  description: string        // Damage/loss caused with date
+  showCause: string          // Whether worker showed cause
+  damageDate: string         // Date of deduction imposed
+  deductionAmount: string    // Amount of deduction imposed
+  installments: string       // No. of installments
+  dateRealised: string       // Date total amount realised
   remarks: string
 }
 
@@ -138,6 +146,30 @@ export type LeaveRow = {
 
 function getDaysInMonth(year: number, month: number) {
   return new Date(year, month, 0).getDate()
+}
+
+// Normalise any date value (Date, ISO datetime string, or empty) to YYYY-MM-DD
+// — statutory registers show the date only, never a time component.
+function dateOnly(v: string | Date | null | undefined): string {
+  if (!v) return ''
+  if (typeof v === 'string') return v.split('T')[0]
+  try {
+    return new Date(v).toISOString().split('T')[0]
+  } catch {
+    return ''
+  }
+}
+
+// Sum a JSON-encoded allowances array defensively (legacy data may hold strings
+// like ["[]"] or nested values), coercing each element to a number.
+function sumNumeric(json: string): number {
+  try {
+    const arr = JSON.parse(json)
+    if (!Array.isArray(arr)) return 0
+    return arr.reduce((s: number, v: unknown) => s + (Number(v) || 0), 0)
+  } catch {
+    return 0
+  }
 }
 
 export async function getCycleContext(cycleId: string): Promise<CycleContext> {
@@ -161,7 +193,7 @@ export async function getCycleContext(cycleId: string): Promise<CycleContext> {
       sex: s.sex ?? ce.employee.sex,
       designation: s.designation ?? ce.employee.designation,
       department: s.department ?? ce.employee.department,
-      dateOfEntry: s.dateOfEntry ?? (ce.employee.dateOfEntry ? new Date(ce.employee.dateOfEntry).toISOString().split('T')[0] : ''),
+      dateOfEntry: dateOnly(s.dateOfEntry ?? ce.employee.dateOfEntry),
       uan: s.uan ?? ce.employee.uan ?? null,
       esiNo: s.esiNo ?? ce.employee.esiNo ?? null,
     }
@@ -196,9 +228,7 @@ export async function getWagesData(ctx: CycleContext): Promise<WagesRow[]> {
 
   return ctx.employees.map((emp) => {
     const w = wages.find((r) => r.employeeId === emp.employeeId)
-    const otherAllowances = w
-      ? (JSON.parse(w.otherAllowances) as number[]).reduce((s, v) => s + v, 0)
-      : 0
+    const otherAllowances = w ? sumNumeric(w.otherAllowances) : 0
     const fineDeduction = w?.fineDeduction ?? 0
     const basic = w?.basic ?? 0
     const da = w?.da ?? 0
@@ -299,25 +329,44 @@ export async function getOvertimeData(ctx: CycleContext): Promise<OvertimeRow[]>
   })
 }
 
+const NIL = 'Nil'
+const isoDate = (d: Date) => new Date(d).toISOString().split('T')[0]
+
+async function getFatherNames(ctx: CycleContext): Promise<Map<string, string>> {
+  const dbEmps = await prisma.employee.findMany({
+    where: { id: { in: ctx.employees.map((e) => e.employeeId) } },
+    select: { id: true, fatherSpouseName: true },
+  })
+  return new Map(dbEmps.map((e) => [e.id, e.fatherSpouseName ?? '']))
+}
+
 export async function getFinesData(ctx: CycleContext): Promise<FineRow[]> {
   const fines = await prisma.fineRecord.findMany({
     where: { cycleId: ctx.cycleId },
-    include: { employee: { select: { empId: true } } },
     orderBy: { offenceDate: 'asc' },
   })
-  return fines.map((f) => {
-    const emp = ctx.employees.find((e) => e.employeeId === f.employeeId)
+  const fathers = await getFatherNames(ctx)
+
+  // One row per employee; "Nil" wherever there is no fine entry.
+  return ctx.employees.map((emp, i) => {
+    const ef = fines.filter((f) => f.employeeId === emp.employeeId)
+    const has = ef.length > 0
     return {
-      id: f.id,
-      employeeId: f.employeeId,
-      empId: emp?.empId ?? f.employee.empId,
-      name: emp?.name ?? '',
-      offenceDate: new Date(f.offenceDate).toISOString().split('T')[0],
-      offenceDescription: f.offenceDescription,
-      fineAmount: f.fineAmount,
-      recovered: f.recovered,
-      pendingRecovery: f.pendingRecovery,
-      remarks: f.remarks ?? '',
+      sno: i + 1,
+      empId: emp.empId,
+      name: emp.name,
+      fatherSpouseName: fathers.get(emp.employeeId) || NIL,
+      sex: emp.sex || NIL,
+      department: emp.department || NIL,
+      offenceDescription: has
+        ? ef.map((f) => `${f.offenceDescription} (${isoDate(f.offenceDate)})`).join('; ')
+        : NIL,
+      showCause: has ? (ef.some((f) => f.showCauseDate) ? 'Yes' : 'No') : NIL,
+      heard: NIL,
+      rate: NIL,
+      fineAmount: has ? `₹${ef.reduce((s, f) => s + f.fineAmount, 0).toFixed(2)}` : NIL,
+      dateRealised: NIL,
+      remarks: has ? (ef.map((f) => f.remarks).filter(Boolean).join('; ') || NIL) : NIL,
     }
   })
 }
@@ -325,22 +374,29 @@ export async function getFinesData(ctx: CycleContext): Promise<FineRow[]> {
 export async function getDeductionsData(ctx: CycleContext): Promise<DeductionRow[]> {
   const ded = await prisma.deductionRecord.findMany({
     where: { cycleId: ctx.cycleId },
-    include: { employee: { select: { empId: true } } },
     orderBy: { damageDate: 'asc' },
   })
-  return ded.map((d) => {
-    const emp = ctx.employees.find((e) => e.employeeId === d.employeeId)
+  const fathers = await getFatherNames(ctx)
+
+  return ctx.employees.map((emp, i) => {
+    const ed = ded.filter((d) => d.employeeId === emp.employeeId)
+    const has = ed.length > 0
     return {
-      id: d.id,
-      employeeId: d.employeeId,
-      empId: emp?.empId ?? d.employee.empId,
-      name: emp?.name ?? '',
-      damageDate: new Date(d.damageDate).toISOString().split('T')[0],
-      description: d.description,
-      deductionAmount: d.deductionAmount,
-      recovered: d.recovered,
-      pendingRecovery: d.pendingRecovery,
-      remarks: d.remarks ?? '',
+      sno: i + 1,
+      empId: emp.empId,
+      name: emp.name,
+      fatherSpouseName: fathers.get(emp.employeeId) || NIL,
+      sex: emp.sex || NIL,
+      department: emp.department || NIL,
+      description: has
+        ? ed.map((d) => `${d.description} (${isoDate(d.damageDate)})`).join('; ')
+        : NIL,
+      showCause: NIL,
+      damageDate: has ? ed.map((d) => isoDate(d.damageDate)).join('; ') : NIL,
+      deductionAmount: has ? `₹${ed.reduce((s, d) => s + d.deductionAmount, 0).toFixed(2)}` : NIL,
+      installments: NIL,
+      dateRealised: NIL,
+      remarks: has ? (ed.map((d) => d.remarks).filter(Boolean).join('; ') || NIL) : NIL,
     }
   })
 }

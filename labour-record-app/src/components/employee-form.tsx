@@ -17,6 +17,11 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
   const router = useRouter()
   const isEdit = !!employee
 
+  const initialType = establishments.find(
+    (e) => e.id === (employee?.establishmentId ?? defaultEstablishmentId)
+  )?.type
+  const initialFirmDa = initialType ? getDaRate(initialType) : 0
+
   const [form, setForm] = useState({
     empId: employee?.empId ?? '',
     name: employee?.name ?? '',
@@ -52,10 +57,18 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
     basicWage: String(employee?.basicWage ?? 0),
     daWage: String(employee?.daWage ?? 0),
     hraWage: String(employee?.hraWage ?? 0),
+    // Salary Setup drivers (editable; DA defaults to the firm rate)
+    setupDa: String(employee?.daWage || initialFirmDa),
+    setupHra: String(employee?.hraWage ?? 0),
+    setupOther: '0',
+    setupOvertime: '0',
     pfMode: (employee?.pfMode ?? 'PERCENT') as PfMode,
     pfPercent: String(employee?.pfPercent ?? 12),
     pfWageCeiling: String(employee?.pfWageCeiling ?? 15000),
+    pfFixedAmount: String(employee?.pfAmount || 1800),
     esiApplicable: true,
+    esiPercent: '0.75',
+    esiThreshold: '21000',
     pfAmount: String(employee?.pfAmount ?? 0),
     esiAmount: String(employee?.esiAmount ?? 0),
     lwfAmount: String(employee?.lwfAmount ?? 0),
@@ -68,26 +81,36 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
     setForm((prev) => ({ ...prev, [field]: value }))
 
   const selectedType = establishments.find((e) => e.id === form.establishmentId)?.type
+  const firmDa = selectedType ? getDaRate(selectedType) : 0
 
-  // Item 10: derive Basic/DA/PF/ESI from the default total salary + firm DA + PF config.
+  // Live breakdown from the current Salary Setup inputs (recomputed each render).
+  const preview = computeSalaryBreakdown({
+    totalSalary: parseFloat(form.defaultTotalSalary) || 0,
+    daRate: parseFloat(form.setupDa) || 0,
+    hra: parseFloat(form.setupHra) || 0,
+    otherAllowances: parseFloat(form.setupOther) || 0,
+    lwf: parseFloat(form.lwfAmount) || 0,
+    overtimeEarnings: parseFloat(form.setupOvertime) || 0,
+    pfConfig: {
+      mode: form.pfMode,
+      percent: parseFloat(form.pfPercent) || 0,
+      ceiling: parseFloat(form.pfWageCeiling) || undefined,
+      fixedAmount: parseFloat(form.pfFixedAmount) || 0,
+    },
+    esiApplicable: form.esiApplicable,
+    esiEmployeePct: parseFloat(form.esiPercent) || 0,
+    esiThreshold: parseFloat(form.esiThreshold) || 0,
+  })
+
+  // Item 10: auto-fill the Monthly Wage Defaults from the live preview (still editable).
   function applyBreakdown() {
-    const daRate = selectedType ? getDaRate(selectedType) : parseFloat(form.daWage) || 0
-    const r = computeSalaryBreakdown({
-      totalSalary: parseFloat(form.defaultTotalSalary) || 0,
-      daRate,
-      pfConfig: {
-        mode: form.pfMode,
-        percent: parseFloat(form.pfPercent) || 0,
-        ceiling: parseFloat(form.pfWageCeiling) || undefined,
-      },
-      esiApplicable: form.esiApplicable,
-    })
     setForm((prev) => ({
       ...prev,
-      basicWage: String(r.basic),
-      daWage: String(r.da),
-      pfAmount: String(r.pf),
-      esiAmount: String(r.esi),
+      basicWage: String(preview.basic),
+      daWage: String(preview.da),
+      hraWage: String(preview.hra),
+      pfAmount: String(preview.pf),
+      esiAmount: String(preview.esi),
     }))
   }
 
@@ -440,12 +463,66 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
           <div>
             <label className={labelClass}>
               Default Total Salary (₹)
-              <Info text="The monthly gross (Basic + DA target). Basic, DA, PF and ESI are derived from this. Click Compute to split." />
+              <Info text="Monthly gross target (Basic + DA + HRA + Other). Basic is the remainder after the components below." />
             </label>
             <input className={inputClass} type="number" min="0" step="0.01"
               aria-label="Default Total Salary"
               value={form.defaultTotalSalary}
               onChange={(e) => set('defaultTotalSalary', e.target.value)} />
+          </div>
+          <div>
+            <label className={labelClass}>
+              DA (₹)
+              <Info text="Dearness Allowance. Defaults to the firm rate but is editable per employee. Use the ↺ button to reset to the firm rate." />
+            </label>
+            <div className="flex gap-1">
+              <input className={inputClass} type="number" min="0" step="0.01"
+                aria-label="Setup DA" value={form.setupDa}
+                onChange={(e) => set('setupDa', e.target.value)} />
+              {selectedType && (
+                <button type="button" title={`Reset to firm rate ₹${firmDa}`}
+                  onClick={() => set('setupDa', String(firmDa))}
+                  className="px-2 text-[10px] text-[#4a9eff] border border-[#1a3a6a] rounded hover:bg-[#1a3060] whitespace-nowrap">
+                  ↺ ₹{firmDa.toLocaleString('en-IN')}
+                </button>
+              )}
+            </div>
+          </div>
+          <div>
+            <label className={labelClass}>
+              HRA (₹)
+              <Info text="House Rent Allowance (editable). Part of the gross; reduces Basic." />
+            </label>
+            <input className={inputClass} type="number" min="0" step="0.01"
+              aria-label="Setup HRA" value={form.setupHra}
+              onChange={(e) => set('setupHra', e.target.value)} />
+          </div>
+          <div>
+            <label className={labelClass}>
+              Other Allowances (₹)
+              <Info text="Any other fixed monthly allowance. Part of the gross; reduces Basic." />
+            </label>
+            <input className={inputClass} type="number" min="0" step="0.01"
+              aria-label="Setup Other Allowances" value={form.setupOther}
+              onChange={(e) => set('setupOther', e.target.value)} />
+          </div>
+          <div>
+            <label className={labelClass}>
+              Overtime / Double Wages (₹)
+              <Info text="Extra earnings added on top of the gross (e.g. holiday double-wages). Not part of Basic." />
+            </label>
+            <input className={inputClass} type="number" min="0" step="0.01"
+              aria-label="Setup Overtime" value={form.setupOvertime}
+              onChange={(e) => set('setupOvertime', e.target.value)} />
+          </div>
+          <div>
+            <label className={labelClass}>
+              LWF (₹)
+              <Info text="Labour Welfare Fund deduction per month (editable). TN employee share ≈ ₹10. Subtracted from gross in the net pay." />
+            </label>
+            <input className={inputClass} type="number" min="0" step="0.01"
+              aria-label="Setup LWF" value={form.lwfAmount}
+              onChange={(e) => set('lwfAmount', e.target.value)} />
           </div>
           <div>
             <label className={labelClass}>
@@ -460,38 +537,77 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
             </select>
           </div>
           {form.pfMode === 'PERCENT' && (
-            <div className="grid grid-cols-2 gap-2">
+            <>
               <div>
                 <label className={labelClass}>PF %</label>
                 <input className={inputClass} type="number" min="0" step="0.01"
-                  aria-label="PF Percent"
-                  value={form.pfPercent}
+                  aria-label="PF Percent" value={form.pfPercent}
                   onChange={(e) => set('pfPercent', e.target.value)} />
               </div>
               <div>
-                <label className={labelClass}>Wage Ceiling</label>
+                <label className={labelClass}>PF Wage Ceiling (₹)</label>
                 <input className={inputClass} type="number" min="0" step="1"
-                  aria-label="PF Wage Ceiling"
-                  value={form.pfWageCeiling}
+                  aria-label="PF Wage Ceiling" value={form.pfWageCeiling}
                   onChange={(e) => set('pfWageCeiling', e.target.value)} />
               </div>
+            </>
+          )}
+          {form.pfMode === 'FIXED' && (
+            <div>
+              <label className={labelClass}>
+                Fixed PF Amount (₹)
+                <Info text="Flat monthly PF deducted for this employee." />
+              </label>
+              <input className={inputClass} type="number" min="0" step="0.01"
+                aria-label="PF Fixed Amount" value={form.pfFixedAmount}
+                onChange={(e) => set('pfFixedAmount', e.target.value)} />
             </div>
           )}
-          <div className="col-span-3 flex items-center gap-4">
-            <label className="flex items-center gap-2 text-xs text-[#7a9ab8] cursor-pointer">
+          <div className="col-span-3 flex items-center gap-2 pt-1">
+            <label className="flex items-center gap-2 text-xs text-[#7a9ab8] cursor-pointer whitespace-nowrap">
               <input type="checkbox" checked={form.esiApplicable}
                 onChange={(e) => set('esiApplicable', e.target.checked)} />
-              ESI Applicable (0.75% when gross ≤ ₹21,000)
+              ESI Applicable
+              <Info text="ESI = employee % of gross wages, only when gross ≤ the threshold. TN statutory default: 0.75% with a ₹21,000 threshold — both editable here." />
             </label>
-            {selectedType && (
-              <span className="text-[10px] text-[#4a6a8a]">
-                Firm DA rate: ₹{getDaRate(selectedType).toLocaleString('en-IN')}
-              </span>
+            {form.esiApplicable && (
+              <>
+                <label className="text-[10px] text-[#5a8ab8] ml-2">ESI %</label>
+                <input className={`${inputClass} w-20`} type="number" min="0" step="0.01"
+                  aria-label="ESI Percent" value={form.esiPercent}
+                  onChange={(e) => set('esiPercent', e.target.value)} />
+                <label className="text-[10px] text-[#5a8ab8]">Threshold ₹</label>
+                <input className={`${inputClass} w-24`} type="number" min="0" step="1"
+                  aria-label="ESI Threshold" value={form.esiThreshold}
+                  onChange={(e) => set('esiThreshold', e.target.value)} />
+              </>
             )}
             <button type="button" onClick={applyBreakdown}
-              className="ml-auto px-3 py-1 bg-[#0f2040] text-[#4a9eff] text-xs rounded border border-[#1a3a6a] hover:bg-[#1a3060]">
-              Compute breakdown ↓
+              className="ml-auto px-4 py-1.5 bg-[#1a5adc] text-white text-xs font-medium rounded hover:bg-[#2a6aec] whitespace-nowrap">
+              Apply to wage defaults ↓
             </button>
+          </div>
+        </div>
+
+        {/* Live breakdown preview — updates as you type */}
+        <div className="mb-5 rounded border border-[#1e2d3d] bg-[#0a1520] overflow-hidden">
+          <div className="px-3 py-1.5 bg-[#0f1f30] text-[10px] uppercase tracking-wider text-[#5a8ab8] font-semibold">
+            Live Breakdown Preview
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-1 px-4 py-3">
+            <PreviewRow label="Basic" value={preview.basic} />
+            <PreviewRow label="DA" value={preview.da} />
+            <PreviewRow label="HRA" value={preview.hra} />
+            <PreviewRow label="Other Allow." value={preview.otherAllowances} />
+            <PreviewRow label="Overtime" value={preview.overtimeEarnings} accent="#c0a040" />
+            <PreviewRow label="PF" value={preview.pf} accent="#f09070" />
+            <PreviewRow label="ESI" value={preview.esi} accent="#f09070" />
+            <PreviewRow label="LWF" value={preview.lwf} accent="#f09070" />
+          </div>
+          <div className="flex flex-wrap justify-between gap-2 px-4 py-2 border-t border-[#1e2d3d] text-xs">
+            <span className="text-[#40c070] font-semibold">Gross: ₹{preview.grossWages.toLocaleString('en-IN')}</span>
+            <span className="text-[#f07070]">− Deductions: ₹{preview.totalDeductions.toLocaleString('en-IN')}</span>
+            <span className="text-white font-bold">Net Pay: ₹{preview.netSalary.toLocaleString('en-IN')}</span>
           </div>
         </div>
         <p className="text-xs font-semibold text-[#c8d8e8] mb-3 uppercase tracking-wide">Monthly Wage Defaults</p>
@@ -571,5 +687,16 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
         </button>
       </div>
     </form>
+  )
+}
+
+function PreviewRow({ label, value, accent }: { label: string; value: number; accent?: string }) {
+  return (
+    <div className="flex justify-between items-baseline">
+      <span className="text-[11px] text-[#5a8ab8]">{label}</span>
+      <span className="text-xs font-mono" style={{ color: accent ?? '#c8d8e8' }}>
+        ₹{value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+      </span>
+    </div>
   )
 }

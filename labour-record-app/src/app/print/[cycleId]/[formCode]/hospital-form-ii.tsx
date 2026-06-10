@@ -1,8 +1,6 @@
 import type { CycleContext, DeductionRow } from '@/lib/export/form-data'
 import { MONTH_NAMES } from '@/lib/export/form-data'
 
-const fmt = (n: number) => n === 0 ? 'Nil' : n.toFixed(2)
-
 export function HospitalFormII({ ctx, deductions }: { ctx: CycleContext; deductions: DeductionRow[] }) {
   const { establishment, cycle } = ctx
   const period = `${MONTH_NAMES[cycle.month]} ${cycle.year}`
@@ -11,51 +9,50 @@ export function HospitalFormII({ ctx, deductions }: { ctx: CycleContext; deducti
     <div className="form-page">
       <div className="form-header">
         <h2>REGISTER OF DEDUCTIONS FOR DAMAGE OR LOSS</h2>
-        <p>Form II [Rule 4] — Tamil Nadu Payment of Wages Act</p>
-        <p><strong>{establishment.name}</strong> — {period}</p>
-        <p>Address: {establishment.address} | Reg. No.: {establishment.regCertNo}</p>
+        <p>Form No. II — Prescribed under Rule 21(4) of Minimum Wages (Tamil Nadu) Rules, 1963</p>
+        <p>Register of Deductions for Damage or Loss caused to the Employer by Neglect or Default — for <strong>{period}</strong></p>
+        <p>Name and Address of the Establishment: <strong>{establishment.name}</strong>, {establishment.address}</p>
+        <p>Name of the Manager/In-charge: {establishment.managerName} | Registration Certificate No.: {establishment.regCertNo}</p>
       </div>
-      {deductions.length === 0 ? (
-        <p style={{ textAlign: 'center', marginTop: '20px', fontStyle: 'italic' }}>No deductions recorded for this period.</p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>S.No</th>
-              <th>Emp ID</th>
-              <th>Name</th>
-              <th>Damage Date</th>
-              <th>Description</th>
-              <th>Deduction Amount (₹)</th>
-              <th>Recovered (₹)</th>
-              <th>Pending (₹)</th>
-              <th>Remarks</th>
+      <table>
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>Name</th>
+            <th>Father&apos;s / Husband&apos;s Name</th>
+            <th>Age &amp; Sex</th>
+            <th>Department</th>
+            <th>Damage or Loss Caused with Date</th>
+            <th>Whether worker showed cause against deduction (if so, date)</th>
+            <th>Date of Deduction imposed</th>
+            <th>Amount of Deduction imposed</th>
+            <th>No. of installments (if any)</th>
+            <th>Date on which total amount realized</th>
+            <th>Remarks</th>
+          </tr>
+          <tr>
+            {Array.from({ length: 12 }, (_, i) => <th key={i} style={{ fontWeight: 'normal' }}>({i + 1})</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {deductions.map((r) => (
+            <tr key={r.sno}>
+              <td style={{ textAlign: 'center' }}>{r.sno}</td>
+              <td>{r.name}</td>
+              <td>{r.fatherSpouseName}</td>
+              <td style={{ textAlign: 'center' }}>{r.sex}</td>
+              <td style={{ textAlign: 'center' }}>{r.department}</td>
+              <td style={{ textAlign: 'center' }}>{r.description}</td>
+              <td style={{ textAlign: 'center' }}>{r.showCause}</td>
+              <td style={{ textAlign: 'center' }}>{r.damageDate}</td>
+              <td style={{ textAlign: 'center' }}>{r.deductionAmount}</td>
+              <td style={{ textAlign: 'center' }}>{r.installments}</td>
+              <td style={{ textAlign: 'center' }}>{r.dateRealised}</td>
+              <td style={{ textAlign: 'center' }}>{r.remarks}</td>
             </tr>
-          </thead>
-          <tbody>
-            {deductions.map((row, i) => (
-              <tr key={row.id}>
-                <td style={{ textAlign: 'center' }}>{i + 1}</td>
-                <td>{row.empId}</td>
-                <td>{row.name}</td>
-                <td style={{ textAlign: 'center' }}>{row.damageDate}</td>
-                <td>{row.description}</td>
-                <td style={{ textAlign: 'right' }}>{fmt(row.deductionAmount)}</td>
-                <td style={{ textAlign: 'right' }}>{fmt(row.recovered)}</td>
-                <td style={{ textAlign: 'right' }}>{fmt(row.pendingRecovery)}</td>
-                <td>{row.remarks}</td>
-              </tr>
-            ))}
-            <tr className="totals-row">
-              <td colSpan={5} style={{ textAlign: 'right' }}>TOTAL</td>
-              <td style={{ textAlign: 'right' }}>{fmt(deductions.reduce((s, r) => s + r.deductionAmount, 0))}</td>
-              <td style={{ textAlign: 'right' }}>{fmt(deductions.reduce((s, r) => s + r.recovered, 0))}</td>
-              <td style={{ textAlign: 'right' }}>{fmt(deductions.reduce((s, r) => s + r.pendingRecovery, 0))}</td>
-              <td />
-            </tr>
-          </tbody>
-        </table>
-      )}
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
