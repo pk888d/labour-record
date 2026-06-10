@@ -36,7 +36,9 @@ export function ShopFormV({ ctx, muster }: { ctx: CycleContext; muster: MusterRo
         </thead>
         <tbody>
           {muster.map((row, i) => {
+            const workedDays = row.dailyMarks.filter((m) => m === 'P' || m === 'OT').length
             const leaveDays = row.dailyMarks.filter((m) => m === 'L').length
+            const absentDays = row.dailyMarks.filter((m) => m === 'A').length
             return (
               <tr key={row.employeeId}>
                 <td style={{ textAlign: 'center' }}>{i + 1}</td>
@@ -48,8 +50,8 @@ export function ShopFormV({ ctx, muster }: { ctx: CycleContext; muster: MusterRo
                 {row.dailyMarks.map((m, d) => (
                   <td key={d} style={{ textAlign: 'center', fontSize: '8px' }}>{m || '-'}</td>
                 ))}
-                <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{row.totalPresent}</td>
-                <td style={{ textAlign: 'center' }}>{row.totalAbsent}</td>
+                <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{workedDays}</td>
+                <td style={{ textAlign: 'center' }}>{absentDays}</td>
                 <td style={{ textAlign: 'center' }}>{leaveDays}</td>
                 <td>{row.remarks || 'Nil'}</td>
               </tr>

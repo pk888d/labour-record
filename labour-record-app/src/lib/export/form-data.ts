@@ -64,8 +64,11 @@ export type MusterRow = {
   sex: string
   designation: string
   dailyMarks: string[]
-  totalPresent: number
+  totalPresent: number // days actually worked (P / OT) — excludes holidays
   totalAbsent: number
+  leaveDays: number
+  holidayDays: number
+  wageDays: number // worked + paid holidays + paid leave
   workStartTime: string
   workEndTime: string
   restInterval: string
@@ -285,8 +288,12 @@ export async function getMusterData(ctx: CycleContext): Promise<MusterRow[]> {
     const marks = storedMarks.length >= ctx.daysInMonth
       ? storedMarks.slice(0, ctx.daysInMonth)
       : [...storedMarks, ...Array(ctx.daysInMonth - storedMarks.length).fill('')]
-    const totalPresent = marks.filter((m) => m === 'P' || m === 'OT' || m === 'H').length
+    // Days worked = actual attendance (P / OT). Holidays (H) are paid but NOT worked.
+    const totalPresent = marks.filter((m) => m === 'P' || m === 'OT').length
     const totalAbsent = marks.filter((m) => m === 'A').length
+    const leaveDays = marks.filter((m) => m === 'L').length
+    const holidayDays = marks.filter((m) => m === 'H').length
+    const wageDays = totalPresent + holidayDays + leaveDays
     return {
       employeeId: emp.employeeId,
       empId: emp.empId,
@@ -297,6 +304,9 @@ export async function getMusterData(ctx: CycleContext): Promise<MusterRow[]> {
       dailyMarks: marks,
       totalPresent,
       totalAbsent,
+      leaveDays,
+      holidayDays,
+      wageDays,
       workStartTime: r?.workStartTime ?? '',
       workEndTime: r?.workEndTime ?? '',
       restInterval: r?.restInterval ?? '',
