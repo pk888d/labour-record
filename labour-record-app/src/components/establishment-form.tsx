@@ -34,6 +34,11 @@ export function EstablishmentForm({ establishment }: Props) {
     managerName: establishment?.managerName ?? '',
     regCertNo: establishment?.regCertNo ?? '',
     type: establishment?.type ?? 'HOSPITAL',
+    contactPhone: establishment?.contactPhone ?? '',
+    contactEmail: establishment?.contactEmail ?? '',
+    processingFee: String(establishment?.processingFee ?? 0),
+    serviceStartDate: establishment?.serviceStartDate
+      ? new Date(establishment.serviceStartDate).toISOString().split('T')[0] : '',
     workWeekDays: establishment?.workWeekDays ?? 6,
     isActive: establishment?.isActive ?? true,
     wageFormulaConfig: establishment?.wageFormulaConfig
@@ -168,6 +173,44 @@ export function EstablishmentForm({ establishment }: Props) {
             <option value={6}>6 days (Mon–Sat)</option>
             <option value={5}>5 days (Mon–Fri)</option>
           </select>
+        </div>
+      </div>
+
+      <div className="border-t border-[#1e2d3d] pt-4">
+        <p className="text-xs font-semibold text-[#c8d8e8] mb-3">Contact &amp; Billing</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass}>
+              Contact Phone
+              <Info text="Primary contact number for this establishment." />
+            </label>
+            <input className={inputClass} aria-label="Contact Phone" value={form.contactPhone}
+              onChange={(e) => set('contactPhone', e.target.value)} placeholder="98xxx xxxxx" />
+          </div>
+          <div>
+            <label className={labelClass}>
+              Contact Email
+              <Info text="Primary contact email for this establishment." />
+            </label>
+            <input className={inputClass} type="email" aria-label="Contact Email" value={form.contactEmail}
+              onChange={(e) => set('contactEmail', e.target.value)} placeholder="firm@example.com" />
+          </div>
+          <div>
+            <label className={labelClass}>
+              Processing Fee (₹ / month)
+              <Info text="Your monthly service/processing fee charged to this establishment." />
+            </label>
+            <input className={inputClass} type="number" min="0" step="0.01" aria-label="Processing Fee"
+              value={form.processingFee} onChange={(e) => set('processingFee', e.target.value)} />
+          </div>
+          <div>
+            <label className={labelClass}>
+              Service Start Date
+              <Info text="The date you started servicing this establishment / data start date." />
+            </label>
+            <input className={inputClass} type="date" aria-label="Service Start Date"
+              value={form.serviceStartDate} onChange={(e) => set('serviceStartDate', e.target.value)} />
+          </div>
         </div>
       </div>
 

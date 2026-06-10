@@ -15,6 +15,10 @@ model Establishment {
   managerName       String
   regCertNo         String
   type              EstablishmentType
+  contactPhone      String?
+  contactEmail      String?
+  processingFee     Float             @default(0)
+  serviceStartDate  DateTime?
   wageFormulaConfig String            @default("{}") // JSON string
   workWeekDays      Int               @default(6)
   isActive          Boolean           @default(true)
