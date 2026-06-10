@@ -27,6 +27,11 @@ const RULE_INFO: Record<string, { label: string; info: string; min: number; max:
     info: 'Employer PF contribution as % of Basic wage. Statutory rate: 13% (12% PF + 1% admin).',
     min: 0, max: 15,
   },
+  PF_WAGE_CEILING: {
+    label: 'PF Wage Ceiling (₹)',
+    info: 'PF is computed on the PF wage capped at this ceiling. Statutory ceiling: ₹15,000 → max PF ₹1,800 at 12%. Set 0 for no cap.',
+    min: 0, max: 100000,
+  },
   ESI_EMPLOYEE_PCT: {
     label: 'ESI Employee (%)',
     info: 'Employee ESI contribution as % of gross wages. Statutory rate: 0.75%. e.g. Gross ₹7,360 → ESI ₹55.20.',
@@ -36,6 +41,16 @@ const RULE_INFO: Record<string, { label: string; info: string; min: number; max:
     label: 'ESI Employer (%)',
     info: 'Employer ESI contribution as % of gross wages. Statutory rate: 3.25%.',
     min: 0, max: 5,
+  },
+  ESI_THRESHOLD: {
+    label: 'ESI Threshold (₹)',
+    info: 'ESI applies only when gross wages are at or below this amount. Statutory threshold: ₹21,000. Set 0 to always apply.',
+    min: 0, max: 100000,
+  },
+  LWF_EMPLOYEE: {
+    label: 'LWF Employee (₹/month)',
+    info: 'Labour Welfare Fund deducted from the employee each month (flat amount).',
+    min: 0, max: 1000,
   },
 }
 
@@ -47,6 +62,7 @@ const LINE_RULE: Record<string, string> = {
   pfEmployer:   'PF_EMPLOYER_PCT',
   esiEmployee:  'ESI_EMPLOYEE_PCT',
   esiEmployer:  'ESI_EMPLOYER_PCT',
+  lwf:          'LWF_EMPLOYEE',
 }
 
 function r2(n: number) { return Math.round(n * 100) / 100 }
@@ -69,7 +85,6 @@ export function WageRulesClient({ establishments }: { establishments: Establishm
     monthlyBasic: 6000,
     monthlyDa: 1360,
     fixedAllowance: 360,
-    lwf: 0.25,
     daysInMonth: 30,
     wageDays: 26,
     holidayDaysWorked: 0,
@@ -133,18 +148,21 @@ export function WageRulesClient({ establishments }: { establishments: Establishm
 
   // ── Live salary slip calculation ──────────────────────────────────────────
   const calc = useMemo(() => {
-    const { monthlyBasic, monthlyDa, fixedAllowance, lwf, daysInMonth, wageDays, holidayDaysWorked, otHours } = slip
+    const { monthlyBasic, monthlyDa, fixedAllowance, daysInMonth, wageDays, holidayDaysWorked, otHours } = slip
     const safeWageDays = Math.min(wageDays, daysInMonth)
 
     const proratedBasic = daysInMonth > 0 ? r2(monthlyBasic * safeWageDays / daysInMonth) : 0
     const proratedDa    = daysInMonth > 0 ? r2(monthlyDa    * safeWageDays / daysInMonth) : 0
 
-    const holidayMult = getRuleVal(rules, 'HOLIDAY_MULTIPLIER')
-    const otMult      = getRuleVal(rules, 'OT_MULTIPLIER')
-    const pfEmpPct    = getRuleVal(rules, 'PF_EMPLOYEE_PCT')
-    const pfErPct     = getRuleVal(rules, 'PF_EMPLOYER_PCT')
-    const esiEmpPct   = getRuleVal(rules, 'ESI_EMPLOYEE_PCT')
-    const esiErPct    = getRuleVal(rules, 'ESI_EMPLOYER_PCT')
+    const holidayMult  = getRuleVal(rules, 'HOLIDAY_MULTIPLIER')
+    const otMult       = getRuleVal(rules, 'OT_MULTIPLIER')
+    const pfEmpPct     = getRuleVal(rules, 'PF_EMPLOYEE_PCT')
+    const pfErPct      = getRuleVal(rules, 'PF_EMPLOYER_PCT')
+    const pfCeiling    = getRuleVal(rules, 'PF_WAGE_CEILING')
+    const esiEmpPct    = getRuleVal(rules, 'ESI_EMPLOYEE_PCT')
+    const esiErPct     = getRuleVal(rules, 'ESI_EMPLOYER_PCT')
+    const esiThreshold = getRuleVal(rules, 'ESI_THRESHOLD')
+    const lwf          = getRuleVal(rules, 'LWF_EMPLOYEE')
 
     const dailyRate     = safeWageDays > 0 ? r2((proratedBasic + proratedDa) / safeWageDays) : 0
     const holidayBonus  = r2(dailyRate * (holidayMult - 1) * holidayDaysWorked)
@@ -154,30 +172,34 @@ export function WageRulesClient({ establishments }: { establishments: Establishm
     const totalEarnings = r2(proratedBasic + proratedDa + fixedAllowance + holidayBonus)
     const grossWages    = r2(totalEarnings + otEarnings)
 
-    const pfEmployee  = r2(proratedBasic * pfEmpPct / 100)
-    const esiEmployee = r2(grossWages    * esiEmpPct / 100)
+    // PF on the PF wage capped at the ceiling (0 = no cap); ESI only at/below threshold.
+    const pfWage      = pfCeiling > 0 ? Math.min(proratedBasic, pfCeiling) : proratedBasic
+    const esiApplies  = esiThreshold <= 0 || grossWages <= esiThreshold
+    const pfEmployee  = r2(pfWage * pfEmpPct / 100)
+    const esiEmployee = r2(esiApplies ? grossWages * esiEmpPct / 100 : 0)
     const totalDeductions = r2(pfEmployee + esiEmployee + lwf)
     const netPay      = r2(grossWages - totalDeductions)
 
-    const pfEmployer  = r2(proratedBasic * pfErPct / 100)
-    const esiEmployer = r2(grossWages    * esiErPct / 100)
+    const pfEmployer  = r2(pfWage * pfErPct / 100)
+    const esiEmployer = r2(esiApplies ? grossWages * esiErPct / 100 : 0)
     const totalCtc    = r2(grossWages + pfEmployer + esiEmployer)
 
     return {
       proratedBasic, proratedDa, fixedAllowance, holidayBonus, otEarnings,
       totalEarnings, grossWages,
       pfEmployee, esiEmployee, lwf, totalDeductions, netPay,
-      pfEmployer, esiEmployer, totalCtc,
+      pfEmployer, esiEmployer, totalCtc, esiApplies,
       // formula strings
       formulas: {
         proratedBasic: `₹${monthlyBasic} × ${safeWageDays} days ÷ ${daysInMonth} days`,
         proratedDa:    `₹${monthlyDa} × ${safeWageDays} days ÷ ${daysInMonth} days`,
         holidayBonus:  `daily rate ₹${dailyRate} × (${holidayMult}× − 1) × ${holidayDaysWorked} holiday(s)`,
         otEarnings:    `₹${hourlyRate}/hr × ${otMult}× × ${otHours} hrs`,
-        pfEmployee:    `₹${proratedBasic} basic × ${pfEmpPct}%`,
-        esiEmployee:   `₹${grossWages} gross × ${esiEmpPct}%`,
-        pfEmployer:    `₹${proratedBasic} basic × ${pfErPct}%`,
-        esiEmployer:   `₹${grossWages} gross × ${esiErPct}%`,
+        pfEmployee:    `min(₹${proratedBasic}, ₹${pfCeiling} ceiling) × ${pfEmpPct}%`,
+        esiEmployee:   esiApplies ? `₹${grossWages} gross × ${esiEmpPct}%` : `gross ₹${grossWages} > ₹${esiThreshold} threshold → Nil`,
+        pfEmployer:    `min(₹${proratedBasic}, ₹${pfCeiling} ceiling) × ${pfErPct}%`,
+        esiEmployer:   esiApplies ? `₹${grossWages} gross × ${esiErPct}%` : `over ₹${esiThreshold} threshold → Nil`,
+        lwf:           'flat monthly amount (LWF_EMPLOYEE rule)',
       },
     }
   }, [slip, rules])
@@ -358,7 +380,6 @@ export function WageRulesClient({ establishments }: { establishments: Establishm
               { label: 'Monthly Basic (₹)', field: 'monthlyBasic', min: 0 },
               { label: 'Monthly DA (₹)',    field: 'monthlyDa',    min: 0 },
               { label: 'Fixed Allowance (₹)', field: 'fixedAllowance', min: 0 },
-              { label: 'LWF (₹)',           field: 'lwf',          min: 0 },
               { label: 'Days in Month',     field: 'daysInMonth',  min: 1 },
               { label: 'Wage Days Worked',  field: 'wageDays',     min: 0 },
               { label: 'Holiday Days Worked', field: 'holidayDaysWorked', min: 0 },
@@ -400,7 +421,7 @@ export function WageRulesClient({ establishments }: { establishments: Establishm
             </div>
             {slipRow('PF',  calc.pfEmployee,  calc.formulas.pfEmployee,  'pfEmployee',  'PF_EMPLOYEE_PCT')}
             {slipRow('ESI', calc.esiEmployee, calc.formulas.esiEmployee, 'esiEmployee', 'ESI_EMPLOYEE_PCT')}
-            {slipRow('LWF', calc.lwf,         'fixed amount per month')}
+            {slipRow('LWF', calc.lwf,         calc.formulas.lwf,         'lwf',         'LWF_EMPLOYEE')}
             <div className="flex justify-between items-center px-2 py-1.5 bg-[#0f2030] border-t border-[#1e2d3d]">
               <span className="text-xs font-semibold text-[#c8d8e8]">Total Deductions</span>
               <span className="text-xs font-bold font-mono text-[#f07070]">{fmt(calc.totalDeductions)}</span>

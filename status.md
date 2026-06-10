@@ -190,3 +190,10 @@
 - Scope: editable LWF (₹) input in Salary Setup, bound to form.lwfAmount (same value as Monthly Wage Defaults LWF, kept in sync), feeding the live preview + net. Salary Setup now controls DA, HRA, Other Allowances, Overtime, LWF, PF (Percent/Fixed + ceiling), ESI (% + threshold).
 - Files changed: src/components/employee-form.tsx
 - Validation: browser — LWF=20 drops Net by exactly ₹20 (10110→10090); value syncs; 0 page errors; tsc clean; 148 tests pass.
+
+### Task Update — 2026-06-10 — Wage Rules aligned with salary controls
+- Task: /wage-rules — add the same configurable parameters (PF ceiling, ESI threshold, LWF)
+- Status: completed
+- Scope: added 3 establishment-level rules to WAGE_RULE_DEFAULTS — PF_WAGE_CEILING (15000), ESI_THRESHOLD (21000), LWF_EMPLOYEE (10) — auto-surfaced by the API. Added RULE_INFO (labels/limits). Wired the live simulator: PF computed on min(basic, ceiling) [0=no cap]; ESI applies only when gross ≤ threshold [0=always]; LWF deduction now driven by the rule (removed the manual LWF slip input). LWF row highlights when editing LWF_EMPLOYEE.
+- Files changed: src/domain/calculations/wage-defaults.ts, src/app/wage-rules/wage-rules-client.tsx
+- Validation: browser — 9 rules listed incl. the 3 new; PF capped at ₹1,800 for high basic; ESI=Nil over ₹21k then ₹174 after threshold raised to ₹40k; LWF ₹10 from rule; save persists + simulator updates; 0 page errors; tsc clean; 148 tests pass.

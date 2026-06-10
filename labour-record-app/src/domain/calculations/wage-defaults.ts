@@ -3,8 +3,11 @@ export const WAGE_RULE_DEFAULTS: Record<string, number> = {
   OT_MULTIPLIER: 2.0,
   PF_EMPLOYEE_PCT: 12.0,
   PF_EMPLOYER_PCT: 13.0,
+  PF_WAGE_CEILING: 15000,
   ESI_EMPLOYEE_PCT: 0.75,
   ESI_EMPLOYER_PCT: 3.25,
+  ESI_THRESHOLD: 21000,
+  LWF_EMPLOYEE: 10,
 }
 
 export function getWageRuleValue(
