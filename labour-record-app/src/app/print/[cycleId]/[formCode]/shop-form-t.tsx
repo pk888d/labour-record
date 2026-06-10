@@ -1,61 +1,13 @@
 import type { CycleContext, WagesRow } from '@/lib/export/form-data'
-import { MONTH_NAMES } from '@/lib/export/form-data'
-
-const fmt = (n: number) => { const v = Number(n); return v ? v.toFixed(2) : 'Nil' }
-
-function ShopWageSlipCard({ row, establishment, period }: {
-  row: WagesRow
-  establishment: CycleContext['establishment']
-  period: string
-}) {
-  return (
-    <div style={{ border: '1px solid #000', padding: '6px', fontSize: '9px', pageBreakInside: 'avoid' }}>
-      <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '4px' }}>
-        WAGE SLIP — {establishment.name} — {period}
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px', marginBottom: '4px' }}>
-        <div>Emp No: <strong>{row.empId}</strong></div>
-        <div>Name: <strong>{row.name}</strong></div>
-        <div>Designation: {row.designation}</div>
-        <div>Days Worked: {row.daysWorked}</div>
-        <div>Payment Date: {row.paymentDate || '-'}</div>
-      </div>
-      <table style={{ width: '100%' }}>
-        <thead>
-          <tr><th colSpan={2}>Earnings</th><th colSpan={2}>Deductions</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Basic</td><td style={{ textAlign: 'right' }}>{fmt(row.basic)}</td><td>PF</td><td style={{ textAlign: 'right' }}>{fmt(row.pf)}</td></tr>
-          <tr><td>DA</td><td style={{ textAlign: 'right' }}>{fmt(row.da)}</td><td>ESI</td><td style={{ textAlign: 'right' }}>{fmt(row.esi)}</td></tr>
-          <tr><td>HRA</td><td style={{ textAlign: 'right' }}>{fmt(row.hra)}</td><td>LWF</td><td style={{ textAlign: 'right' }}>{fmt(row.lwf)}</td></tr>
-          <tr><td>Other</td><td style={{ textAlign: 'right' }}>{fmt(row.otherAllowances)}</td><td>Fine</td><td style={{ textAlign: 'right' }}>{fmt(row.fineDeduction)}</td></tr>
-          <tr><td></td><td></td><td>Other</td><td style={{ textAlign: 'right' }}>{fmt(row.otherDeductions)}</td></tr>
-          <tr><td></td><td></td><td>Advance</td><td style={{ textAlign: 'right' }}>{fmt(row.advanceRecovered)}</td></tr>
-          <tr style={{ fontWeight: 'bold', borderTop: '1px solid #000' }}>
-            <td>Gross</td><td style={{ textAlign: 'right' }}>{fmt(row.grossEarnings)}</td>
-            <td>Net</td><td style={{ textAlign: 'right' }}>{fmt(row.netWage)}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div style={{ marginTop: '4px' }}>Employee Signature: ________________________</div>
-    </div>
-  )
-}
+import { WageSlipForm } from './wage-slip-form'
 
 export function ShopFormT({ ctx, wages }: { ctx: CycleContext; wages: WagesRow[] }) {
-  const { establishment, cycle } = ctx
-  const period = `${MONTH_NAMES[cycle.month]} ${cycle.year}`
   return (
-    <div className="form-page">
-      <div className="form-header no-print">
-        <h2>WAGE SLIPS</h2>
-        <p>Form T [Rule 19] — Tamil Nadu Shops and Establishments Act — {period}</p>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-        {wages.map((row) => (
-          <ShopWageSlipCard key={row.employeeId} row={row} establishment={establishment} period={period} />
-        ))}
-      </div>
-    </div>
+    <WageSlipForm
+      ctx={ctx}
+      wages={wages}
+      formTitle="FORM T — WAGE SLIP"
+      rule="Prescribed under Rule 19 of the Tamil Nadu Shops and Establishments Rules, 1948"
+    />
   )
 }

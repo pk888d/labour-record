@@ -38,6 +38,7 @@ export type WagesRow = {
   sex: string
   designation: string
   department: string | null
+  dateOfEntry: string
   daysWorked: number
   basic: number
   da: number
@@ -91,6 +92,8 @@ export type OvertimeRow = {
   employeeId: string
   empId: string
   name: string
+  fatherSpouseName: string
+  sex: string
   designation: string
   dailyOt: number[]
   totalOtHours: number
@@ -253,6 +256,7 @@ export async function getWagesData(ctx: CycleContext): Promise<WagesRow[]> {
       sex: emp.sex,
       designation: emp.designation,
       department: emp.department,
+      dateOfEntry: emp.dateOfEntry,
       daysWorked: w?.daysWorked ?? 0,
       basic,
       da,
@@ -318,6 +322,7 @@ export async function getEmployeeData(ctx: CycleContext): Promise<EmployeeRow[]>
 
 export async function getOvertimeData(ctx: CycleContext): Promise<OvertimeRow[]> {
   const ot = await prisma.overtimeRecord.findMany({ where: { cycleId: ctx.cycleId } })
+  const fathers = await getFatherNames(ctx)
   return ctx.employees.map((emp) => {
     const r = ot.find((o) => o.employeeId === emp.employeeId)
     const storedDailyOt = r ? (JSON.parse(r.dailyOt) as number[]) : []
@@ -328,6 +333,8 @@ export async function getOvertimeData(ctx: CycleContext): Promise<OvertimeRow[]>
       employeeId: emp.employeeId,
       empId: emp.empId,
       name: emp.name,
+      fatherSpouseName: fathers.get(emp.employeeId) || '',
+      sex: emp.sex,
       designation: emp.designation,
       dailyOt,
       totalOtHours: r?.totalOtHours ?? 0,

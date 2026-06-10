@@ -9,48 +9,56 @@ export function ShopFormV({ ctx, muster }: { ctx: CycleContext; muster: MusterRo
   return (
     <div className="form-page">
       <div className="form-header">
-        <h2>EMPLOYMENT REGISTER (MUSTER ROLL)</h2>
-        <p>Form V [Rule 15] — Tamil Nadu Shops and Establishments Act</p>
-        <p><strong>{establishment.name}</strong> — {period}</p>
-        <p>Address: {establishment.address} | Reg. No.: {establishment.regCertNo}</p>
+        <h2>FORM V — REGISTER OF EMPLOYMENT</h2>
+        <p>Prescribed under Rule 15 of the Tamil Nadu Shops and Establishments Rules, 1948</p>
+        <p>Register of Employment for the Month of <strong>{period}</strong></p>
+        <p>Name and Address of the Establishment: <strong>{establishment.name}</strong>, {establishment.address}</p>
+        <p>Name of the Manager/In-charge: {establishment.managerName} | Registration Certificate No.: {establishment.regCertNo}</p>
       </div>
       <table>
         <thead>
           <tr>
             <th rowSpan={2}>S.No</th>
-            <th rowSpan={2}>Emp ID</th>
-            <th rowSpan={2}>Name</th>
-            <th rowSpan={2}>Designation</th>
-            <th colSpan={daysInMonth}>Attendance ({period})</th>
-            <th rowSpan={2}>Total P</th>
-            <th rowSpan={2}>Total A</th>
-            <th rowSpan={2}>Work Hrs</th>
+            <th rowSpan={2}>Name of the Employee</th>
+            <th rowSpan={2}>EID No</th>
+            <th rowSpan={2}>Time work begins</th>
+            <th rowSpan={2}>Rest Interval</th>
+            <th rowSpan={2}>Time work ends</th>
+            <th colSpan={daysInMonth}>Daily attendance ({period})</th>
+            <th rowSpan={2}>Total Days Worked</th>
+            <th rowSpan={2}>Total Days Absent</th>
+            <th rowSpan={2}>Days on Leave</th>
             <th rowSpan={2}>Remarks</th>
           </tr>
           <tr>
-            {days.map((d) => <th key={d} style={{ minWidth: '14px' }}>{d}</th>)}
+            {days.map((d) => <th key={d} style={{ minWidth: '13px', fontWeight: 'normal' }}>{d}</th>)}
           </tr>
         </thead>
         <tbody>
-          {muster.map((row, i) => (
-            <tr key={row.employeeId}>
-              <td style={{ textAlign: 'center' }}>{i + 1}</td>
-              <td>{row.empId}</td>
-              <td>{row.name}</td>
-              <td>{row.designation}</td>
-              {row.dailyMarks.map((m, d) => (
-                <td key={d} style={{ textAlign: 'center', fontSize: '8px' }}>{m || '-'}</td>
-              ))}
-              <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{row.totalPresent}</td>
-              <td style={{ textAlign: 'center' }}>{row.totalAbsent}</td>
-              <td style={{ textAlign: 'center' }}>{row.workStartTime}{row.workEndTime ? `–${row.workEndTime}` : ''}</td>
-              <td>{row.remarks}</td>
-            </tr>
-          ))}
+          {muster.map((row, i) => {
+            const leaveDays = row.dailyMarks.filter((m) => m === 'L').length
+            return (
+              <tr key={row.employeeId}>
+                <td style={{ textAlign: 'center' }}>{i + 1}</td>
+                <td>{row.name}</td>
+                <td>{row.empId}</td>
+                <td style={{ textAlign: 'center' }}>{row.workStartTime || 'Nil'}</td>
+                <td style={{ textAlign: 'center' }}>{row.restInterval || 'Nil'}</td>
+                <td style={{ textAlign: 'center' }}>{row.workEndTime || 'Nil'}</td>
+                {row.dailyMarks.map((m, d) => (
+                  <td key={d} style={{ textAlign: 'center', fontSize: '8px' }}>{m || '-'}</td>
+                ))}
+                <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{row.totalPresent}</td>
+                <td style={{ textAlign: 'center' }}>{row.totalAbsent}</td>
+                <td style={{ textAlign: 'center' }}>{leaveDays}</td>
+                <td>{row.remarks || 'Nil'}</td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
-      <div style={{ marginTop: '8px', fontSize: '9px' }}>
-        P=Present A=Absent H=Half-day HO=Holiday WO=Week Off L=Leave OT=Overtime
+      <div style={{ marginTop: '10px', fontSize: '9px' }}>
+        P = Present · A = Absent · H = Holiday / Weekly off · L = Leave · OT = Overtime
       </div>
     </div>
   )

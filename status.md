@@ -212,5 +212,16 @@
   - Data: added fatherSpouseName + sex to WagesRow and MusterRow (via getFatherNames) so registers can show them.
 - Files changed: src/lib/export/form-data.ts, src/app/print/[cycleId]/[formCode]/{hospital-form-i,ii,xi,xii,v,shop-form-w,shop-form-x}.tsx (note: i/ii rebuilt earlier)
 - Validation: browser render of XI/XII/V/I → 0 page errors, all list 6 employees with template columns + (n) numbering; tsc clean; 148 tests pass.
-- REMAINING (complex daily-grid / vertical layouts, next pass): Overtime (Form IV), Wage Slips (Form XVII, Form T), Shop Employee Register (Form U), Shop Employment (Form V).
 - Note: DOCX exports already match templates exactly (they use the .docx files); this work is only the on-screen Print/PDF (HTML) views.
+
+### Task Update — 2026-06-10 — HTML print views aligned to forms-template (ALL 12 done)
+- Task: Finish the remaining 5 print forms
+- Status: completed — all 12 HTML print forms now mirror the statutory templates
+- Scope (remaining 5 rebuilt this pass):
+  * Overtime (Form IV): Name/Father/Sex/Designation + daily OT grid + Total OT/Normal Rate/OT Rate/Normal Earnings/OT Earnings/Total.
+  * Wage Slips (Form XVII + Form T): shared WageSlipForm — vertical numbered template layout (1. Establishment … 6. Wage period From/To … 7. Wage Earned (a–g) | Deductions (i–v) | Net Amount Paid; signatures), 2-up.
+  * Employee Register (Form U): vertical per-employee 23-field card (Name…Remarks), Nil for empties, 2-up.
+  * Employment (Form V shop): work-begin/rest/work-end + daily attendance grid + Days Worked/Absent/Leave/Remarks.
+  - Data: added fatherSpouseName+sex to OvertimeRow; dateOfEntry to WagesRow (for the slip).
+- Files changed: src/lib/export/form-data.ts, src/app/print/[cycleId]/[formCode]/{hospital-form-iv,hospital-form-xvii,shop-form-t,shop-form-u,shop-form-v,wage-slip-form}.tsx
+- Validation: production build ✓ compiled; browser render of all 12 forms → 0 page errors; slip + U vertical layouts confirmed via screenshot; tsc clean; 148 tests pass.
