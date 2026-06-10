@@ -27,7 +27,7 @@ export function Sidebar() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/tech-sakthi-logo.webp" alt="Tech Sakthi" className="w-8 h-8 object-contain" />
         <div>
-          <p className="text-sm font-bold text-white">LabourRecord</p>
+          <p className="text-sm font-bold text-white">Mustearly</p>
           <p className="text-[10px] text-[#4a6a8a] mt-0.5">by Tech Sakthi</p>
         </div>
       </div>

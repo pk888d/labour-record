@@ -6,7 +6,7 @@ import { Sidebar } from '@/components/sidebar'
 const geist = Geist({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'LabourRecord — Compliance Manager',
+  title: 'Mustearly — Compliance Manager',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
