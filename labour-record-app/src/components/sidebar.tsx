@@ -22,19 +22,19 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname()
   return (
-    <aside className="w-48 min-h-screen bg-[#0f1923] border-r border-[#1e2d3d] flex flex-col">
-      <div className="flex items-center gap-2 px-4 py-4 border-b border-[#1e2d3d]">
+    <aside className="w-48 min-h-screen bg-[var(--ts-navy-mid)] border-r border-[var(--ts-border)] flex flex-col">
+      <div className="flex items-center gap-2 px-4 py-4 border-b border-[var(--ts-border)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/tech-sakthi-logo.webp" alt="Tech Sakthi" className="w-8 h-8 object-contain" />
         <div>
-          <p className="text-sm font-bold text-white">Mustearly</p>
-          <p className="text-[10px] text-[#4a6a8a] mt-0.5">by Tech Sakthi</p>
+          <p className="text-sm font-bold text-[var(--ts-gold)]" style={{ fontFamily: 'var(--font-heading)' }}>Mustearly</p>
+          <p className="text-[10px] text-[var(--ts-text-muted)] mt-0.5">by Tech Sakthi</p>
         </div>
       </div>
       <nav className="flex-1 py-2">
         {navItems.map((group) => (
           <div key={group.section}>
-            <p className="px-3 pt-3 pb-1 text-[10px] uppercase tracking-widest text-[#4a6a8a]">
+            <p className="px-3 pt-3 pb-1 text-[10px] uppercase tracking-widest text-[var(--ts-text-muted)]">
               {group.section}
             </p>
             {group.items.map((item) => {
@@ -45,10 +45,10 @@ export function Sidebar() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-2 mx-1.5 px-3 py-1.5 rounded text-xs',
+                    'flex items-center gap-2 mx-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors',
                     active
-                      ? 'bg-[#1a3050] text-[#4a9eff] font-semibold'
-                      : 'text-[#7a9ab8] hover:bg-[#1a2a3a] hover:text-[#c8d8e8]'
+                      ? 'bg-[var(--ts-navy-light)] text-[var(--ts-gold)] font-semibold border-l-2 border-[var(--ts-gold)]'
+                      : 'text-[var(--ts-text-secondary)] hover:bg-[var(--ts-navy-light)] hover:text-[var(--ts-text-primary)]'
                   )}
                 >
                   <span className="w-3.5 text-center">{item.icon}</span>

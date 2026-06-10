@@ -1,7 +1,20 @@
 @import "tailwindcss";
 
+/* Tech Sakthi theme palette (from techsakthi/assets/css/style.css) */
 :root {
   color-scheme: dark;
+  --ts-gold: #D4A31E;
+  --ts-gold-light: #FFD166;
+  --ts-green: #1B8A50;
+  --ts-blue: #3B7DD8;
+  --ts-maroon: #A82040;
+  --ts-navy: #071426;
+  --ts-navy-mid: #0C2340;
+  --ts-navy-light: #132E4A;
+  --ts-text-primary: #F0F8FF;
+  --ts-text-secondary: #B8D4E8;
+  --ts-text-muted: #7EA8C4;
+  --ts-border: rgba(255, 255, 255, 0.08);
 }
 
 * {
@@ -9,13 +22,14 @@
 }
 
 body {
-  background: #0d1117;
-  color: #c8d8e8;
+  background: var(--ts-navy);
+  color: var(--ts-text-secondary);
 }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #0d1117; }
-::-webkit-scrollbar-thumb { background: #2a3a50; border-radius: 3px; }
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: var(--ts-navy); }
+::-webkit-scrollbar-thumb { background: var(--ts-navy-light); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ts-gold); }
 
 @media print {
   body {
