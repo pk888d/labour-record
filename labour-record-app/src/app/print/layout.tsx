@@ -17,6 +17,9 @@ export default function PrintLayout({ children }: { children: React.ReactNode })
         .form-header { text-align: center; margin-bottom: 6px; }
         .form-header h2 { font-size: 12px; font-weight: bold; margin: 2px 0; }
         .form-header p { font-size: 10px; margin: 1px 0; }
+        /* Title, rule and period stay centred; establishment / manager / reg-cert
+           details (the last two lines) are left-aligned as in the statutory forms. */
+        .form-header p:nth-last-of-type(-n+2) { text-align: left; }
         .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 6px; font-size: 9px; }
         .no-print { display: block; }
         @media print { .no-print { display: none !important; } .ts-watermark { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
