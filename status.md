@@ -197,3 +197,20 @@
 - Scope: added 3 establishment-level rules to WAGE_RULE_DEFAULTS — PF_WAGE_CEILING (15000), ESI_THRESHOLD (21000), LWF_EMPLOYEE (10) — auto-surfaced by the API. Added RULE_INFO (labels/limits). Wired the live simulator: PF computed on min(basic, ceiling) [0=no cap]; ESI applies only when gross ≤ threshold [0=always]; LWF deduction now driven by the rule (removed the manual LWF slip input). LWF row highlights when editing LWF_EMPLOYEE.
 - Files changed: src/domain/calculations/wage-defaults.ts, src/app/wage-rules/wage-rules-client.tsx
 - Validation: browser — 9 rules listed incl. the 3 new; PF capped at ₹1,800 for high basic; ESI=Nil over ₹21k then ₹174 after threshold raised to ₹40k; LWF ₹10 from rule; save persists + simulator updates; 0 page errors; tsc clean; 148 tests pass.
+
+### Task Update — 2026-06-10 — HTML print views aligned to forms-template (in progress)
+- Task: Browser Print/Save-as-PDF output must match the statutory template column layout (all forms)
+- Status: in progress — 7 of 12 forms rebuilt to match templates
+- Scope:
+  - Rebuilt to exact template column layout (template header block: Form No + rule + title + establishment/address + manager + reg cert + period; template column headers in order; (1)…(n) numbering row; lists ALL employees; "Nil" for empty cells):
+    * Fines (Form I) — 12 cols  · Deductions (Form II) — 12 cols
+    * Employees (Form XI) — 9 cols (Name, Age&Sex, Father, Nature of Employment, Permanent Address, Date of Commencement/termination, Signature)
+    * Wages (Form XII) — 17 cols with grouped headers (Total Earnings → Min Wages/DA/Total Normal; Deductions → Amount/Kind)
+    * Muster (Form V) — Name/Father/Sex/Nature + daily attendance grid + Days Worked/Leave/Absent/Counted/Remarks
+    * Shop Wages (Form W) — 14 cols (Name, EmpID, Days, Basic, DA, HRA, Other, OT, Leave, Gross, PF, ESI, LWF)
+    * Shop Leave (Form X) — grouped Earned Leaves (opening/earned/availed/balance) + Medical/Other + Remarks
+  - Data: added fatherSpouseName + sex to WagesRow and MusterRow (via getFatherNames) so registers can show them.
+- Files changed: src/lib/export/form-data.ts, src/app/print/[cycleId]/[formCode]/{hospital-form-i,ii,xi,xii,v,shop-form-w,shop-form-x}.tsx (note: i/ii rebuilt earlier)
+- Validation: browser render of XI/XII/V/I → 0 page errors, all list 6 employees with template columns + (n) numbering; tsc clean; 148 tests pass.
+- REMAINING (complex daily-grid / vertical layouts, next pass): Overtime (Form IV), Wage Slips (Form XVII, Form T), Shop Employee Register (Form U), Shop Employment (Form V).
+- Note: DOCX exports already match templates exactly (they use the .docx files); this work is only the on-screen Print/PDF (HTML) views.

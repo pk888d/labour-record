@@ -34,6 +34,8 @@ export type WagesRow = {
   employeeId: string
   empId: string
   name: string
+  fatherSpouseName: string
+  sex: string
   designation: string
   department: string | null
   daysWorked: number
@@ -57,6 +59,8 @@ export type MusterRow = {
   employeeId: string
   empId: string
   name: string
+  fatherSpouseName: string
+  sex: string
   designation: string
   dailyMarks: string[]
   totalPresent: number
@@ -225,6 +229,7 @@ export async function getCycleContext(cycleId: string): Promise<CycleContext> {
 
 export async function getWagesData(ctx: CycleContext): Promise<WagesRow[]> {
   const wages = await prisma.wageRecord.findMany({ where: { cycleId: ctx.cycleId } })
+  const fathers = await getFatherNames(ctx)
 
   return ctx.employees.map((emp) => {
     const w = wages.find((r) => r.employeeId === emp.employeeId)
@@ -244,6 +249,8 @@ export async function getWagesData(ctx: CycleContext): Promise<WagesRow[]> {
       employeeId: emp.employeeId,
       empId: emp.empId,
       name: emp.name,
+      fatherSpouseName: fathers.get(emp.employeeId) || '',
+      sex: emp.sex,
       designation: emp.designation,
       department: emp.department,
       daysWorked: w?.daysWorked ?? 0,
@@ -267,6 +274,7 @@ export async function getWagesData(ctx: CycleContext): Promise<WagesRow[]> {
 
 export async function getMusterData(ctx: CycleContext): Promise<MusterRow[]> {
   const att = await prisma.attendanceRecord.findMany({ where: { cycleId: ctx.cycleId } })
+  const fathers = await getFatherNames(ctx)
   return ctx.employees.map((emp) => {
     const r = att.find((a) => a.employeeId === emp.employeeId)
     const storedMarks = r ? (JSON.parse(r.dailyMarks) as string[]) : []
@@ -279,6 +287,8 @@ export async function getMusterData(ctx: CycleContext): Promise<MusterRow[]> {
       employeeId: emp.employeeId,
       empId: emp.empId,
       name: emp.name,
+      fatherSpouseName: fathers.get(emp.employeeId) || '',
+      sex: emp.sex,
       designation: emp.designation,
       dailyMarks: marks,
       totalPresent,
