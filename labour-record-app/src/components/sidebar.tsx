@@ -12,7 +12,6 @@ const navItems = [
     { href: '/establishments', label: 'Establishments', icon: '🏢' },
     { href: '/employees', label: 'Employees', icon: '👥' },
     { href: '/holidays', label: 'Holidays', icon: '📅' },
-    { href: '/wage-rules', label: 'Wage Rules', icon: '⚙️' },
   ]},
   { section: 'Output', items: [
     { href: '/exports', label: 'Exports', icon: '↓' },
