@@ -1,4 +1,5 @@
 import type { WageFormulaConfig } from '@/types'
+import { ESTABLISHMENT_TYPES } from '@/domain/calculations/da-rates'
 
 type EstablishmentInput = {
   name: string
@@ -16,7 +17,9 @@ export function validateEstablishment(input: EstablishmentInput): string[] {
   if (!input.employerName?.trim()) errors.push('employerName is required')
   if (!input.managerName?.trim()) errors.push('managerName is required')
   if (!input.regCertNo?.trim()) errors.push('regCertNo is required')
-  if (!['HOSPITAL', 'SHOP'].includes(input.type)) errors.push('type must be HOSPITAL or SHOP')
+  if (!ESTABLISHMENT_TYPES.includes(input.type as (typeof ESTABLISHMENT_TYPES)[number])) {
+    errors.push('type must be a supported establishment type')
+  }
   return errors
 }
 

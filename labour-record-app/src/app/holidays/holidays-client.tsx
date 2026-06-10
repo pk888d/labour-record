@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { Info } from '@/components/info-tooltip'
 
-type Holiday = { id: string; date: string; name: string; year: number }
+type Holiday = { id: string; date: string; name: string; year: number; doubleWage?: boolean }
 
 const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
 
@@ -66,6 +66,23 @@ export function HolidaysClient({
     setName('')
   }
 
+  async function loadDefaults() {
+    setSaving(true)
+    setErrors([])
+    const res = await fetch('/api/holidays/seed-defaults', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ year }),
+    })
+    setSaving(false)
+    if (!res.ok) {
+      const data = await res.json() as { error?: string }
+      setErrors([data.error ?? 'Failed to load defaults'])
+      return
+    }
+    await loadYear(year)
+  }
+
   async function deleteHoliday(id: string) {
     setSaving(true)
     setErrors([])
@@ -95,16 +112,26 @@ export function HolidaysClient({
             Government holidays are automatically marked as H (paid) in attendance. Employees who work on a holiday (marked P) earn double wages per the HOLIDAY_MULTIPLIER wage rule.
           </p>
         </div>
-        <select
-          value={year}
-          onChange={(e) => loadYear(parseInt(e.target.value, 10))}
-          className="bg-[#0f1923] border border-[#2a3a50] text-[#c8d8e8] text-xs px-3 py-1.5 rounded"
-          aria-label="Year"
-        >
-          {yearOptions.map((y) => (
-            <option key={y} value={y}>{y}</option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={loadDefaults}
+            disabled={saving}
+            className="px-3 py-1.5 bg-[#0f2040] text-[#4a9eff] text-xs rounded border border-[#1a3a6a] hover:bg-[#1a3060] disabled:opacity-50 whitespace-nowrap"
+            title="Populate the standard double-wage holidays for this year"
+          >
+            Load default holidays
+          </button>
+          <select
+            value={year}
+            onChange={(e) => loadYear(parseInt(e.target.value, 10))}
+            className="bg-[#0f1923] border border-[#2a3a50] text-[#c8d8e8] text-xs px-3 py-1.5 rounded"
+            aria-label="Year"
+          >
+            {yearOptions.map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Add form */}
@@ -168,6 +195,7 @@ export function HolidaysClient({
                 <th className="text-left py-2 px-2 text-[#5a8ab8] font-medium">Date</th>
                 <th className="text-left py-2 px-2 text-[#5a8ab8] font-medium">Day</th>
                 <th className="text-left py-2 px-2 text-[#5a8ab8] font-medium">Holiday Name</th>
+                <th className="text-left py-2 px-2 text-[#5a8ab8] font-medium">Double Wage</th>
                 <th className="text-right py-2 px-2 text-[#5a8ab8] font-medium">Action</th>
               </tr>
             </thead>
@@ -180,6 +208,13 @@ export function HolidaysClient({
                     <td className="py-2 px-2 text-[#c8d8e8]">{formatDate(h.date)}</td>
                     <td className="py-2 px-2 text-[#7a9ab8]">{DAY_NAMES[d.getDay()]}</td>
                     <td className="py-2 px-2 text-white font-medium">{h.name}</td>
+                    <td className="py-2 px-2">
+                      {h.doubleWage !== false ? (
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-[#0f2a1a] text-[#40c070]">2× Double</span>
+                      ) : (
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-[#1a2332] text-[#7a9ab8]">Normal</span>
+                      )}
+                    </td>
                     <td className="py-2 px-2 text-right">
                       <button
                         onClick={() => deleteHoliday(h.id)}

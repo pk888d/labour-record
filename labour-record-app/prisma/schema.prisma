@@ -27,8 +27,12 @@ model Establishment {
 }
 
 enum EstablishmentType {
-  HOSPITAL
   SHOP
+  HOSPITAL
+  HOTEL
+  PETROL_BUNK
+  MEDICAL
+  OIL_MILL
 }
 
 model Employee {
@@ -60,9 +64,13 @@ model Employee {
   exitDate            DateTime?
   exitReason          String?
   remarks             String?
+  defaultTotalSalary  Float          @default(0)
   basicWage           Float          @default(0)
   daWage              Float          @default(0)
   hraWage             Float          @default(0)
+  pfMode              String         @default("PERCENT") // PERCENT | FIXED | NONE
+  pfPercent           Float          @default(12)
+  pfWageCeiling       Float          @default(15000)
   pfAmount            Float          @default(0)
   esiAmount           Float          @default(0)
   lwfAmount           Float          @default(0)
@@ -305,11 +313,12 @@ model AuditLog {
 }
 
 model GovtHoliday {
-  id        String   @id @default(cuid())
-  date      DateTime @unique
-  name      String
-  year      Int
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  date       DateTime @unique
+  name       String
+  year       Int
+  doubleWage Boolean  @default(true)
+  createdAt  DateTime @default(now())
 }
 
 model WageRule {

@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { FORM_DISPLAY_NAMES } from '@/types'
 import type { FormCode, WageFormulaConfig } from '@/types'
-import { applyAttendanceDefaults, calculateAttendanceTotals } from '@/domain/calculations/attendance-calculator'
+import { applyRotatingAttendanceDefaults, calculateAttendanceTotals } from '@/domain/calculations/attendance-calculator'
 import { getWageRuleValue } from '@/domain/calculations/wage-defaults'
 import { FormEntryClient } from './form-entry-client'
 
@@ -112,13 +112,15 @@ export default async function FormEntryPage({
 
   // Compute defaulted marks once — shared by initialAttendance and initialWages
   const defaultedMarksMap = new Map(
-    employees.map((emp) => {
+    employees.map((emp, idx) => {
       const attRec = existingAttendance.find((r) => r.employeeId === emp.employeeId)
       const storedMarks = attRec ? (JSON.parse(attRec.dailyMarks) as string[]) : []
       const raw = storedMarks.length >= daysInMonth
         ? storedMarks.slice(0, daysInMonth)
         : [...storedMarks, ...Array(daysInMonth - storedMarks.length).fill('')]
-      return [emp.employeeId, applyAttendanceDefaults(raw, cycle.year, cycle.month, holidayDaySet, establishment.workWeekDays)]
+      // Round-robin weekly offs (item 7): stagger each employee by their index.
+      return [emp.employeeId, applyRotatingAttendanceDefaults(
+        raw, cycle.year, cycle.month, holidayDaySet, establishment.workWeekDays, idx)]
     })
   )
 

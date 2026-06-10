@@ -29,6 +29,24 @@ function buildTemplateData(
   const { establishment, cycle, daysInMonth } = ctx
   const period = `${MONTH_NAMES[cycle.month]} ${cycle.year}`
 
+  // Enrich every row with a serial number and a few computed columns the
+  // statutory templates expect (left blank via nullGetter when not applicable).
+  const enrichedRows = rows.map((r, i) => {
+    const row = r as unknown as Record<string, number>
+    const totalNormal = (row.basic ?? 0) + (row.da ?? 0)
+    const totalDeductions =
+      (row.pf ?? 0) + (row.esi ?? 0) + (row.lwf ?? 0) +
+      (row.fineDeduction ?? 0) + (row.otherDeductions ?? 0) + (row.advanceRecovered ?? 0)
+    return {
+      ...r,
+      sno: i + 1,
+      totalNormal,
+      totalDeductions,
+      leaveWages: 0,
+      otEarnings: (r as { otEarnings?: number }).otEarnings ?? 0,
+    }
+  })
+
   return {
     establishmentName: establishment.name,
     address: establishment.address,
@@ -39,14 +57,31 @@ function buildTemplateData(
     year: cycle.year,
     month: cycle.month,
     daysInMonth,
-    rows,
+    rows: enrichedRows,
   }
+}
+
+export type PageOrientation = 'landscape' | 'portrait'
+
+// A4 dimensions in twips. Landscape is the default (registers are wide tables).
+const A4 = { short: 11906, long: 16838 }
+
+function setOrientation(xml: string, orientation: PageOrientation): string {
+  const w = orientation === 'landscape' ? A4.long : A4.short
+  const h = orientation === 'landscape' ? A4.short : A4.long
+  const pgSz = `<w:pgSz w:w="${w}" w:h="${h}" w:orient="${orientation}"/>`
+  if (/<w:pgSz\b[^>]*\/>/.test(xml)) {
+    return xml.replace(/<w:pgSz\b[^>]*\/>/g, pgSz)
+  }
+  // No pgSz present — inject one into the section properties.
+  return xml.replace(/<w:sectPr\b[^>]*>/, (m) => m + pgSz)
 }
 
 export async function generateDocx(
   cycleId: string,
   formCode: string,
-  baseFileName: string
+  baseFileName: string,
+  orientation: PageOrientation = 'landscape'
 ): Promise<string> {
   const templatePath = getTemplatePath(formCode)
   if (!fs.existsSync(templatePath)) {
@@ -90,11 +125,22 @@ export async function generateDocx(
 
   const templateContent = fs.readFileSync(templatePath, 'binary')
   const zip = new PizZip(templateContent)
-  const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true })
+  const doc = new Docxtemplater(zip, {
+    paragraphLoop: true,
+    linebreaks: true,
+    nullGetter: () => '', // leave untagged/missing columns blank instead of throwing
+  })
 
   doc.render(buildTemplateData(ctx, rows))
 
-  const buffer = doc.getZip().generate({ type: 'nodebuffer', compression: 'DEFLATE' }) as Buffer
+  // Apply page orientation (landscape by default for wide register tables).
+  const zip2 = doc.getZip()
+  const docXmlFile = zip2.file('word/document.xml')
+  if (docXmlFile) {
+    zip2.file('word/document.xml', setOrientation(docXmlFile.asText(), orientation))
+  }
+
+  const buffer = zip2.generate({ type: 'nodebuffer', compression: 'DEFLATE' }) as Buffer
 
   fs.mkdirSync(EXPORTS_DIR, { recursive: true })
   const outputPath = path.join(EXPORTS_DIR, `${baseFileName}.docx`)

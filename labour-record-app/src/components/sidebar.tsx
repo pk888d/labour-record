@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 
 const navItems = [
   { section: 'Workspace', items: [
+    { href: '/dashboard', label: 'Dashboard', icon: '▦' },
     { href: '/cycles', label: 'Monthly Cycles', icon: '↻' },
   ]},
   { section: 'Masters', items: [
@@ -22,9 +23,13 @@ export function Sidebar() {
   const pathname = usePathname()
   return (
     <aside className="w-48 min-h-screen bg-[#0f1923] border-r border-[#1e2d3d] flex flex-col">
-      <div className="px-4 py-4 border-b border-[#1e2d3d]">
-        <p className="text-sm font-bold text-white">LabourRecord</p>
-        <p className="text-[10px] text-[#4a6a8a] mt-0.5">Compliance Manager</p>
+      <div className="flex items-center gap-2 px-4 py-4 border-b border-[#1e2d3d]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/tech-sakthi-logo.webp" alt="Tech Sakthi" className="w-8 h-8 object-contain" />
+        <div>
+          <p className="text-sm font-bold text-white">LabourRecord</p>
+          <p className="text-[10px] text-[#4a6a8a] mt-0.5">by Tech Sakthi</p>
+        </div>
       </div>
       <nav className="flex-1 py-2">
         {navItems.map((group) => (

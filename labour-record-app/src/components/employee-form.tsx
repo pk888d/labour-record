@@ -3,6 +3,9 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Employee, Establishment } from '@/generated/prisma/client'
 import { Info } from '@/components/info-tooltip'
+import { getDaRate } from '@/domain/calculations/da-rates'
+import { computeSalaryBreakdown } from '@/domain/calculations/salary-breakdown'
+import type { PfMode } from '@/domain/calculations/pf-calculator'
 
 type Props = {
   employee?: Employee
@@ -45,9 +48,14 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
     exitReason: employee?.exitReason ?? '',
     remarks: employee?.remarks ?? '',
     establishmentId: employee?.establishmentId ?? defaultEstablishmentId ?? '',
+    defaultTotalSalary: String(employee?.defaultTotalSalary ?? 0),
     basicWage: String(employee?.basicWage ?? 0),
     daWage: String(employee?.daWage ?? 0),
     hraWage: String(employee?.hraWage ?? 0),
+    pfMode: (employee?.pfMode ?? 'PERCENT') as PfMode,
+    pfPercent: String(employee?.pfPercent ?? 12),
+    pfWageCeiling: String(employee?.pfWageCeiling ?? 15000),
+    esiApplicable: true,
     pfAmount: String(employee?.pfAmount ?? 0),
     esiAmount: String(employee?.esiAmount ?? 0),
     lwfAmount: String(employee?.lwfAmount ?? 0),
@@ -56,8 +64,32 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
   const [errors, setErrors] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
 
-  const set = (field: string, value: string) =>
+  const set = (field: string, value: unknown) =>
     setForm((prev) => ({ ...prev, [field]: value }))
+
+  const selectedType = establishments.find((e) => e.id === form.establishmentId)?.type
+
+  // Item 10: derive Basic/DA/PF/ESI from the default total salary + firm DA + PF config.
+  function applyBreakdown() {
+    const daRate = selectedType ? getDaRate(selectedType) : parseFloat(form.daWage) || 0
+    const r = computeSalaryBreakdown({
+      totalSalary: parseFloat(form.defaultTotalSalary) || 0,
+      daRate,
+      pfConfig: {
+        mode: form.pfMode,
+        percent: parseFloat(form.pfPercent) || 0,
+        ceiling: parseFloat(form.pfWageCeiling) || undefined,
+      },
+      esiApplicable: form.esiApplicable,
+    })
+    setForm((prev) => ({
+      ...prev,
+      basicWage: String(r.basic),
+      daWage: String(r.da),
+      pfAmount: String(r.pf),
+      esiAmount: String(r.esi),
+    }))
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -403,6 +435,65 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
       )}
 
       <section>
+        <p className="text-xs font-semibold text-[#c8d8e8] mb-3 uppercase tracking-wide">Salary Setup</p>
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <div>
+            <label className={labelClass}>
+              Default Total Salary (₹)
+              <Info text="The monthly gross (Basic + DA target). Basic, DA, PF and ESI are derived from this. Click Compute to split." />
+            </label>
+            <input className={inputClass} type="number" min="0" step="0.01"
+              aria-label="Default Total Salary"
+              value={form.defaultTotalSalary}
+              onChange={(e) => set('defaultTotalSalary', e.target.value)} />
+          </div>
+          <div>
+            <label className={labelClass}>
+              PF Mode
+              <Info text="PERCENT: 12% of Basic+DA capped at the wage ceiling (₹1,800 default). FIXED: a flat PF amount. NONE: no PF." />
+            </label>
+            <select className={inputClass} aria-label="PF Mode" value={form.pfMode}
+              onChange={(e) => set('pfMode', e.target.value as PfMode)}>
+              <option value="PERCENT">Percent (%)</option>
+              <option value="FIXED">Fixed (₹)</option>
+              <option value="NONE">None</option>
+            </select>
+          </div>
+          {form.pfMode === 'PERCENT' && (
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className={labelClass}>PF %</label>
+                <input className={inputClass} type="number" min="0" step="0.01"
+                  aria-label="PF Percent"
+                  value={form.pfPercent}
+                  onChange={(e) => set('pfPercent', e.target.value)} />
+              </div>
+              <div>
+                <label className={labelClass}>Wage Ceiling</label>
+                <input className={inputClass} type="number" min="0" step="1"
+                  aria-label="PF Wage Ceiling"
+                  value={form.pfWageCeiling}
+                  onChange={(e) => set('pfWageCeiling', e.target.value)} />
+              </div>
+            </div>
+          )}
+          <div className="col-span-3 flex items-center gap-4">
+            <label className="flex items-center gap-2 text-xs text-[#7a9ab8] cursor-pointer">
+              <input type="checkbox" checked={form.esiApplicable}
+                onChange={(e) => set('esiApplicable', e.target.checked)} />
+              ESI Applicable (0.75% when gross ≤ ₹21,000)
+            </label>
+            {selectedType && (
+              <span className="text-[10px] text-[#4a6a8a]">
+                Firm DA rate: ₹{getDaRate(selectedType).toLocaleString('en-IN')}
+              </span>
+            )}
+            <button type="button" onClick={applyBreakdown}
+              className="ml-auto px-3 py-1 bg-[#0f2040] text-[#4a9eff] text-xs rounded border border-[#1a3a6a] hover:bg-[#1a3060]">
+              Compute breakdown ↓
+            </button>
+          </div>
+        </div>
         <p className="text-xs font-semibold text-[#c8d8e8] mb-3 uppercase tracking-wide">Monthly Wage Defaults</p>
         <div className="grid grid-cols-3 gap-4">
           <div>

@@ -2,8 +2,14 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Establishment } from '@/generated/prisma/client'
-import type { WageFormulaConfig } from '@/types'
+import type { WageFormulaConfig, EstablishmentType } from '@/types'
 import { Info } from '@/components/info-tooltip'
+import {
+  ESTABLISHMENT_TYPES,
+  ESTABLISHMENT_TYPE_LABELS,
+  getWagePreset,
+  getDaRate,
+} from '@/domain/calculations/da-rates'
 
 type Props = {
   establishment?: Establishment
@@ -136,16 +142,19 @@ export function EstablishmentForm({ establishment }: Props) {
         <div>
           <label className={labelClass}>
             Establishment Type *
-            <Info text="HOSPITAL: Clinical Establishments Act applies. SHOP: Tamil Nadu Shops & Establishments Act applies. Determines which statutory forms are generated." />
+            <Info text="HOSPITAL uses Clinical Establishments Act forms. All other types fall under the TN Shops & Establishments Act. Type also fixes the default DA rate (editable per employee)." />
           </label>
           <select className={inputClass} aria-label="Type" value={form.type}
             onChange={(e) => {
-              set('type', e.target.value)
-              setFormula('preset', e.target.value === 'HOSPITAL'
-                ? 'TN_MINIMUM_WAGES_HOSPITAL' : 'TN_SHOPS_ESTABLISHMENTS')
+              const type = e.target.value as EstablishmentType
+              set('type', type)
+              setFormula('preset', getWagePreset(type))
             }}>
-            <option value="HOSPITAL">Hospital</option>
-            <option value="SHOP">Shop</option>
+            {ESTABLISHMENT_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {ESTABLISHMENT_TYPE_LABELS[t]} (DA ₹{getDaRate(t).toLocaleString('en-IN')})
+              </option>
+            ))}
           </select>
         </div>
         <div>
@@ -181,7 +190,7 @@ export function EstablishmentForm({ establishment }: Props) {
                 onChange={(e) => setFormula('fixedAllowance', parseFloat(e.target.value))} />
             </div>
           )}
-          {form.type === 'SHOP' && (
+          {form.type !== 'HOSPITAL' && (
             <div>
               <label className={labelClass}>HRA (₹)</label>
               <input className={inputClass} type="number" min="0"

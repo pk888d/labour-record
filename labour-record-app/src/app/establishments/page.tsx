@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { PageHeader } from '@/components/page-header'
 import { DeleteEstablishmentButton } from './delete-establishment-button'
+import { ESTABLISHMENT_TYPE_LABELS } from '@/domain/calculations/da-rates'
+import type { EstablishmentType } from '@/types'
 
 export default async function EstablishmentsPage() {
   const establishments = await prisma.establishment.findMany({
@@ -40,14 +42,18 @@ export default async function EstablishmentsPage() {
             <tbody>
               {establishments.map((est) => (
                 <tr key={est.id} className="border-b border-[#1a2332] hover:bg-[#111d2d]">
-                  <td className="py-2 px-3 font-medium text-white">{est.name}</td>
+                  <td className="py-2 px-3 font-medium">
+                    <Link href={`/establishments/${est.id}/employees`} className="text-white hover:text-[#4a9eff] hover:underline">
+                      {est.name}
+                    </Link>
+                  </td>
                   <td className="py-2 px-3">
                     <span className={`text-xs px-2 py-0.5 rounded ${
                       est.type === 'HOSPITAL'
                         ? 'bg-[#1a2a50] text-[#4a9eff]'
                         : 'bg-[#2a1a40] text-[#c087f0]'
                     }`}>
-                      {est.type}
+                      {ESTABLISHMENT_TYPE_LABELS[est.type as EstablishmentType] ?? est.type}
                     </span>
                   </td>
                   <td className="py-2 px-3 text-[#7a9ab8]">{est.employerName}</td>

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { PageHeader } from '@/components/page-header'
 import { DeleteCycleButton } from './delete-cycle-button'
+import { GenerateFyButton } from './generate-fy-button'
 
 const MONTH_NAMES = ['','January','February','March','April','May','June',
   'July','August','September','October','November','December']
@@ -15,6 +16,12 @@ export default async function CyclesPage() {
     },
   })
 
+  const establishments = await prisma.establishment.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true },
+    orderBy: { name: 'asc' },
+  })
+
   return (
     <div>
       <PageHeader
@@ -22,6 +29,11 @@ export default async function CyclesPage() {
         subtitle={`${cycles.length} cycle${cycles.length !== 1 ? 's' : ''}`}
         action={{ label: '+ New Cycle', href: '/cycles/new' }}
       />
+      {establishments.length > 0 && (
+        <div className="px-6 pt-3">
+          <GenerateFyButton establishments={establishments} />
+        </div>
+      )}
       <div className="p-6">
         {cycles.length === 0 ? (
           <p className="text-[#4a6a8a] text-sm">

@@ -39,9 +39,16 @@ describe('validateEstablishment', () => {
     expect(errors).toContain('regCertNo is required')
   })
 
-  it('requires type to be HOSPITAL or SHOP', () => {
+  it('rejects an unsupported type', () => {
     const errors = validateEstablishment({ ...base, type: 'OTHER' as any })
-    expect(errors).toContain('type must be HOSPITAL or SHOP')
+    expect(errors).toContain('type must be a supported establishment type')
+  })
+
+  it('accepts all six supported types', () => {
+    for (const type of ['SHOP', 'HOSPITAL', 'HOTEL', 'PETROL_BUNK', 'MEDICAL', 'OIL_MILL']) {
+      const errors = validateEstablishment({ ...base, type: type as any })
+      expect(errors).toEqual([])
+    }
   })
 })
 

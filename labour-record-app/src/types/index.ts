@@ -1,4 +1,10 @@
-export type EstablishmentType = 'HOSPITAL' | 'SHOP'
+export type EstablishmentType =
+  | 'SHOP'
+  | 'HOSPITAL'
+  | 'HOTEL'
+  | 'PETROL_BUNK'
+  | 'MEDICAL'
+  | 'OIL_MILL'
 export type EmployeeStatus = 'ACTIVE' | 'SUSPENDED' | 'EXITED'
 export type FormTaskStatus =
   | 'NOT_STARTED'
