@@ -225,3 +225,47 @@
   - Data: added fatherSpouseName+sex to OvertimeRow; dateOfEntry to WagesRow (for the slip).
 - Files changed: src/lib/export/form-data.ts, src/app/print/[cycleId]/[formCode]/{hospital-form-iv,hospital-form-xvii,shop-form-t,shop-form-u,shop-form-v,wage-slip-form}.tsx
 - Validation: production build ✓ compiled; browser render of all 12 forms → 0 page errors; slip + U vertical layouts confirmed via screenshot; tsc clean; 148 tests pass.
+
+### Task Update — 2026-06-10 — Print header alignment + cycle-year guard
+- Task: Fix print form header alignment + reject implausible cycle years
+- Status: completed
+- Scope:
+  - Print form headers: title/rule/period stay centred; establishment + manager/reg-cert lines left-aligned (single CSS rule `.form-header p:nth-last-of-type(-n+2)`), matching the statutory template. Applies to all forms.
+  - Cycle year validation capped at currentYear+1 (was 2100, letting 2099 typos through); dynamic error message. Corrected the stray 2099 local cycle to 2026. +2 tests.
+- Files: src/app/print/layout.tsx, src/domain/validations/cycle.ts, tests/domain/cycle.test.ts
+- Validation: browser header alignment [center,center,left,left]; 150 tests pass; commits 6442f9a, 63ec844.
+
+### Task Update — 2026-06-10 — Tech Sakthi theme + navigation bar
+- Task: Apply Tech Sakthi theme + add Home/Back/Forward navigation
+- Status: completed
+- Scope: Tech Sakthi palette (navy #071426 bg, gold #D4A31E accent, Poppins/Inter fonts) on the app shell — globals.css variables, sidebar (gold brand + active item), page header (gold action button). New TopNav bar (Home → dashboard, Back/Forward via router history), sticky at top of content.
+- Files: src/app/globals.css, src/app/layout.tsx, src/components/{sidebar,page-header,top-nav}.tsx
+- Validation: body bg rgb(7,20,38); Home/Back/Forward work; all pages render 0 errors; 150 tests pass; commit 12cac8d.
+
+### Task Update — 2026-06-10 — Muster "Days Worked" fix
+- Task: Muster Days Worked wrongly counted holidays as worked
+- Status: completed
+- Scope: getMusterData.totalPresent counted P+OT+H (so a 30-day month with 4 Sundays showed 30 worked instead of 26). Now Days Worked = P+OT; holidays/leave counted separately; Days counted for wages = worked + paid holidays + paid leave. Added leaveDays/holidayDays/wageDays to MusterRow (HTML + DOCX). Fixed Forms V (muster) and shop V (employment).
+- Files: src/lib/export/form-data.ts, src/app/print/[cycleId]/[formCode]/{hospital-form-v,shop-form-v}.tsx
+- Validation: browser muster shows Worked 26 / Counted 30 for 26P+4H; tsc clean; 150 tests; commit 3659cac.
+
+### Task Update — 2026-06-10 — Dashboard establishment listing (4 layouts) + new fields
+- Task: Dashboard option to list establishments in multiple layouts
+- Status: completed
+- Scope:
+  - New Establishment fields: contactPhone, contactEmail, processingFee, serviceStartDate (migration) + inputs in establishment form ("Contact & Billing") + API persist.
+  - Dashboard "Establishments" section with a localStorage-persisted view switcher: Cards (rich), Table (detailed/all fields), Expandable rows (master-detail), Directory (split list + profile). All show name/type/address/employees/owner/POC/contact/fee/start date/DA.
+- Files: prisma/schema.prisma (+migration establishment_contact_fee_startdate), src/app/api/establishments/{route,[id]/route}.ts, src/components/establishment-form.tsx, src/app/dashboard/{page,dashboard-establishments}.tsx
+- Validation: all 4 views render + switcher persists across reload; build ✓; 0 page errors; 150 tests pass; commit 598c3e0.
+
+### Task Update — 2026-06-10 — Remove Wage Rules page
+- Task: Wage Rules page no longer needed
+- Status: completed
+- Scope: removed /wage-rules page + /api/wage-rules route + sidebar link. Wage calculation unaffected (getWageRuleValue/WAGE_RULE_DEFAULTS + WageRule data still used by cycle wage computation).
+- Files: deleted src/app/wage-rules/*, src/app/api/wage-rules/route.ts; src/components/sidebar.tsx
+- Validation: /wage-rules → 404, not in sidebar, dashboard loads, 0 page errors; build ✓; 150 tests pass; commit b5116c1.
+
+### Project metrics — 2026-06-10
+- Tests: 150 passing (13 files) · tsc clean · production build compiles
+- App branded "Mustearly" (by Tech Sakthi), Tech Sakthi navy/gold theme
+- All 11 original feedback items complete; all 12 statutory forms match templates (HTML print + DOCX); dashboard 4-layout establishment listing; Home/Back/Forward nav
