@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     } catch {
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
     }
-    const b = body as { date?: string; name?: string }
+    const b = body as { date?: string; name?: string; doubleWage?: boolean }
     if (!b.date || !b.name?.trim()) {
       return NextResponse.json({ errors: ['date and name are required'] }, { status: 422 })
     }
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     }
     const year = date.getFullYear()
     const holiday = await prisma.govtHoliday.create({
-      data: { date, name: b.name.trim(), year },
+      data: { date, name: b.name.trim(), year, doubleWage: b.doubleWage ?? true },
     })
     return NextResponse.json(holiday, { status: 201 })
   } catch (error: unknown) {

@@ -38,3 +38,6 @@ npm-debug.log*
 .vscode/
 .idea/
 *.swp
+
+# Superpowers tooling cache (local)
+.superpowers/

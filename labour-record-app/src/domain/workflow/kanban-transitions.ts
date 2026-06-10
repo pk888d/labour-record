@@ -1,4 +1,4 @@
-import type { FormTaskStatus } from '@/types'
+import type { FormTaskStatus, EstablishmentType } from '@/types'
 import { HOSPITAL_FORM_CODES, SHOP_FORM_CODES } from '@/types'
 
 export const VALID_TRANSITIONS: Record<FormTaskStatus, FormTaskStatus[]> = {
@@ -18,6 +18,8 @@ export function requiresComment(from: FormTaskStatus, to: FormTaskStatus): boole
   return from === 'READY_FOR_REVIEW' && to === 'NEEDS_CORRECTION'
 }
 
-export function getFormCodes(type: 'HOSPITAL' | 'SHOP'): readonly string[] {
+// Only HOSPITAL uses Clinical Establishments forms; every other type falls
+// under the TN Shops & Establishments Act and uses the shop form set.
+export function getFormCodes(type: EstablishmentType): readonly string[] {
   return type === 'HOSPITAL' ? HOSPITAL_FORM_CODES : SHOP_FORM_CODES
 }

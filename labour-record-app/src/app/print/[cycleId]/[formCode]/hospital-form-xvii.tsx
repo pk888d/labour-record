@@ -1,7 +1,7 @@
 import type { CycleContext, WagesRow } from '@/lib/export/form-data'
 import { MONTH_NAMES } from '@/lib/export/form-data'
 
-const fmt = (n: number) => n === 0 ? 'Nil' : n.toFixed(2)
+const fmt = (n: number) => { const v = Number(n); return v ? v.toFixed(2) : 'Nil' }
 
 function WageSlipCard({ row, establishment, period }: {
   row: WagesRow

@@ -3,6 +3,16 @@ import { prisma } from '@/lib/prisma'
 export const MONTH_NAMES = ['','January','February','March','April','May','June',
   'July','August','September','October','November','December']
 
+function sumNumeric(json: string): number {
+  try {
+    const arr = JSON.parse(json)
+    if (!Array.isArray(arr)) return 0
+    return arr.reduce((s: number, v: unknown) => s + (Number(v) || 0), 0)
+  } catch {
+    return 0
+  }
+}
+
 export type SlipData = {
   employeeId: string
   empId: string
@@ -62,7 +72,7 @@ export async function getCycleWithSlips(cycleId: string): Promise<{ cycle: Cycle
     const basic = w?.basic ?? 0
     const da = w?.da ?? 0
     const hra = w?.hra ?? 0
-    const otherAllowances = w ? (JSON.parse(w.otherAllowances ?? '[]') as number[]).reduce((s, v) => s + v, 0) : 0
+    const otherAllowances = w ? sumNumeric(w.otherAllowances ?? '[]') : 0
     const holidayBonus = w?.holidayBonus ?? 0
     const overtimeEarnings = w?.overtimeEarnings ?? 0
     const grossWages = w?.grossWages ?? (basic + da + hra + otherAllowances)

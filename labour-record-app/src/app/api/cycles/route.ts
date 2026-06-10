@@ -99,7 +99,7 @@ export async function POST(request: Request) {
       })
     }
 
-    const formCodes = getFormCodes(establishment.type as 'HOSPITAL' | 'SHOP')
+    const formCodes = getFormCodes(establishment.type)
     await prisma.formTask.createMany({
       data: formCodes.map((formCode) => ({
         cycleId: cycle.id,

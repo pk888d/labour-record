@@ -23,10 +23,14 @@ const VALID_CODES = [
 
 export default async function PrintPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ cycleId: string; formCode: string }>
+  searchParams: Promise<{ orientation?: string }>
 }) {
   const { cycleId, formCode } = await params
+  const { orientation: orientationParam } = await searchParams
+  const orientation: 'landscape' | 'portrait' = orientationParam === 'portrait' ? 'portrait' : 'landscape'
   if (!VALID_CODES.includes(formCode)) notFound()
 
   const ctx = await getCycleContext(cycleId).catch(() => null)
@@ -97,9 +101,25 @@ export default async function PrintPage({
     }
   }
 
+  // On-screen page width mirrors the chosen orientation (A4 @ 96dpi) so the
+  // toggle is visibly WYSIWYG; @page drives the actual print orientation.
+  const screenWidth = orientation === 'landscape' ? '1123px' : '794px'
+
   return (
     <>
-      <PrintButton />
+      <style>{`
+        @page { size: A4 ${orientation}; margin: 8mm; }
+        @media screen {
+          .form-page {
+            width: ${screenWidth};
+            max-width: 100%;
+            margin: 16px auto;
+            background: #fff;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.4);
+          }
+        }
+      `}</style>
+      <PrintButton orientation={orientation} />
       {content}
     </>
   )

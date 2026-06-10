@@ -12,6 +12,7 @@ export default async function HolidaysPage() {
     date: h.date.toISOString(),
     name: h.name,
     year: h.year,
+    doubleWage: h.doubleWage,
   }))
   return <HolidaysClient initialHolidays={serialized} initialYear={currentYear} />
 }

@@ -8,6 +8,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+  const orientationParam = req.nextUrl.searchParams.get('orientation')
+  const orientation = orientationParam === 'portrait' ? 'portrait' : 'landscape'
 
   const formTask = await prisma.formTask.findUnique({
     where: { id },
@@ -36,7 +38,7 @@ export async function POST(
   const generateErrors: string[] = []
 
   try {
-    docxPath = await generateDocx(cycleId, formCode, baseFileName)
+    docxPath = await generateDocx(cycleId, formCode, baseFileName, orientation)
   } catch (err) {
     generateErrors.push(`DOCX: ${err instanceof Error ? err.message : String(err)}`)
   }
