@@ -28,8 +28,18 @@ describe('validateNewCycle', () => {
   })
 
   it('rejects year 1999', () => {
-    expect(validateNewCycle({ ...base, year: 1999 }))
-      .toContain('year must be between 2000 and 2100')
+    expect(validateNewCycle({ ...base, year: 1999 }).join())
+      .toMatch(/year must be between 2000 and \d{4}/)
+  })
+
+  it('rejects an implausible far-future year (2099)', () => {
+    expect(validateNewCycle({ ...base, year: 2099 }).join())
+      .toMatch(/year must be between 2000 and \d{4}/)
+  })
+
+  it('accepts next year', () => {
+    const nextYear = new Date().getFullYear() + 1
+    expect(validateNewCycle({ ...base, year: nextYear })).toEqual([])
   })
 
   it('rejects wagePeriodDays 0', () => {
