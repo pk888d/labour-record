@@ -228,4 +228,38 @@ test.describe('Mustearly — E2E', () => {
       expect(counted, 'Days counted ≥ Days worked').toBeGreaterThanOrEqual(worked)
     }
   })
+
+  test('Print document fidelity: year, bold subtitle, DB-consistent values', async ({ page }) => {
+    const cycleId = await firstCycleId(page)
+    // The printed period year must match the cycle the user opened (no stale year)
+    await page.goto(`/cycles/${cycleId}`, { waitUntil: 'networkidle' })
+    const heading = await page.locator('h1').first().innerText()
+    const yearMatch = heading.match(/\b(20\d\d|2[1-9]\d\d)\b/)
+    const cycleYear = yearMatch ? yearMatch[1] : null
+
+    await page.goto(`/print/${cycleId}/HOSPITAL_FORM_XII`, { waitUntil: 'networkidle' })
+    const subtitle = page.locator('.form-header p', { hasText: 'for the Month' })
+    // Subtitle (Register of … for the Month of <period>) must be BOLD per the template
+    const weight = await subtitle.evaluate((e) => parseInt(getComputedStyle(e).fontWeight))
+    expect(weight, 'subtitle should be bold').toBeGreaterThanOrEqual(600)
+    // Printed year matches the cycle's year (not a stale value)
+    if (cycleYear) expect(await subtitle.innerText()).toContain(cycleYear)
+    // Wage register row math stays internally consistent (DB-derived)
+    const cells = (await page.locator('table tbody tr').first().locator('td').allInnerTexts()).map((x) => x.replace(/[₹,]/g, ''))
+    const basic = parseFloat(cells[8]), da = parseFloat(cells[9]), tn = parseFloat(cells[10])
+    if ([basic, da, tn].every(Number.isFinite)) expect(tn).toBeCloseTo(basic + da, 2)
+  })
+
+  test('Wage slip matches template: landscape, per-employee Original + Photocopy', async ({ page }) => {
+    const cycleId = await firstCycleId(page)
+    await page.goto(`/print/${cycleId}/HOSPITAL_FORM_XVII`, { waitUntil: 'networkidle' })
+    const sheets = await page.locator('.ts-wageslip-sheet').count()
+    expect(sheets, 'one sheet per employee').toBeGreaterThan(0)
+    // each sheet carries both an Original and a Photocopy copy
+    expect(await page.getByText('[Original]').count()).toBe(sheets)
+    expect(await page.getByText(/Duplicate \/ Photocopy/).count()).toBe(sheets)
+    // landscape orientation declared for the slip
+    const css = await page.locator('style').evaluateAll((els) => els.map((e) => e.textContent).join('\n'))
+    expect(css).toMatch(/A4 landscape/)
+  })
 })

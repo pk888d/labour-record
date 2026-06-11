@@ -1,6 +1,16 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('Monthly Cycles', () => {
+  // Clean up the far-future test cycle so it doesn't pollute print views / other tests.
+  test.afterAll(async ({ request }) => {
+    const res = await request.get('/api/cycles')
+    if (!res.ok()) return
+    const cycles = (await res.json()) as { id: string; year: number }[]
+    for (const c of cycles.filter((c) => c.year === 2099)) {
+      await request.delete(`/api/cycles/${c.id}`)
+    }
+  })
+
   test('cycles list page loads', async ({ page }) => {
     await page.goto('/cycles')
     await expect(page.getByRole('heading', { name: /cycles/i })).toBeVisible()

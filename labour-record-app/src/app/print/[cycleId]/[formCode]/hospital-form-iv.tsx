@@ -13,7 +13,7 @@ export function HospitalFormIV({ ctx, ot }: { ctx: CycleContext; ot: OvertimeRow
       <div className="form-header">
         <h2>FORM No. IV — REGISTER OF OVERTIME (MUSTER ROLL CUM WAGES)</h2>
         <p>Prescribed under Rule 25(2) of Minimum Wages (Tamil Nadu) Rules, 1953</p>
-        <p>Overtime Register for the Month of <strong>{period}</strong></p>
+        <p style={{ fontWeight: 'bold' }}>Overtime Register for the Month of {period}</p>
         <p>Name and Address of the Establishment: <strong>{establishment.name}</strong>, {establishment.address}</p>
         <p>Name of the Manager/In-charge: {establishment.managerName} | Registration Certificate No.: {establishment.regCertNo}</p>
       </div>

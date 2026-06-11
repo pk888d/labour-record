@@ -10,7 +10,7 @@ export function HospitalFormII({ ctx, deductions }: { ctx: CycleContext; deducti
       <div className="form-header">
         <h2>REGISTER OF DEDUCTIONS FOR DAMAGE OR LOSS</h2>
         <p>Form No. II — Prescribed under Rule 21(4) of Minimum Wages (Tamil Nadu) Rules, 1963</p>
-        <p>Register of Deductions for Damage or Loss caused to the Employer by Neglect or Default — for <strong>{period}</strong></p>
+        <p style={{ fontWeight: 'bold' }}>Register of Deductions for Damage or Loss caused to the Employer by Neglect or Default — for {period}</p>
         <p>Name and Address of the Establishment: <strong>{establishment.name}</strong>, {establishment.address}</p>
         <p>Name of the Manager/In-charge: {establishment.managerName} | Registration Certificate No.: {establishment.regCertNo}</p>
       </div>

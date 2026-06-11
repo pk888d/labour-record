@@ -10,7 +10,7 @@ export function HospitalFormI({ ctx, fines }: { ctx: CycleContext; fines: FineRo
       <div className="form-header">
         <h2>REGISTER OF FINES</h2>
         <p>Form No. I — Prescribed under Rule 21(4) of Minimum Wages (Tamil Nadu) Rules, 1953</p>
-        <p>Register of Fines for the Month of <strong>{period}</strong></p>
+        <p style={{ fontWeight: 'bold' }}>Register of Fines for the Month of {period}</p>
         <p>Name and Address of the Establishment: <strong>{establishment.name}</strong>, {establishment.address}</p>
         <p>Name of the Manager/In-charge: {establishment.managerName} | Registration Certificate No.: {establishment.regCertNo}</p>
       </div>

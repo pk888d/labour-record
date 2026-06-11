@@ -23,7 +23,7 @@ export function HospitalFormXII({ ctx, wages }: { ctx: CycleContext; wages: Wage
       <div className="form-header">
         <h2>FORM No. XII — REGISTER OF WAGES</h2>
         <p>Prescribed under Rule 27(1) of Minimum Wages (Tamil Nadu) Rules, 1963</p>
-        <p>Register of Wages for the Month of <strong>{period}</strong></p>
+        <p style={{ fontWeight: 'bold' }}>Register of Wages for the Month of {period}</p>
         <p>Name and Address of the Establishment: <strong>{establishment.name}</strong>, {establishment.address}</p>
         <p>Name of the Manager/In-charge: {establishment.managerName} | Registration Certificate No.: {establishment.regCertNo}</p>
       </div>

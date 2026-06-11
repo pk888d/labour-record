@@ -11,7 +11,7 @@ export function ShopFormV({ ctx, muster }: { ctx: CycleContext; muster: MusterRo
       <div className="form-header">
         <h2>FORM V — REGISTER OF EMPLOYMENT</h2>
         <p>Prescribed under Rule 15 of the Tamil Nadu Shops and Establishments Rules, 1948</p>
-        <p>Register of Employment for the Month of <strong>{period}</strong></p>
+        <p style={{ fontWeight: 'bold' }}>Register of Employment for the Month of {period}</p>
         <p>Name and Address of the Establishment: <strong>{establishment.name}</strong>, {establishment.address}</p>
         <p>Name of the Manager/In-charge: {establishment.managerName} | Registration Certificate No.: {establishment.regCertNo}</p>
       </div>
