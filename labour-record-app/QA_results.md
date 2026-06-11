@@ -1,7 +1,11 @@
 # QA Results — Mustearly E2E run
 
-**Target:** http://localhost:3000 · **Date:** 2026-06-10 · **Tool:** Playwright (Chromium, headless)
+**Target:** http://localhost:3000 · **Tool:** Playwright (Chromium, headless)
 **Outcome:** ✅ **36 / 36 functional checks pass · 0 uncaught console/page errors**
+
+### Re-run log
+- **2026-06-11** — deterministic suite `e2e/qa-e2e.spec.ts` → **9/9 passed (42s)**; fresh regression sweep → **15/15 pages + 12/12 print forms HTTP 200, 0 console/page errors**. No regressions, no new defects.
+- **2026-06-10** — initial full crawl (below): 36/36 checks pass, 0 errors.
 
 > Two checks initially reported FAIL but were **test-harness selector bugs, not app defects** — both verified to pass with corrected selectors (details below). No application bug was found.
 
