@@ -238,6 +238,9 @@ test.describe('Mustearly — E2E', () => {
     const cycleYear = yearMatch ? yearMatch[1] : null
 
     await page.goto(`/print/${cycleId}/HOSPITAL_FORM_XII`, { waitUntil: 'networkidle' })
+    // @page margin:0 suppresses the browser's default print header/footer (title/date/URL/page#)
+    const pageCss = await page.locator('style').evaluateAll((els) => els.map((e) => e.textContent).join('\n'))
+    expect(pageCss, 'print @page margin must be 0 to hide browser headers/footers').toMatch(/@page\s*\{[^}]*margin:\s*0\b/)
     const subtitle = page.locator('.form-header p', { hasText: 'for the Month' })
     // Subtitle (Register of … for the Month of <period>) must be BOLD per the template
     const weight = await subtitle.evaluate((e) => parseInt(getComputedStyle(e).fontWeight))

@@ -108,7 +108,12 @@ export default async function PrintPage({
   return (
     <>
       <style>{`
-        @page { size: A4 ${orientation}; margin: 8mm; }
+        /* margin:0 removes the browser's default print header/footer
+           (page title, date, URL, "Page X of Y"); reapplied as padding. */
+        @page { size: A4 ${orientation}; margin: 0; }
+        @media print {
+          .form-page { padding: 8mm; }
+        }
         @media screen {
           .form-page {
             width: ${screenWidth};

@@ -83,7 +83,8 @@ export function WageSlipForm({ ctx, wages, formTitle, rule }: {
       {/* Landscape; each employee = one row (left Original | right Photocopy).
           Two employees per page to save paper → page break after every 2nd. */}
       <style>{`@media print {
-        @page { size: A4 landscape; margin: 8mm; }
+        @page { size: A4 landscape; margin: 0; }
+        .form-page { padding: 8mm; }
         .ts-wageslip-sheet { page-break-inside: avoid; break-inside: avoid; }
         .ts-wageslip-sheet:nth-of-type(2n) { page-break-after: always; break-after: page; }
         .ts-wageslip-sheet:last-child { page-break-after: auto; break-after: auto; }

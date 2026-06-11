@@ -75,12 +75,13 @@ export default async function IndividualSlipPage({
       )}
 
       <style>{`
-        @page { size: A4 landscape; margin: 10mm; }
+        /* margin:0 suppresses the browser's print header/footer; reapplied as padding. */
+        @page { size: A4 landscape; margin: 0; }
         @media print {
           aside { display: none !important; }
           body { background: white !important; }
           main { padding: 0 !important; }
-          .ts-sheet { page-break-inside: avoid; }
+          .ts-sheet { page-break-inside: avoid; padding: 8mm; }
           .ts-watermark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
       `}</style>
