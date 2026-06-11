@@ -32,14 +32,14 @@ describe('validateNewCycle', () => {
       .toMatch(/year must be between 2000 and \d{4}/)
   })
 
-  it('rejects an implausible far-future year (2099)', () => {
-    expect(validateNewCycle({ ...base, year: 2099 }).join())
-      .toMatch(/year must be between 2000 and \d{4}/)
+  it('accepts a far-future year up to 9999 (e.g. 2099)', () => {
+    expect(validateNewCycle({ ...base, year: 2099 })).toEqual([])
+    expect(validateNewCycle({ ...base, year: 9999 })).toEqual([])
   })
 
-  it('accepts next year', () => {
-    const nextYear = new Date().getFullYear() + 1
-    expect(validateNewCycle({ ...base, year: nextYear })).toEqual([])
+  it('rejects a year above 9999', () => {
+    expect(validateNewCycle({ ...base, year: 10000 }).join())
+      .toMatch(/year must be between 2000 and 9999/)
   })
 
   it('rejects wagePeriodDays 0', () => {

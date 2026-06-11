@@ -12,7 +12,7 @@ test.describe('Print Views — Hospital Forms', () => {
   test('Form XII (Wages Register) print page loads', async ({ page }) => {
     const cycleId = await getCycleId(page)
     await page.goto(`/print/${cycleId}/HOSPITAL_FORM_XII`)
-    await expect(page.getByText(/Wages Register|Form XII/i).first()).toBeVisible({ timeout: 20000 })
+    await expect(page.getByText(/REGISTER OF WAGES/i).first()).toBeVisible({ timeout: 20000 })
   })
 
   test('Form V (Muster Roll) print page loads', async ({ page }) => {
@@ -24,7 +24,7 @@ test.describe('Print Views — Hospital Forms', () => {
   test('Form XI (Employee Register) print page loads', async ({ page }) => {
     const cycleId = await getCycleId(page)
     await page.goto(`/print/${cycleId}/HOSPITAL_FORM_XI`)
-    await expect(page.getByText(/Employee Register|Form XI/i).first()).toBeVisible()
+    await expect(page.getByText(/REGISTER OF EMPLOYEES/i).first()).toBeVisible()
   })
 
   test('Form XVII (Wage Slips) print page loads', async ({ page }) => {
@@ -42,13 +42,13 @@ test.describe('Print Views — Hospital Forms', () => {
   test('Form I (Fines Register) print page loads', async ({ page }) => {
     const cycleId = await getCycleId(page)
     await page.goto(`/print/${cycleId}/HOSPITAL_FORM_I`)
-    await expect(page.getByText(/Fines Register|Form I/i).first()).toBeVisible()
+    await expect(page.getByText(/REGISTER OF FINES/i).first()).toBeVisible()
   })
 
   test('Form II (Deductions Register) print page loads', async ({ page }) => {
     const cycleId = await getCycleId(page)
     await page.goto(`/print/${cycleId}/HOSPITAL_FORM_II`)
-    await expect(page.getByText(/Deductions Register|Form II/i).first()).toBeVisible()
+    await expect(page.getByText(/REGISTER OF DEDUCTIONS/i).first()).toBeVisible()
   })
 
   test('print page has Print button', async ({ page }) => {

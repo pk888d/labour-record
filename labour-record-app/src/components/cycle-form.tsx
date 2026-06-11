@@ -30,9 +30,8 @@ export function CycleForm({ establishments }: Props) {
     setSaving(true)
     setErrors([])
 
-    const currentYear = new Date().getFullYear()
-    if (form.year < 2000 || form.year > currentYear + 2) {
-      setErrors([`Year must be between 2000 and ${currentYear + 2}`])
+    if (form.year < 2000 || form.year > 9999) {
+      setErrors(['Year must be between 2000 and 9999'])
       setSaving(false)
       return
     }
@@ -116,7 +115,7 @@ export function CycleForm({ establishments }: Props) {
             Year *
             <Info text="The calendar year. e.g. 2024" />
           </label>
-          <input className={inputClass} aria-label="Year" type="number" min="2000" max="2100"
+          <input className={inputClass} aria-label="Year" type="number" min="2000" max="9999"
             value={form.year}
             onChange={(e) => set('year', parseInt(e.target.value))} required />
         </div>

@@ -11,7 +11,7 @@ test.describe('Page Load Checks', () => {
     { path: '/cycles', name: 'Cycles list' },
     { path: '/cycles/new', name: 'New cycle form' },
     { path: '/holidays', name: 'Holidays page' },
-    { path: '/wage-rules', name: 'Wage rules page' },
+    { path: '/dashboard', name: 'Dashboard page' },
     { path: '/exports', name: 'Exports page' },
   ]
 
@@ -143,7 +143,8 @@ test.describe('Specific UI Feature Checks', () => {
     await expect(page.getByRole('button', { name: 'Add Holiday' })).toBeVisible()
   })
 
-  test('wage rules page: establishment selector works', async ({ page }) => {
+  test.skip('wage rules page: establishment selector works', async ({ page }) => {
+    // Wage Rules page was removed; test retained as skipped for history.
     await page.goto('/wage-rules')
     await page.waitForLoadState('networkidle')
     const selector = page.getByLabel('Establishment').or(page.locator('select').first())
@@ -173,7 +174,7 @@ test.describe('Specific UI Feature Checks', () => {
   })
 
   test('sidebar navigation: no 404 errors on nav links', async ({ page }) => {
-    const navLinks = ['/establishments', '/employees', '/cycles', '/holidays', '/wage-rules', '/exports']
+    const navLinks = ['/dashboard', '/establishments', '/employees', '/cycles', '/holidays', '/exports']
     for (const path of navLinks) {
       const response = await page.goto(path)
       const status = response?.status() ?? 0

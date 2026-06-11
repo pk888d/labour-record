@@ -15,13 +15,13 @@ test.describe('Navigation & Layout', () => {
     await expect(page.getByRole('link', { name: 'Employees' })).toBeVisible()
     await expect(page.getByRole('link', { name: 'Exports' })).toBeVisible()
     await expect(page.getByRole('link', { name: 'Holidays' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Wage Rules' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Dashboard' })).toBeVisible()
   })
 
   test('active link is highlighted', async ({ page }) => {
     await page.goto('/cycles')
     const cyclesLink = page.getByRole('link', { name: 'Monthly Cycles' })
-    await expect(cyclesLink).toHaveClass(/text-\[#4a9eff\]/)
+    await expect(cyclesLink).toHaveClass(/gold/) // active item uses the gold accent
   })
 
   test('sidebar navigates to employees', async ({ page }) => {
@@ -47,8 +47,9 @@ test.describe('Navigation & Layout', () => {
     await expect(page.getByRole('link', { name: 'Holidays' })).toBeVisible()
   })
 
-  test('sidebar has Wage Rules link', async ({ page }) => {
+  test('sidebar has Dashboard link (Wage Rules removed)', async ({ page }) => {
     await page.goto('/')
-    await expect(page.getByRole('link', { name: 'Wage Rules' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Dashboard' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Wage Rules' })).toHaveCount(0)
   })
 })

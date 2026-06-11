@@ -37,9 +37,9 @@ export function HolidaysClient({
     if (!name.trim()) { setErrors(['Holiday name is required']); return }
     if (name.trim().length < 3) { setErrors(['Holiday name must be at least 3 characters']); return }
     const selectedDate = new Date(date)
-    const thisYear = new Date().getFullYear()
-    if (selectedDate.getFullYear() < thisYear - 1 || selectedDate.getFullYear() > thisYear + 3) {
-      setErrors([`Date seems unusual. Are you sure about year ${selectedDate.getFullYear()}?`])
+    const y = selectedDate.getFullYear()
+    if (y < 2000 || y > 9999) {
+      setErrors([`Date seems unusual. Year must be between 2000 and 9999 (got ${y}).`])
       return
     }
 

@@ -19,10 +19,11 @@ test.describe('Monthly Cycles', () => {
     await page.getByLabel('Month').selectOption('6')
     await page.getByLabel('Year').fill('2099')
     await page.getByRole('button', { name: /Create Cycle/i }).click()
-    // Navigate to cycles list (handles both success and duplicate-already-exists case)
-    await page.goto('/cycles')
+    // Wait for the create POST + client redirect to settle before asserting
+    await page.waitForLoadState('networkidle')
+    await page.goto('/cycles', { waitUntil: 'networkidle' })
     await expect(page.locator('tr', { hasText: 'DNV Orthocare' }).first()).toBeVisible()
-    await expect(page.getByText(/June.*2099|2099.*June/).first()).toBeVisible()
+    await expect(page.getByText(/June.*2099|2099.*June/).first()).toBeVisible({ timeout: 15000 })
   })
 
   test('cycle detail shows form tasks', async ({ page }) => {
