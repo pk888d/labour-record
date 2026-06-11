@@ -78,3 +78,14 @@
 - [ ] 404 / not-found for invalid establishment / cycle / employee IDs
 - [ ] Empty / invalid form submissions surface inline errors (no crash)
 - [ ] No uncaught console/page errors on any page (excluding browser-extension noise)
+
+## 13. Mathematical calculations (verify with evidence — input → expected → actual)
+- [ ] DA per firm type: Shop 7353 / Hospital 5544 / Hotel 8466 / Petrol Bunk 7247 / Medical 7970 / Oil Mill 8950
+- [ ] PF PERCENT: 12% of (Basic+DA) capped at wage ceiling → ₹1,800 cap; below cap exact %
+- [ ] PF FIXED = entered amount; PF NONE = 0
+- [ ] ESI = ESI% of gross when gross ≤ threshold, else 0; custom %/threshold honoured
+- [ ] Salary breakdown: Basic = Total − DA − HRA − Other (floor 0); Net = Gross − (PF+ESI+LWF)
+- [ ] Attendance totals: worked = P+OT; wageDays = worked+leave; H not worked
+- [ ] Muster Days Worked = P+OT (excludes H); Days counted = worked + holidays + leave
+- [ ] Wage register (Form XII): Total Normal = Basic+DA; Amount Deducted = Σ deductions; Net = Gross − Deductions
+- [ ] Round-robin weekly-off rotation correctness

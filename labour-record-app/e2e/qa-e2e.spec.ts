@@ -170,4 +170,62 @@ test.describe('Mustearly — E2E', () => {
       expect(r?.status(), path).toBe(404)
     }
   })
+
+  test('Calculations: salary breakdown, wage register, muster', async ({ page }) => {
+    const numOf = async (label: string) => {
+      const t = await page.locator('text=Live Breakdown Preview').locator('xpath=..').innerText()
+      const m = t.match(new RegExp(label + '\\s*₹([\\d,]+(?:\\.\\d+)?)'))
+      return m ? parseFloat(m[1].replace(/,/g, '')) : NaN
+    }
+    // controlled salary inputs
+    await page.goto('/employees', { waitUntil: 'networkidle' })
+    await page.locator('table a:has-text("Edit")').first().click()
+    await page.getByLabel('Default Total Salary').fill('20000')
+    await page.getByLabel('Setup DA').fill('5000')
+    await page.getByLabel('Setup HRA').fill('2000')
+    await page.getByLabel('Setup Other Allowances').fill('1000')
+    await page.getByLabel('PF Mode').selectOption('PERCENT')
+    await page.getByLabel('PF Percent').fill('12')
+    await page.getByLabel('PF Wage Ceiling').fill('15000')
+    if (!(await page.getByLabel('ESI Percent').isVisible().catch(() => false))) await page.getByText('ESI Applicable').click()
+    await page.getByLabel('ESI Percent').fill('0.75')
+    await page.getByLabel('ESI Threshold').fill('21000')
+    await page.getByLabel('Setup LWF').fill('10')
+    await page.waitForTimeout(300)
+    expect(await numOf('Basic')).toBeCloseTo(12000, 2)   // 20000 - 5000 - 2000 - 1000
+    expect(await numOf('PF')).toBeCloseTo(1800, 2)        // min(17000,15000) * 12%
+    expect(await numOf('ESI')).toBeCloseTo(150, 2)        // 0.75% of 20000
+    expect(await numOf('LWF')).toBeCloseTo(10, 2)
+    // Net = Gross - (PF+ESI+LWF) = 20000 - 1960 = 18040
+    const netTxt = await page.locator('text=Live Breakdown Preview').locator('xpath=..').innerText()
+    expect(netTxt).toMatch(/Net Pay:\s*₹18,040/)
+    // ESI = 0 over threshold
+    await page.getByLabel('Default Total Salary').fill('25000')
+    await page.waitForTimeout(250)
+    expect(await numOf('ESI')).toBeCloseTo(0, 2)
+
+    // Wage register (Form XII) relational math — checked on the first cycle row
+    // that actually has wage data (cells are "Nil" when a cycle has no records).
+    const cycleId = await firstCycleId(page)
+    await page.goto(`/print/${cycleId}/HOSPITAL_FORM_XII`, { waitUntil: 'networkidle' })
+    const dataRows = await page.locator('table tbody tr').all()
+    for (const row of dataRows) {
+      const cells = (await row.locator('td').allInnerTexts()).map((x) => x.replace(/[₹,]/g, ''))
+      const basic = parseFloat(cells[8]), da = parseFloat(cells[9]), totalNormal = parseFloat(cells[10])
+      const gross = parseFloat(cells[12]), amtDed = parseFloat(cells[13]), net = parseFloat(cells[15])
+      if ([basic, da, totalNormal, gross, amtDed, net].every(Number.isFinite)) {
+        expect(totalNormal, 'Total Normal = Basic + DA').toBeCloseTo(basic + da, 2)
+        expect(net, 'Net = Gross - Amount Deducted').toBeCloseTo(gross - amtDed, 2)
+        break // one verified row is sufficient evidence
+      }
+    }
+
+    // Muster (Form V): Days Worked ≤ Days counted for wages (when present)
+    await page.goto(`/print/${cycleId}/HOSPITAL_FORM_V`, { waitUntil: 'networkidle' })
+    const mr = await page.locator('table tbody tr').first().locator('td').allInnerTexts()
+    const worked = parseInt(mr[mr.length - 5]), counted = parseInt(mr[mr.length - 2])
+    if (Number.isFinite(worked) && Number.isFinite(counted)) {
+      expect(counted, 'Days counted ≥ Days worked').toBeGreaterThanOrEqual(worked)
+    }
+  })
 })
