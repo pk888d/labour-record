@@ -80,10 +80,21 @@ export function WageSlipForm({ ctx, wages, formTitle, rule }: {
 }) {
   return (
     <div className="form-page">
-      <style>{`@media print { @page { size: A4 landscape; margin: 8mm; } .ts-wageslip-sheet { page-break-after: always; break-after: page; } .ts-wageslip-sheet:last-child { page-break-after: auto; break-after: auto; } }`}</style>
-      {wages.map((row) => (
+      {/* Landscape; each employee = one row (left Original | right Photocopy).
+          Two employees per page to save paper → page break after every 2nd. */}
+      <style>{`@media print {
+        @page { size: A4 landscape; margin: 8mm; }
+        .ts-wageslip-sheet { page-break-inside: avoid; break-inside: avoid; }
+        .ts-wageslip-sheet:nth-of-type(2n) { page-break-after: always; break-after: page; }
+        .ts-wageslip-sheet:last-child { page-break-after: auto; break-after: auto; }
+      }`}</style>
+      {wages.map((row, i) => (
         <div key={row.employeeId} className="ts-wageslip-sheet"
-          style={{ display: 'flex', gap: 0, alignItems: 'stretch', marginBottom: '18px' }}>
+          style={{
+            display: 'flex', gap: 0, alignItems: 'stretch',
+            marginBottom: '12px', paddingBottom: '10px',
+            borderBottom: i % 2 === 0 ? '1px dashed #888' : 'none', // cut line between the two slips on a page
+          }}>
           <div style={{ flex: 1, padding: '0 8px' }}>
             <Slip row={row} ctx={ctx} formTitle={formTitle} rule={rule} copyLabel="Original" />
           </div>

@@ -250,7 +250,7 @@ test.describe('Mustearly — E2E', () => {
     if ([basic, da, tn].every(Number.isFinite)) expect(tn).toBeCloseTo(basic + da, 2)
   })
 
-  test('Wage slip matches template: landscape, per-employee Original + Photocopy', async ({ page }) => {
+  test('Wage slip matches template: landscape, Original + Photocopy, 2 employees per page', async ({ page }) => {
     const cycleId = await firstCycleId(page)
     await page.goto(`/print/${cycleId}/HOSPITAL_FORM_XVII`, { waitUntil: 'networkidle' })
     const sheets = await page.locator('.ts-wageslip-sheet').count()
@@ -261,5 +261,10 @@ test.describe('Mustearly — E2E', () => {
     // landscape orientation declared for the slip
     const css = await page.locator('style').evaluateAll((els) => els.map((e) => e.textContent).join('\n'))
     expect(css).toMatch(/A4 landscape/)
+    // 2 employees per page (to save paper) → printed pages == ceil(employees / 2)
+    await page.emulateMedia({ media: 'print' })
+    const pdf = await page.pdf({ preferCSSPageSize: true, printBackground: true })
+    const pageCount = (pdf.toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length
+    expect(pageCount, '2 employees per page').toBe(Math.ceil(sheets / 2))
   })
 })
