@@ -311,3 +311,19 @@
 - Unit tests: 150 passing · E2E (Playwright): 97 passing, 1 skipped, 0 failed
 - Print: browser header/footer suppressed; statutory layout; wage slip 2 employees/landscape page; all 12 forms match templates
 - Validation/UX: cycle+holiday years 2000–9999; branded 404 + error boundary
+
+### Task Update — 2026-06-11 — Calendar + in-app event notifications
+- Task: Full calendar feature with event notifications
+- Status: completed
+- Scope:
+  - New CalendarEvent model (+migration calendar_events): title, date, time, type, establishment?, remindDaysBefore, recurring (none/monthly/yearly), notes.
+  - TDD pure logic: src/lib/calendar/events.ts (buildCalendarEvents — unifies holidays + wage-cycle deadlines [7th of following month] + form-task due dates + employee join/exit + custom events, range-filtered, recurring expansion, sorted) and notifications.ts (getReminders → overdue/upcoming/count). 14 new unit tests.
+  - Data loader src/lib/calendar/load.ts (Prisma → pure fns). API: GET/POST /api/calendar-events, DELETE /api/calendar-events/[id], GET /api/notifications.
+  - UI: /calendar month-grid page (prev/next/today nav, type legend, event chips, click-day add) + Add-Event modal; NotificationBell in TopNav (badge + dropdown, 60s refresh); dashboard "Upcoming & Overdue" panel; sidebar Calendar link; Calendar icon in TopNav.
+- Files: prisma/schema.prisma (+migration), src/lib/calendar/{events,notifications,load}.ts, src/app/api/{calendar-events/route,calendar-events/[id]/route,notifications/route}.ts, src/app/calendar/{page,calendar-view}.tsx, src/components/{notification-bell,top-nav,sidebar}.tsx, src/app/dashboard/{page,reminders-panel}.tsx, tests/domain/calendar-{events,notifications}.test.ts, e2e/11-calendar.spec.ts
+- Validation: 164 unit tests (14 new); full e2e 101 pass/1 skip/0 fail (4 new calendar tests, self-cleaning); tsc clean; build ✓; browser-verified (holidays/cycle-deadlines render, add event, bell badge, dashboard widget, 0 page errors)
+- Next step: user-directed
+
+### Project metrics — 2026-06-11 (calendar)
+- Unit tests: 164 passing · E2E: 101 passing, 1 skipped, 0 failed
+- New: Calendar page + month grid; in-app notifications (bell + dashboard panel); CalendarEvent model; calendar/notifications domain libs

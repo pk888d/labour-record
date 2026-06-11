@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { NotificationBell } from './notification-bell'
 
 function IconBtn({ onClick, label, children }: { onClick: () => void; label: string; children: React.ReactNode }) {
   return (
@@ -34,6 +35,17 @@ export function TopNav() {
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9.5 12 3l9 6.5" /><path d="M5 9v11h14V9" /><path d="M9 20v-6h6v6" /></svg>
         Home
       </Link>
+      <div className="ml-auto flex items-center gap-2">
+        <Link
+          href="/calendar"
+          title="Calendar"
+          aria-label="Calendar"
+          className="flex items-center justify-center w-8 h-8 rounded-lg border border-[var(--ts-border)] text-[var(--ts-text-secondary)] hover:text-[var(--ts-gold)] hover:border-[var(--ts-gold)] transition-colors"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
+        </Link>
+        <NotificationBell />
+      </div>
     </div>
   )
 }

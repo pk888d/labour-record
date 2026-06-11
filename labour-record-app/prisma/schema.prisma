@@ -25,9 +25,10 @@ model Establishment {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  employees     Employee[]
-  monthlyCycles MonthlyCycle[]
-  wageRules     WageRule[]
+  employees      Employee[]
+  monthlyCycles  MonthlyCycle[]
+  wageRules      WageRule[]
+  calendarEvents CalendarEvent[]
 }
 
 enum EstablishmentType {
@@ -323,6 +324,23 @@ model GovtHoliday {
   year       Int
   doubleWage Boolean  @default(true)
   createdAt  DateTime @default(now())
+}
+
+model CalendarEvent {
+  id               String         @id @default(cuid())
+  title            String
+  date             DateTime
+  time             String?
+  type             String         @default("custom") // custom | reminder | meeting | deadline
+  establishmentId  String?
+  establishment    Establishment? @relation(fields: [establishmentId], references: [id])
+  remindDaysBefore Int?
+  recurring        String         @default("none") // none | monthly | yearly
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([date])
 }
 
 model WageRule {

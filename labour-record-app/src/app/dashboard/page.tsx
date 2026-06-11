@@ -3,6 +3,10 @@ import { PageHeader } from '@/components/page-header'
 import { getDaRate } from '@/domain/calculations/da-rates'
 import type { EstablishmentType } from '@/types'
 import { DashboardEstablishments, type EstRow } from './dashboard-establishments'
+import { RemindersPanel } from './reminders-panel'
+import { loadReminders } from '@/lib/calendar/load'
+
+export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
   const establishments = await prisma.establishment.findMany({
@@ -10,6 +14,7 @@ export default async function DashboardPage() {
     orderBy: { name: 'asc' },
     include: { _count: { select: { employees: true, monthlyCycles: true } } },
   })
+  const reminders = await loadReminders()
 
   const rows: EstRow[] = establishments.map((e) => ({
     id: e.id,
@@ -45,6 +50,8 @@ export default async function DashboardPage() {
           <SummaryCard label="Total Employees" value={totalEmployees} accent="var(--ts-green)" />
           <SummaryCard label="Monthly Cycles" value={totalCycles} accent="var(--ts-blue)" />
         </div>
+
+        <RemindersPanel reminders={reminders} />
 
         <DashboardEstablishments establishments={rows} />
       </div>

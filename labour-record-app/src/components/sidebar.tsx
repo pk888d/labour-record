@@ -7,6 +7,7 @@ const navItems = [
   { section: 'Workspace', items: [
     { href: '/dashboard', label: 'Dashboard', icon: '▦' },
     { href: '/cycles', label: 'Monthly Cycles', icon: '↻' },
+    { href: '/calendar', label: 'Calendar', icon: '🗓' },
   ]},
   { section: 'Masters', items: [
     { href: '/establishments', label: 'Establishments', icon: '🏢' },
