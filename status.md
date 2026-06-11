@@ -269,3 +269,45 @@
 - Tests: 150 passing (13 files) · tsc clean · production build compiles
 - App branded "Mustearly" (by Tech Sakthi), Tech Sakthi navy/gold theme
 - All 11 original feedback items complete; all 12 statutory forms match templates (HTML print + DOCX); dashboard 4-layout establishment listing; Home/Back/Forward nav
+
+### Task Update — 2026-06-11 — Autonomous E2E QA harness
+- Task: Full autonomous E2E UI test (plan → crawl → log → deterministic spec)
+- Status: completed
+- Scope: QA_plan.md (12-area checklist incl. math + print), QA_results.md (36/36 checks, 0 console/page errors, 0 broken links across 71 links), QA_404_report.md (all 404s intentional). New e2e/qa-e2e.spec.ts (UI-derived IDs, console-error guard). Removed obsolete e2e/10-wage-rules.spec.ts.
+- Files: labour-record-app/{QA_plan.md,QA_results.md,QA_404_report.md,e2e/qa-e2e.spec.ts}
+- Validation: qa-e2e 12/12; 21/21 live math + 80/80 unit math verified; 0 broken links
+- Next step: branded error states + template fixes
+
+### Task Update — 2026-06-11 — Branded 404 + error boundary
+- Task: Graceful error states
+- Status: completed
+- Scope: src/app/not-found.tsx (branded 404 + Go-to-Dashboard) and error.tsx (recoverable boundary + Try again). 404 still returns HTTP 404. Verified in browser for unknown route, removed /wage-rules, bad IDs, and a forced render error.
+- Files: src/app/{not-found,error}.tsx
+- Validation: browser-verified all 404 cases + error boundary; 150 tests; build ✓
+- Next step: open year range
+
+### Task Update — 2026-06-11 — Year range to 9999 + e2e suite refresh
+- Task: Allow cycle/holiday years up to 9999; align stale specs to current app
+- Status: completed
+- Scope: year validation 2000–9999 (cycle.ts server, cycle-form.tsx client max=9999, holidays-client.tsx). Refreshed stale e2e specs (01 Wage Rules removed + gold highlight; 04 June 2099 valid + de-flaked + afterAll cleanup; 07 rebuilt form titles; 99 dropped /wage-rules). 
+- Files: src/domain/validations/cycle.ts, src/components/cycle-form.tsx, src/app/holidays/holidays-client.tsx, tests/domain/cycle.test.ts, e2e/{01,04,07,99}*.spec.ts
+- Validation: full e2e 15-fail → 95 pass/1 skip/0 fail; 150 unit; browser-verified 9999 accepted, 1999 rejected
+- Next step: print template fidelity
+
+### Task Update — 2026-06-11 — Print fidelity: year, bold, wage slip, browser header
+- Task: Fix print docs (stale June 2099, bold subtitle, wage slip layout, browser header/footer)
+- Status: completed
+- Scope:
+  - June 2099 was a stray e2e-created cycle; deleted + afterAll cleanup so it stops polluting print views (DNV now June 2026).
+  - Bolded the "Register of … for the Month of <period>" subtitle across all register forms (per template).
+  - Wage slip (XVII/T) rebuilt to template: LANDSCAPE, left [Original] | right [Duplicate/Photocopy], **2 employees per page** to save paper (6 emp → 3 pages, verified via PDF).
+  - Suppressed browser print header/footer (title/date/URL/page#) via @page margin:0 + 8mm content padding, across forms/wage-slip/salary-slips.
+  - Verified DB values == printed values (Basic/DA/Gross/Net) and correct year.
+- Files: src/app/print/[cycleId]/[formCode]/{wage-slip-form,page,hospital-form-i/ii/iv/v/xii,shop-form-v/w/x}.tsx, src/app/cycles/[id]/salary-slips/[employeeId]/page.tsx, e2e/qa-e2e.spec.ts
+- Validation: full e2e 97 pass/1 skip/0 fail; 150 unit; tsc clean; build ✓; browser+PDF verified (no header/footer, June 2026, bold, 2-up wage slip)
+- Next step: user-directed
+
+### Project metrics — 2026-06-11
+- Unit tests: 150 passing · E2E (Playwright): 97 passing, 1 skipped, 0 failed
+- Print: browser header/footer suppressed; statutory layout; wage slip 2 employees/landscape page; all 12 forms match templates
+- Validation/UX: cycle+holiday years 2000–9999; branded 404 + error boundary
