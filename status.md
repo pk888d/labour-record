@@ -34,10 +34,19 @@
 - Committed with message: `feat: scaffold Next.js 15 app with TypeScript, Tailwind, Prisma, Vitest`
 - Code review fixes for Task 1: moved `prisma` CLI to devDependencies, added `src/lib/prisma.ts` singleton using `@prisma/adapter-better-sqlite3` (required by Prisma 7.x)
 
+### Task Update — 2026-06-13 18:30 IST
+- Task: Mustearly review fixes — print fidelity (5 review comments)
+- Status: completed
+- Scope: (#1) fill-the-paper auto-scale on all register forms via server-computed density (approach A); (#2) Form V Muster Roll rebuilt to match docx — corrected citation to Rule 27(5)/1963, added Period of Work, Daily Hours incl. OT, Time commenced/ceased, Rest Interval, summary columns; (#3) print blank-then-loads fixed by replacing 60-node watermark with one tiled SVG background + gating Print button on document.fonts.ready; (#4) Form XII labels aligned to exact docx wording; (#5) wage slip reworked to deterministic 2-employees-per-page chunks that fill the sheet (no overflow). Consolidated conflicting @page/.form-page rules to a single source.
+- Files changed: src/lib/print-density.ts (new), src/app/print/layout.tsx, src/app/print/[cycleId]/[formCode]/page.tsx, print-button.tsx, hospital-form-v.tsx, hospital-form-xii.tsx, wage-slip-form.tsx, src/components/print-brand.tsx
+- Metrics impact: +1 lib file (print-density.ts)
+- Validation: `npx tsc --noEmit` clean; `npx playwright test e2e/07-print-views.spec.ts` → 11/11 passed; visual screenshots of Form V / XII / XVII confirmed against docx templates
+- Next step: sweep remaining forms (hospital I/II/IV/XI, shop U/V/W/X) for per-form label spot-check against their docx (density + orientation already applied)
+
 ## EXECUTION STATUS
 
-- Current state: QA testing complete — 42/42 tests passing after fixes
-- Next action: Continue with Task 2 — Define Prisma schema and run migration (or next user-directed task)
+- Current state: Print review fixes complete — Form V/XII/XVII aligned to docx, fill-paper + print-readiness applied across all 12 forms; tsc clean, 11/11 print e2e passing
+- Next action: Optional label spot-check sweep of the remaining 8 forms against their docx templates
 
 ---
 

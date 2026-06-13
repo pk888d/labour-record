@@ -1,33 +1,27 @@
 // Shared Tech Sakthi branding for output/print surfaces (items 1 & 2).
 
-// Diagonal repeating watermark. Fixed so it tiles across every printed page.
+// Diagonal repeating watermark. A SINGLE fixed layer painted from one tiled SVG
+// background — the previous version rendered 60 rotated DOM nodes, which made the
+// print engine spool slowly and show a blank/loading preview first (item #3).
+// One node with a repeating background prints cheaply and tiles per page.
 export function Watermark({ text = 'TECH SAKTHI' }: { text?: string }) {
-  const cells = Array.from({ length: 60 })
+  const tile = encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='300' height='200'>` +
+      `<text x='10' y='120' transform='rotate(-30 150 100)' ` +
+      `font-family='Arial, sans-serif' font-size='22' font-weight='800' ` +
+      `letter-spacing='3' fill='#000'>${text}</text>` +
+    `</svg>`,
+  )
   return (
     <div aria-hidden className="ts-watermark" style={{
       position: 'fixed',
       inset: 0,
       zIndex: 0,
       pointerEvents: 'none',
-      overflow: 'hidden',
-      display: 'flex',
-      flexWrap: 'wrap',
-      gap: '60px',
-      transform: 'rotate(-30deg) scale(1.6)',
-      transformOrigin: 'center',
+      backgroundImage: `url("data:image/svg+xml,${tile}")`,
+      backgroundRepeat: 'repeat',
       opacity: 0.07,
-    }}>
-      {cells.map((_, i) => (
-        <span key={i} style={{
-          fontSize: '22px',
-          fontWeight: 800,
-          letterSpacing: '3px',
-          color: '#000',
-          whiteSpace: 'nowrap',
-          fontFamily: 'Arial, sans-serif',
-        }}>{text}</span>
-      ))}
-    </div>
+    }} />
   )
 }
 

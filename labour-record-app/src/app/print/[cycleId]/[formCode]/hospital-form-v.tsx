@@ -5,13 +5,14 @@ export function HospitalFormV({ ctx, muster }: { ctx: CycleContext; muster: Must
   const { establishment, cycle, daysInMonth } = ctx
   const period = `${MONTH_NAMES[cycle.month]} ${cycle.year}`
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
+  const dash = '—'
 
   return (
     <div className="form-page">
       <div className="form-header">
         <h2>FORM No. V — REGISTER OF MUSTER ROLL</h2>
-        <p>Prescribed under Rule 26 of Minimum Wages (Tamil Nadu) Rules, 1953</p>
-        <p style={{ fontWeight: 'bold' }}>Muster Roll for the Month of {period}</p>
+        <p>Prescribed under Rule 27(5) of the Minimum Wages (Tamil Nadu) Rules, 1963</p>
+        <p style={{ fontWeight: 'bold' }}>Register of Muster Roll for the Month of {period}</p>
         <p>Name and Address of the Establishment: <strong>{establishment.name}</strong>, {establishment.address}</p>
         <p>Name of the Manager/In-charge: {establishment.managerName} | Registration Certificate No.: {establishment.regCertNo}</p>
       </div>
@@ -23,11 +24,17 @@ export function HospitalFormV({ ctx, muster }: { ctx: CycleContext; muster: Must
             <th rowSpan={2}>Father&apos;s / Husband&apos;s Name</th>
             <th rowSpan={2}>Sex</th>
             <th rowSpan={2}>Nature of work</th>
-            <th colSpan={daysInMonth}>Daily attendance ({period})</th>
+            <th rowSpan={2}>Period of Work</th>
+            <th rowSpan={2}>Daily Hours of work done incl. overtime (if any)</th>
+            <th rowSpan={2}>Time work commenced</th>
+            <th rowSpan={2}>Time work ceased</th>
+            <th rowSpan={2}>Rest Interval</th>
             <th rowSpan={2}>Days Worked</th>
-            <th rowSpan={2}>Days Leave</th>
-            <th rowSpan={2}>Days Absent</th>
-            <th rowSpan={2}>Days counted for wages</th>
+            <th colSpan={daysInMonth}>Daily attendance ({period})</th>
+            <th rowSpan={2}>No. of Days total Hrs worked incl. weekly holidays</th>
+            <th rowSpan={2}>No. of Days leave granted with wages</th>
+            <th rowSpan={2}>No. of Days Absent</th>
+            <th rowSpan={2}>No. of Days counted for wages</th>
             <th rowSpan={2}>Remarks</th>
           </tr>
           <tr>
@@ -36,7 +43,7 @@ export function HospitalFormV({ ctx, muster }: { ctx: CycleContext; muster: Must
         </thead>
         <tbody>
           {muster.map((row, i) => {
-            // Days Worked = actual attendance (P / OT only — holidays are NOT worked days).
+            // Days actually worked (P / OT only — holidays are NOT worked days).
             const workedDays = row.dailyMarks.filter((m) => m === 'P' || m === 'OT').length
             const holidayDays = row.dailyMarks.filter((m) => m === 'H').length
             const leaveDays = row.dailyMarks.filter((m) => m === 'L').length
@@ -50,13 +57,19 @@ export function HospitalFormV({ ctx, muster }: { ctx: CycleContext; muster: Must
                 <td>{row.fatherSpouseName || 'Nil'}</td>
                 <td style={{ textAlign: 'center' }}>{row.sex}</td>
                 <td>{row.designation}</td>
+                <td style={{ textAlign: 'center' }}>{dash}</td>
+                <td style={{ textAlign: 'center' }}>{dash}</td>
+                <td style={{ textAlign: 'center' }}>{row.workStartTime || dash}</td>
+                <td style={{ textAlign: 'center' }}>{row.workEndTime || dash}</td>
+                <td style={{ textAlign: 'center' }}>{row.restInterval || dash}</td>
+                <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{workedDays}</td>
                 {row.dailyMarks.map((m, d) => (
                   <td key={d} style={{ textAlign: 'center', fontSize: '8px' }}>{m || '-'}</td>
                 ))}
-                <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{workedDays}</td>
+                <td style={{ textAlign: 'center' }}>{workedDays + holidayDays}</td>
                 <td style={{ textAlign: 'center' }}>{leaveDays}</td>
                 <td style={{ textAlign: 'center' }}>{absentDays}</td>
-                <td style={{ textAlign: 'center' }}>{wageDays}</td>
+                <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{wageDays}</td>
                 <td>{row.remarks || 'Nil'}</td>
               </tr>
             )

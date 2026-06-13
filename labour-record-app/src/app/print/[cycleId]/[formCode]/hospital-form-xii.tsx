@@ -36,14 +36,14 @@ export function HospitalFormXII({ ctx, wages }: { ctx: CycleContext; wages: Wage
             <th rowSpan={2}>Sex</th>
             <th rowSpan={2}>Designation &amp; Department</th>
             <th rowSpan={2}>Minimum Rate of Wages Fixed</th>
-            <th rowSpan={2}>No. of Days/Hours counted for payment</th>
+            <th rowSpan={2}>No. of Days/Hours units counted for payment to wages</th>
             <th rowSpan={2}>Total Overtime hours worked</th>
             <th colSpan={3}>Total Earnings</th>
-            <th rowSpan={2}>Earned Overtime Earnings</th>
-            <th rowSpan={2}>Gross wages for the wage period</th>
+            <th rowSpan={2}>Earned Overtime Earnings in the wages period</th>
+            <th rowSpan={2}>Gross wages for each wage period</th>
             <th colSpan={2}>Deductions</th>
-            <th rowSpan={2}>Net wages paid</th>
-            <th rowSpan={2}>Date, Signature / Thumb impression</th>
+            <th rowSpan={2}>Net wages paid for each wage period</th>
+            <th rowSpan={2}>Date, Signature / Thumb expression of the employee</th>
           </tr>
           <tr>
             <th>Minimum of Wages</th>

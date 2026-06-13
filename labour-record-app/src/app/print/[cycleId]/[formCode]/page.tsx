@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { getCycleContext, getWagesData, getMusterData, getEmployeeData,
   getOvertimeData, getFinesData, getDeductionsData, getLeaveData } from '@/lib/export/form-data'
+import { printDensity } from '@/lib/print-density'
 import { PrintButton } from './print-button'
 import { HospitalFormXII } from './hospital-form-xii'
 import { HospitalFormV } from './hospital-form-v'
@@ -37,69 +38,87 @@ export default async function PrintPage({
   if (!ctx) notFound()
 
   let content: React.ReactNode
+  let rowCount = 0
+  // Wage-slip layouts (Form XVII / Form T) lay out per-employee cards, not a row
+  // table, so the row-height density does not apply to them.
+  let densityEligible = true
 
   switch (formCode) {
     case 'HOSPITAL_FORM_XII': {
       const wages = await getWagesData(ctx)
+      rowCount = wages.length
       content = <HospitalFormXII ctx={ctx} wages={wages} />
       break
     }
     case 'HOSPITAL_FORM_V': {
       const muster = await getMusterData(ctx)
+      rowCount = muster.length
       content = <HospitalFormV ctx={ctx} muster={muster} />
       break
     }
     case 'HOSPITAL_FORM_XI': {
       const employees = await getEmployeeData(ctx)
+      rowCount = employees.length
       content = <HospitalFormXI ctx={ctx} employees={employees} />
       break
     }
     case 'HOSPITAL_FORM_XVII': {
       const wages = await getWagesData(ctx)
+      densityEligible = false
       content = <HospitalFormXVII ctx={ctx} wages={wages} />
       break
     }
     case 'HOSPITAL_FORM_IV': {
       const ot = await getOvertimeData(ctx)
+      rowCount = ot.length
       content = <HospitalFormIV ctx={ctx} ot={ot} />
       break
     }
     case 'HOSPITAL_FORM_I': {
       const fines = await getFinesData(ctx)
+      rowCount = fines.length
       content = <HospitalFormI ctx={ctx} fines={fines} />
       break
     }
     case 'HOSPITAL_FORM_II': {
       const ded = await getDeductionsData(ctx)
+      rowCount = ded.length
       content = <HospitalFormII ctx={ctx} deductions={ded} />
       break
     }
     case 'SHOP_FORM_W': {
       const wages = await getWagesData(ctx)
+      rowCount = wages.length
       content = <ShopFormW ctx={ctx} wages={wages} />
       break
     }
     case 'SHOP_FORM_T': {
       const wages = await getWagesData(ctx)
+      densityEligible = false
       content = <ShopFormT ctx={ctx} wages={wages} />
       break
     }
     case 'SHOP_FORM_U': {
       const employees = await getEmployeeData(ctx)
+      rowCount = employees.length
       content = <ShopFormU ctx={ctx} employees={employees} />
       break
     }
     case 'SHOP_FORM_V': {
       const muster = await getMusterData(ctx)
+      rowCount = muster.length
       content = <ShopFormV ctx={ctx} muster={muster} />
       break
     }
     case 'SHOP_FORM_X': {
       const leave = await getLeaveData(ctx)
+      rowCount = leave.length
       content = <ShopFormX ctx={ctx} leave={leave} />
       break
     }
   }
+
+  const densityStyle = densityEligible ? printDensity(rowCount, orientation) : undefined
 
   // On-screen page width mirrors the chosen orientation (A4 @ 96dpi) so the
   // toggle is visibly WYSIWYG; @page drives the actual print orientation.
@@ -109,11 +128,9 @@ export default async function PrintPage({
     <>
       <style>{`
         /* margin:0 removes the browser's default print header/footer
-           (page title, date, URL, "Page X of Y"); reapplied as padding. */
+           (page title, date, URL, "Page X of Y"); the inner padding lives in
+           the print layout's .form-page rule (single source — no duplicates). */
         @page { size: A4 ${orientation}; margin: 0; }
-        @media print {
-          .form-page { padding: 8mm; }
-        }
         @media screen {
           .form-page {
             width: ${screenWidth};
@@ -125,7 +142,7 @@ export default async function PrintPage({
         }
       `}</style>
       <PrintButton orientation={orientation} />
-      {content}
+      <div style={densityStyle}>{content}</div>
     </>
   )
 }

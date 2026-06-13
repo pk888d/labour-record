@@ -70,39 +70,47 @@ function Slip({ row, ctx, formTitle, rule, copyLabel }: {
   )
 }
 
-// Each employee gets one LANDSCAPE sheet split in half horizontally:
+// Each employee gets a LANDSCAPE half-sheet split horizontally:
 // left = Original copy, right = Photocopy (duplicate) — as per the template.
+// Two employees fill one page; the rest paginate cleanly. Employees are chunked
+// into explicit page groups (instead of relying on :nth-of-type break rules,
+// which let extra slips spill onto the same page — item #5).
 export function WageSlipForm({ ctx, wages, formTitle, rule }: {
   ctx: CycleContext
   wages: WagesRow[]
   formTitle: string
   rule: string
 }) {
+  const pages: WagesRow[][] = []
+  for (let i = 0; i < wages.length; i += 2) pages.push(wages.slice(i, i + 2))
+
   return (
     <div className="form-page">
-      {/* Landscape; each employee = one row (left Original | right Photocopy).
-          Two employees per page to save paper → page break after every 2nd. */}
       <style>{`@media print {
         @page { size: A4 landscape; margin: 0; }
-        .form-page { padding: 8mm; }
-        .ts-wageslip-sheet { page-break-inside: avoid; break-inside: avoid; }
-        .ts-wageslip-sheet:nth-of-type(2n) { page-break-after: always; break-after: page; }
-        .ts-wageslip-sheet:last-child { page-break-after: auto; break-after: auto; }
+        .ts-wageslip-page { page-break-inside: avoid; break-inside: avoid; page-break-after: always; break-after: page; }
+        .ts-wageslip-page:last-child { page-break-after: auto; break-after: auto; }
       }`}</style>
-      {wages.map((row, i) => (
-        <div key={row.employeeId} className="ts-wageslip-sheet"
-          style={{
-            display: 'flex', gap: 0, alignItems: 'stretch',
-            marginBottom: '12px', paddingBottom: '10px',
-            borderBottom: i % 2 === 0 ? '1px dashed #888' : 'none', // cut line between the two slips on a page
-          }}>
-          <div style={{ flex: 1, padding: '0 8px' }}>
-            <Slip row={row} ctx={ctx} formTitle={formTitle} rule={rule} copyLabel="Original" />
-          </div>
-          <div style={{ borderLeft: '1px dashed #555', position: 'relative' }} />
-          <div style={{ flex: 1, padding: '0 8px' }}>
-            <Slip row={row} ctx={ctx} formTitle={formTitle} rule={rule} copyLabel="Duplicate / Photocopy" />
-          </div>
+      {pages.map((pair, p) => (
+        <div key={p} className="ts-wageslip-page"
+          style={{ display: 'flex', flexDirection: 'column', minHeight: '190mm', gap: '6px' }}>
+          {pair.map((row, i) => (
+            <div key={row.employeeId}
+              style={{
+                flex: 1, display: 'flex', alignItems: 'stretch',
+                // dashed cut line between the two slips stacked on a page
+                borderBottom: i === 0 && pair.length > 1 ? '1px dashed #888' : 'none',
+                paddingBottom: '8px',
+              }}>
+              <div style={{ flex: 1, padding: '0 8px' }}>
+                <Slip row={row} ctx={ctx} formTitle={formTitle} rule={rule} copyLabel="Original" />
+              </div>
+              <div style={{ borderLeft: '1px dashed #555' }} />
+              <div style={{ flex: 1, padding: '0 8px' }}>
+                <Slip row={row} ctx={ctx} formTitle={formTitle} rule={rule} copyLabel="Duplicate / Photocopy" />
+              </div>
+            </div>
+          ))}
         </div>
       ))}
     </div>

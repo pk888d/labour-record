@@ -9,8 +9,13 @@ export default function PrintLayout({ children }: { children: React.ReactNode })
         body { background: white !important; color: black !important; }
         /* @page orientation is injected per-form (landscape default, portrait optional) */
         * { box-sizing: border-box; }
+        /* width:100% always fills the sheet horizontally (item #1). */
         table { border-collapse: collapse; width: 100%; }
         th, td { border: 1px solid #000; padding: 2px 4px; font-size: 9px; line-height: 1.2; }
+        /* Fill-the-paper: data cells take the per-row height / font computed from
+           the row count (see print-density.ts). Vars cascade from .form-page;
+           fall back to the static values when no density wrapper is present. */
+        tbody td { height: var(--ts-row-h, auto); font-size: var(--ts-cell-fs, 9px); }
         th { background: #f0f0f0; font-weight: bold; text-align: center; }
         .totals-row { font-weight: bold; background: #f9f9f9; }
         .form-page { padding: 4mm; font-family: Arial, sans-serif; position: relative; z-index: 1; }
