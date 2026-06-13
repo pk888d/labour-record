@@ -34,6 +34,15 @@
 - Committed with message: `feat: scaffold Next.js 15 app with TypeScript, Tailwind, Prisma, Vitest`
 - Code review fixes for Task 1: moved `prisma` CLI to devDependencies, added `src/lib/prisma.ts` singleton using `@prisma/adapter-better-sqlite3` (required by Prisma 7.x)
 
+### Task Update — 2026-06-13 21:35 IST
+- Task: nginx reverse proxy for Musterly
+- Status: completed
+- Scope: created /etc/nginx/conf.d/musterly.conf — listen 8080, server_name _, proxy_pass 127.0.0.1:3000 with standard proxy headers + websocket upgrade + client_max_body_size 25m. Chose 8080 because port 80 is inventra's default_server, no domain/SSL exists (mirrors inventra's plain-HTTP-by-IP style), and 8080 is free + already firewall-open. Saved a copy to man/musterly.nginx.conf for reproducibility.
+- Files changed: server /etc/nginx/conf.d/musterly.conf (new); repo man/musterly.nginx.conf (new)
+- Metrics impact: none
+- Validation: `nginx -t` ok; reload ok; via http://192.168.0.91:8080 → /cycles,/establishments,/holidays = 200, "3 cycles", /_next CSS asset = 200, print HOSPITAL_FORM_XII = 200
+- Next step: none (optional later: real domain + HTTPS if external access wanted)
+
 ### Task Update — 2026-06-13 21:10 IST
 - Task: Make data-driven listing pages dynamic (live DB without rebuild) + harden deploy
 - Status: completed
