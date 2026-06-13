@@ -34,6 +34,16 @@
 - Committed with message: `feat: scaffold Next.js 15 app with TypeScript, Tailwind, Prisma, Vitest`
 - Code review fixes for Task 1: moved `prisma` CLI to devDependencies, added `src/lib/prisma.ts` singleton using `@prisma/adapter-better-sqlite3` (required by Prisma 7.x)
 
+### Task Update — 2026-06-13 21:55 IST
+- Task: Enable external access via router port-forward (50007 -> 3000)
+- Status: completed
+- Scope: user configured router DNAT external 50007 -> internal 192.168.0.91:3000; host firewalld was blocking 3000 (not in allow-list), so the forward was dropped. Opened 3000/tcp in firewalld (--permanent + reload). Forward targets the Next.js app directly (bypasses the 8080 nginx proxy).
+- Files changed: server firewalld runtime+permanent (3000/tcp); none in repo
+- Metrics impact: none
+- Validation: LAN 192.168.0.91:3000 = 200; public http://49.206.252.114:50007 → /cycles 200 ("3 cycles"), /cycles/[id] 200, print HOSPITAL_FORM_XII 200, /_next asset 200
+- SECURITY NOTE: exposed over plain HTTP to the internet (no TLS) and the Next app is directly internet-facing. For sustained external use: add HTTPS (domain + Let's Encrypt on nginx) and point the router's internal port at nginx (8080) instead of 3000.
+- Next step: optional — domain + HTTPS via nginx if external access is permanent
+
 ### Task Update — 2026-06-13 21:35 IST
 - Task: nginx reverse proxy for Musterly
 - Status: completed
