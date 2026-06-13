@@ -392,3 +392,12 @@
 ### Project metrics — 2026-06-11 (calendar)
 - Unit tests: 164 passing · E2E: 101 passing, 1 skipped, 0 failed
 - New: Calendar page + month grid; in-app notifications (bell + dashboard panel); CalendarEvent model; calendar/notifications domain libs
+
+### Task Update — 2026-06-13 22:20 IST
+- Task: Fix statutory rule citations (registry + print forms) to match .docx templates
+- Status: completed
+- Scope: corrected FORM_DISPLAY_NAMES refs and print-form "Prescribed under" strings. Hospital: I/II=Rule 21(4), IV=25(2), V=27(5), XI=27(6), XII=27(1), XVII=sub-rule (9) of Rule 32. Shop: U/W/X=Rule 16(1)/1948, V=Rule 38(1)(a)/1958, T=Rule 11(6). (I/II/IV/V/XII and Shop U print forms were already correct.)
+- Files changed: src/types/index.ts; print forms hospital-form-xi.tsx, hospital-form-xvii.tsx, shop-form-v.tsx, shop-form-w.tsx, shop-form-t.tsx, shop-form-x.tsx
+- Metrics impact: none
+- Validation: tsc clean; pushed (b634b44); deployed; live http://49.206.252.114:50007 cycle list + print Forms XI/XVII show corrected refs
+- Next step: none (outstanding: no-auth/HTTPS hardening, pluralization "1 employees", unvalidated dates — separate items)
