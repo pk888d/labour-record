@@ -46,10 +46,15 @@ else
 fi
 
 step "4/5  build"
+# Stop a running instance first: `next build` replaces .next, and a live
+# `next start` reading it mid-build crashes with "Could not find a production
+# build" until it's restarted. Brief downtime during build is the safe trade.
+EXISTING=0
+if pm2 describe "$APP_NAME" >/dev/null 2>&1; then EXISTING=1; pm2 stop "$APP_NAME" >/dev/null 2>&1 || true; fi
 npm run build
 
-step "5/5  pm2 (re)start"
-if pm2 describe "$APP_NAME" >/dev/null 2>&1; then
+step "5/5  pm2 start/restart"
+if [[ "$EXISTING" -eq 1 ]]; then
   PORT="$PORT" pm2 restart "$APP_NAME" --update-env
   info "Restarted $APP_NAME"
 else

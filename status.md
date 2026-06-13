@@ -34,6 +34,16 @@
 - Committed with message: `feat: scaffold Next.js 15 app with TypeScript, Tailwind, Prisma, Vitest`
 - Code review fixes for Task 1: moved `prisma` CLI to devDependencies, added `src/lib/prisma.ts` singleton using `@prisma/adapter-better-sqlite3` (required by Prisma 7.x)
 
+### Task Update — 2026-06-13 20:45 IST
+- Task: Restore previous DB onto git-deployed server + diagnose stale cycle list
+- Status: completed
+- Scope: scp'd local prisma dev.db (11 establishments, 19 employees, 3 MonthlyCycles) to server prisma/dev.db (stopped app + cleared WAL first); found /cycles showed "0 cycles" because that page is statically prerendered (○) at build time and the build had run against the fresh seed before the DB swap — rebuilt with the restored DB in place, then restarted
+- Files changed: server-side only (prisma/dev.db replaced)
+- Metrics impact: none
+- Validation: /cycles=200 shows "3 cycles" with all 3 cycle links; print routes V/XII/XVII = 200 for cmq25aedz000m3h455zes7lku
+- KNOWN ISSUE (app design): listing pages /cycles, /establishments, /holidays are statically prerendered, so runtime data changes (new cycle/establishment) won't appear until the next `npm run build`. Detail + print routes are dynamic and reflect live data. Fix = mark these listing routes `export const dynamic = 'force-dynamic'` (or revalidate) — pending user approval.
+- Next step: offer to make listing pages dynamic for a DB-backed app
+
 ### Task Update — 2026-06-13 20:10 IST
 - Task: Switch Musterly to git-based deploy (local → GitHub → server git pull → install)
 - Status: completed
