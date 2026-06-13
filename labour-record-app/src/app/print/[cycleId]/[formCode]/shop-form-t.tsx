@@ -7,7 +7,7 @@ export function ShopFormT({ ctx, wages }: { ctx: CycleContext; wages: WagesRow[]
       ctx={ctx}
       wages={wages}
       formTitle="FORM T — WAGE SLIP"
-      rule="Prescribed under Rule 19 of the Tamil Nadu Shops and Establishments Rules, 1948"
+      rule="Prescribed under Rule 11(6) of the Tamil Nadu Shops and Establishments Rules, 1948"
     />
   )
 }

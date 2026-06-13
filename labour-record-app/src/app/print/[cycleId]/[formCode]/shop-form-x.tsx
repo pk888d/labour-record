@@ -11,7 +11,7 @@ export function ShopFormX({ ctx, leave }: { ctx: CycleContext; leave: LeaveRow[]
     <div className="form-page">
       <div className="form-header">
         <h2>FORM X — REGISTER OF LEAVE AND SOCIAL SECURITY BENEFITS</h2>
-        <p>Prescribed under Rule 16 of the Tamil Nadu Shops and Establishments Rules, 1948</p>
+        <p>Prescribed under Rule 16(1) of the Tamil Nadu Shops and Establishments Rules, 1948</p>
         <p style={{ fontWeight: 'bold' }}>Register for the Month of {period}</p>
         <p>Name and Address of the Establishment: <strong>{establishment.name}</strong>, {establishment.address}</p>
         <p>Name of the Manager/In-charge: {establishment.managerName} | Registration Certificate No.: {establishment.regCertNo}</p>

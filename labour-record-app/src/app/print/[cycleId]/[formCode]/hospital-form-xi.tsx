@@ -17,7 +17,7 @@ export function HospitalFormXI({ ctx, employees }: { ctx: CycleContext; employee
     <div className="form-page">
       <div className="form-header">
         <h2>FORM No. XI — REGISTER OF EMPLOYEES</h2>
-        <p>Prescribed under Rule 25 of Minimum Wages (Tamil Nadu) Rules</p>
+        <p>Prescribed under Rule 27(6) of Minimum Wages (Tamil Nadu) Rules, 1953</p>
         <p>Name and Address of the Establishment: <strong>{establishment.name}</strong>, {establishment.address}</p>
         <p>Name of the Manager/In-charge: {establishment.managerName} | Registration Certificate No.: {establishment.regCertNo} | Month: {period}</p>
       </div>

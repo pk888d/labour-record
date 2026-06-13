@@ -7,7 +7,7 @@ export function HospitalFormXVII({ ctx, wages }: { ctx: CycleContext; wages: Wag
       ctx={ctx}
       wages={wages}
       formTitle="FORM No. XVII — WAGE SLIP"
-      rule="Prescribed under Rule 27(3) of Minimum Wages (Tamil Nadu) Rules, 1963"
+      rule="Prescribed under sub-rule (9) of Rule 32 of Minimum Wages (Tamil Nadu) Rules, 1963"
     />
   )
 }

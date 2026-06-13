@@ -11,7 +11,7 @@ export function ShopFormW({ ctx, wages }: { ctx: CycleContext; wages: WagesRow[]
     <div className="form-page">
       <div className="form-header">
         <h2>FORM W — REGISTER OF WAGES</h2>
-        <p>Prescribed under Rule 18 of the Tamil Nadu Shops and Establishments Rules</p>
+        <p>Prescribed under Rule 16(1) of the Tamil Nadu Shops and Establishments Rules, 1948</p>
         <p style={{ fontWeight: 'bold' }}>Register of Wages for the Month of {period}</p>
         <p>Name and Address of the Establishment: <strong>{establishment.name}</strong>, {establishment.address}</p>
         <p>Name of the Manager/In-charge: {establishment.managerName} | Registration Certificate No.: {establishment.regCertNo}</p>
