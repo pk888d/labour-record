@@ -34,6 +34,15 @@
 - Committed with message: `feat: scaffold Next.js 15 app with TypeScript, Tailwind, Prisma, Vitest`
 - Code review fixes for Task 1: moved `prisma` CLI to devDependencies, added `src/lib/prisma.ts` singleton using `@prisma/adapter-better-sqlite3` (required by Prisma 7.x)
 
+### Task Update — 2026-06-13 21:10 IST
+- Task: Make data-driven listing pages dynamic (live DB without rebuild) + harden deploy
+- Status: completed
+- Scope: added `export const dynamic = 'force-dynamic'` to /cycles, /cycles/new, /establishments, /holidays, /exports (were statically prerendered → stale until rebuild); /establishments/new left static (no DB read). Also hardened man/deploy-server.sh to `pm2 stop` before `next build` (a live next start reading .next mid-build crashed with "Could not find a production build"). Pushed (0804b25) and redeployed via git pull + deploy-server.sh.
+- Files changed: src/app/{cycles,cycles/new,establishments,holidays,exports}/page.tsx, man/deploy-server.sh
+- Metrics impact: build now prerenders 15 static pages (was 20); 5 routes moved to on-demand (ƒ)
+- Validation: local `tsc --noEmit` clean; build shows /cycles,/cycles/new,/establishments,/holidays,/exports as ƒ; deploy preserved DB (seed skipped); LAN /cycles,/establishments,/holidays,/exports = 200; "3 cycles"; print V/XII/XVII = 200; pm2 online 0 restarts
+- Next step: none — review-fix + git deploy workflow complete
+
 ### Task Update — 2026-06-13 20:45 IST
 - Task: Restore previous DB onto git-deployed server + diagnose stale cycle list
 - Status: completed
