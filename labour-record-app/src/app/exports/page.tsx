@@ -4,6 +4,9 @@ import type { FormCode } from '@/types'
 import Link from 'next/link'
 import { MONTH_NAMES } from '@/lib/export/form-data'
 
+// Data-driven list: render per request so newly created records appear without a rebuild.
+export const dynamic = 'force-dynamic'
+
 export default async function ExportsPage() {
   const docs = await prisma.generatedDocument.findMany({
     orderBy: { generatedAt: 'desc' },

@@ -7,6 +7,9 @@ import { GenerateFyButton } from './generate-fy-button'
 const MONTH_NAMES = ['','January','February','March','April','May','June',
   'July','August','September','October','November','December']
 
+// Data-driven list: render per request so newly created records appear without a rebuild.
+export const dynamic = 'force-dynamic'
+
 export default async function CyclesPage() {
   const cycles = await prisma.monthlyCycle.findMany({
     orderBy: [{ year: 'desc' }, { month: 'desc' }],

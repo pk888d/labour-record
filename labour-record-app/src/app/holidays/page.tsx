@@ -1,6 +1,9 @@
 import { prisma } from '@/lib/prisma'
 import { HolidaysClient } from './holidays-client'
 
+// Data-driven list: render per request so newly created records appear without a rebuild.
+export const dynamic = 'force-dynamic'
+
 export default async function HolidaysPage() {
   const currentYear = new Date().getFullYear()
   const holidays = await prisma.govtHoliday.findMany({

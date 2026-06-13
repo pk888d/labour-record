@@ -5,6 +5,9 @@ import { DeleteEstablishmentButton } from './delete-establishment-button'
 import { ESTABLISHMENT_TYPE_LABELS } from '@/domain/calculations/da-rates'
 import type { EstablishmentType } from '@/types'
 
+// Data-driven list: render per request so newly created records appear without a rebuild.
+export const dynamic = 'force-dynamic'
+
 export default async function EstablishmentsPage() {
   const establishments = await prisma.establishment.findMany({
     orderBy: { name: 'asc' },
