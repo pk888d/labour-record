@@ -34,6 +34,24 @@
 - Committed with message: `feat: scaffold Next.js 15 app with TypeScript, Tailwind, Prisma, Vitest`
 - Code review fixes for Task 1: moved `prisma` CLI to devDependencies, added `src/lib/prisma.ts` singleton using `@prisma/adapter-better-sqlite3` (required by Prisma 7.x)
 
+### Task Update — 2026-06-13 20:10 IST
+- Task: Switch Musterly to git-based deploy (local → GitHub → server git pull → install)
+- Status: completed
+- Scope: added man/deploy-server.sh (Linux/pm2: .env w/ absolute DATABASE_URL, npm ci, prisma migrate deploy + generate, seed-only-when-fresh, build, pm2 start/restart+save); pushed branch main to github.com/pk888d/labour-record; re-deployed server from a git clone at /database/web/musterly (repo root; app in labour-record-app/ subdir)
+- Files changed: man/deploy-server.sh (new), status.md
+- Metrics impact: none
+- Validation: see server redeploy validation below (HTTP 200, seeded data, print routes 200)
+- Next step: future updates = `cd /database/web/musterly && git pull && bash man/deploy-server.sh 3000`
+
+### Task Update — 2026-06-13 19:30 IST
+- Task: Deploy Musterly to local server (praveen@192.168.0.91:/database/web/musterly)
+- Status: completed
+- Scope: rsync'd app source to /database/web/musterly (chown praveen); npm ci (264 pkgs, Node 20.20.2); prisma generate + migrate deploy (8 migrations) + seed (2 establishments, 6 employees); set absolute DATABASE_URL=file:/database/web/musterly/dev.db; next build (Next 16.2.6); started under pm2 as "musterly" (fork mode, PORT=3000); pm2 save
+- Files changed: server-side only (no repo changes); server .env pinned to absolute sqlite path
+- Metrics impact: none (deployment)
+- Validation: pm2 status online; ss shows *:3000 LISTEN; http://192.168.0.91:3000/cycles 200 (renders seeded "DNV Orthocare"); /establishments 200; print routes V/XII/XVII all 200 over LAN
+- Next step: optional — nginx reverse-proxy vhost + firewall/domain if external access wanted; otherwise reachable at http://192.168.0.91:3000
+
 ### Task Update — 2026-06-13 18:30 IST
 - Task: Mustearly review fixes — print fidelity (5 review comments)
 - Status: completed
