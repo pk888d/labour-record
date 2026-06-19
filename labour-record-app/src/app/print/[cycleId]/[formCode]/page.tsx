@@ -17,6 +17,28 @@ import { ShopFormU } from './shop-form-u'
 import { ShopFormV } from './shop-form-v'
 import { ShopFormX } from './shop-form-x'
 
+// Paginate a register's rows into per-sheet chunks. Each sheet re-renders the
+// whole form (header repeats) with a continuous startIndex, wrapped in a density
+// <div> that fills the page and forces a page break after every sheet but the last.
+function paginateForm<T>(
+  data: T[],
+  orientation: 'landscape' | 'portrait',
+  render: (rows: T[], startIndex: number) => React.ReactNode,
+): React.ReactNode {
+  const { maxRowsPerSheet, minFillRows } = getPrintConfig(orientation)
+  return chunk(data, maxRowsPerSheet).map((rows, i, all) => (
+    <div
+      key={i}
+      style={{
+        ...printDensity(rows.length, orientation, minFillRows),
+        breakAfter: i < all.length - 1 ? 'page' : 'auto',
+      }}
+    >
+      {render(rows, i * maxRowsPerSheet)}
+    </div>
+  ))
+}
+
 const VALID_CODES = [
   'HOSPITAL_FORM_XII','HOSPITAL_FORM_V','HOSPITAL_FORM_XI','HOSPITAL_FORM_XVII',
   'HOSPITAL_FORM_IV','HOSPITAL_FORM_I','HOSPITAL_FORM_II',
@@ -38,106 +60,74 @@ export default async function PrintPage({
   const ctx = await getCycleContext(cycleId).catch(() => null)
   if (!ctx) notFound()
 
-  // Row-table registers: chunked across sheets (header repeats per sheet).
-  // `data` is the full row array; `renderSheet` renders one sheet's slice with a
-  // starting index so S.No stays continuous.
-  let data: unknown[] | null = null
-  let renderSheet: ((rows: never[], startIndex: number) => React.ReactNode) | null = null
-  // Card forms (Form XVII / Form T / Form U) render once with all data, no chunking.
-  let content: React.ReactNode = null
+  let body: React.ReactNode = null
 
   switch (formCode) {
     case 'HOSPITAL_FORM_XII': {
       const wages = await getWagesData(ctx)
-      data = wages
-      renderSheet = (rows, startIndex) => <HospitalFormXII ctx={ctx} wages={rows} startIndex={startIndex} />
+      body = paginateForm(wages, orientation, (rows, si) => <HospitalFormXII ctx={ctx} wages={rows} startIndex={si} />)
       break
     }
     case 'HOSPITAL_FORM_V': {
       const muster = await getMusterData(ctx)
-      data = muster
-      renderSheet = (rows, startIndex) => <HospitalFormV ctx={ctx} muster={rows} startIndex={startIndex} />
+      body = paginateForm(muster, orientation, (rows, si) => <HospitalFormV ctx={ctx} muster={rows} startIndex={si} />)
       break
     }
     case 'HOSPITAL_FORM_XI': {
       const employees = await getEmployeeData(ctx)
-      data = employees
-      renderSheet = (rows, startIndex) => <HospitalFormXI ctx={ctx} employees={rows} startIndex={startIndex} />
+      body = paginateForm(employees, orientation, (rows, si) => <HospitalFormXI ctx={ctx} employees={rows} startIndex={si} />)
       break
     }
     case 'HOSPITAL_FORM_XVII': {
       const wages = await getWagesData(ctx)
-      content = <HospitalFormXVII ctx={ctx} wages={wages} />
+      // Wage-slip cards, not a row table — rendered once, no pagination.
+      body = <HospitalFormXVII ctx={ctx} wages={wages} />
       break
     }
     case 'HOSPITAL_FORM_IV': {
       const ot = await getOvertimeData(ctx)
-      data = ot
-      renderSheet = (rows, startIndex) => <HospitalFormIV ctx={ctx} ot={rows} startIndex={startIndex} />
+      body = paginateForm(ot, orientation, (rows, si) => <HospitalFormIV ctx={ctx} ot={rows} startIndex={si} />)
       break
     }
     case 'HOSPITAL_FORM_I': {
       const fines = await getFinesData(ctx)
-      data = fines
-      // Form I numbers from r.sno (data field), so no startIndex is needed.
-      renderSheet = (rows) => <HospitalFormI ctx={ctx} fines={rows} />
+      // Form I numbers from r.sno (data field), so startIndex is unused.
+      body = paginateForm(fines, orientation, (rows, _si) => <HospitalFormI ctx={ctx} fines={rows} />)
       break
     }
     case 'HOSPITAL_FORM_II': {
       const ded = await getDeductionsData(ctx)
-      data = ded
-      // Form II numbers from r.sno (data field), so no startIndex is needed.
-      renderSheet = (rows) => <HospitalFormII ctx={ctx} deductions={rows} />
+      // Form II numbers from r.sno (data field), so startIndex is unused.
+      body = paginateForm(ded, orientation, (rows, _si) => <HospitalFormII ctx={ctx} deductions={rows} />)
       break
     }
     case 'SHOP_FORM_W': {
       const wages = await getWagesData(ctx)
-      data = wages
-      renderSheet = (rows, startIndex) => <ShopFormW ctx={ctx} wages={rows} startIndex={startIndex} />
+      body = paginateForm(wages, orientation, (rows, si) => <ShopFormW ctx={ctx} wages={rows} startIndex={si} />)
       break
     }
     case 'SHOP_FORM_T': {
       const wages = await getWagesData(ctx)
-      content = <ShopFormT ctx={ctx} wages={wages} />
+      // Wage-slip cards, not a row table — rendered once, no pagination.
+      body = <ShopFormT ctx={ctx} wages={wages} />
       break
     }
     case 'SHOP_FORM_U': {
       const employees = await getEmployeeData(ctx)
-      content = <ShopFormU ctx={ctx} employees={employees} />
+      // Form U renders as a single employee-register card layout, not a row table.
+      body = <ShopFormU ctx={ctx} employees={employees} />
       break
     }
     case 'SHOP_FORM_V': {
       const muster = await getMusterData(ctx)
-      data = muster
-      renderSheet = (rows, startIndex) => <ShopFormV ctx={ctx} muster={rows} startIndex={startIndex} />
+      body = paginateForm(muster, orientation, (rows, si) => <ShopFormV ctx={ctx} muster={rows} startIndex={si} />)
       break
     }
     case 'SHOP_FORM_X': {
       const leave = await getLeaveData(ctx)
-      data = leave
-      renderSheet = (rows, startIndex) => <ShopFormX ctx={ctx} leave={rows} startIndex={startIndex} />
+      body = paginateForm(leave, orientation, (rows, si) => <ShopFormX ctx={ctx} leave={rows} startIndex={si} />)
       break
     }
-  }
-
-  // Build the printable body: chunked sheets for row tables, single node for cards.
-  let body: React.ReactNode
-  if (data && renderSheet) {
-    const { maxRowsPerSheet, minFillRows } = getPrintConfig(orientation)
-    const sheets = chunk(data, maxRowsPerSheet)
-    body = sheets.map((rows, i) => (
-      <div
-        key={i}
-        style={{
-          ...printDensity(rows.length, orientation, minFillRows),
-          breakAfter: i < sheets.length - 1 ? 'page' : 'auto',
-        }}
-      >
-        {renderSheet(rows as never[], i * maxRowsPerSheet)}
-      </div>
-    ))
-  } else {
-    body = content
   }
 
   // On-screen page width mirrors the chosen orientation (A4 @ 96dpi) so the
