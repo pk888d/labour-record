@@ -1,15 +1,13 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { getPrintConfig, chunk } from './print-config'
 
-const ORIG = { ...process.env }
 afterEach(() => {
-  process.env = { ...ORIG }
+  vi.unstubAllEnvs()
 })
 
 describe('getPrintConfig', () => {
   it('returns defaults when env vars are unset', () => {
-    delete process.env.PRINT_MAX_ROWS_PER_SHEET
-    delete process.env.PRINT_MIN_FILL_ROWS
+    // No vi.stubEnv calls — vars are absent (cleared by unstubAllEnvs from prior tests)
     const cfg = getPrintConfig('landscape')
     // default 20 is below the landscape single-sheet ceiling (floor(150/6.5)=23)
     expect(cfg.maxRowsPerSheet).toBe(20)
@@ -17,28 +15,44 @@ describe('getPrintConfig', () => {
   })
 
   it('reads valid env overrides', () => {
-    process.env.PRINT_MAX_ROWS_PER_SHEET = '15'
-    process.env.PRINT_MIN_FILL_ROWS = '3'
+    vi.stubEnv('PRINT_MAX_ROWS_PER_SHEET', '15')
+    vi.stubEnv('PRINT_MIN_FILL_ROWS', '3')
     const cfg = getPrintConfig('portrait')
     expect(cfg.maxRowsPerSheet).toBe(15)
     expect(cfg.minFillRows).toBe(3)
   })
 
-  it('falls back to defaults on non-numeric / zero / negative values', () => {
-    process.env.PRINT_MAX_ROWS_PER_SHEET = 'abc'
-    process.env.PRINT_MIN_FILL_ROWS = '0'
+  it('falls back to defaults on non-numeric value', () => {
+    vi.stubEnv('PRINT_MAX_ROWS_PER_SHEET', 'abc')
+    vi.stubEnv('PRINT_MIN_FILL_ROWS', '')
+    const cfg = getPrintConfig('landscape')
+    expect(cfg.maxRowsPerSheet).toBe(20)
+    expect(cfg.minFillRows).toBe(5)
+  })
+
+  it('falls back to defaults on zero value', () => {
+    vi.stubEnv('PRINT_MAX_ROWS_PER_SHEET', '0')
+    vi.stubEnv('PRINT_MIN_FILL_ROWS', '0')
+    const cfg = getPrintConfig('landscape')
+    expect(cfg.maxRowsPerSheet).toBe(20)
+    expect(cfg.minFillRows).toBe(5)
+  })
+
+  it('falls back to defaults on negative value', () => {
+    vi.stubEnv('PRINT_MAX_ROWS_PER_SHEET', '-3')
+    vi.stubEnv('PRINT_MIN_FILL_ROWS', '-1')
     const cfg = getPrintConfig('landscape')
     expect(cfg.maxRowsPerSheet).toBe(20)
     expect(cfg.minFillRows).toBe(5)
   })
 
   it('clamps maxRowsPerSheet to the landscape single-sheet ceiling (23)', () => {
-    process.env.PRINT_MAX_ROWS_PER_SHEET = '999'
+    vi.stubEnv('PRINT_MAX_ROWS_PER_SHEET', '999')
     expect(getPrintConfig('landscape').maxRowsPerSheet).toBe(23)
   })
 
   it('clamps maxRowsPerSheet to the portrait single-sheet ceiling (36)', () => {
-    process.env.PRINT_MAX_ROWS_PER_SHEET = '999'
+    vi.stubEnv('PRINT_MAX_ROWS_PER_SHEET', '999')
     expect(getPrintConfig('portrait').maxRowsPerSheet).toBe(36)
   })
 })
