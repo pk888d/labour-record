@@ -401,3 +401,12 @@
 - Metrics impact: none
 - Validation: tsc clean; pushed (b634b44); deployed; live http://49.206.252.114:50007 cycle list + print Forms XI/XVII show corrected refs
 - Next step: none (outstanding: no-auth/HTTPS hardening, pluralization "1 employees", unvalidated dates — separate items)
+
+### Task Update — 2026-06-19 — Configurable max employees per sheet + fill-page (print registers)
+- Task: Env-configurable per-sheet employee count + fill-page for row-table print registers
+- Status: completed
+- Scope: New src/lib/print-config.ts (getPrintConfig reads PRINT_MAX_ROWS_PER_SHEET [default 20] + PRINT_MIN_FILL_ROWS [default 5], clamps max to single-sheet ceiling ~23 landscape/~36 portrait; chunk<T> helper). printDensity gains minFillRows param: below threshold the 16mm row-height clamp lifts so few rows stretch to fill the page. page.tsx refactored to a type-safe generic paginateForm<T> helper that chunks each register into per-sheet slices, repeats the statutory header per sheet (break-after:page), and keeps S.No continuous via a startIndex prop added to the 7 index-numbered forms (V/XII/XI/IV, Shop W/V/X). Forms I/II paginate but keep r.sno numbering; card forms (U/XVII/T) render once, unchanged.
+- Files changed: src/lib/print-config.ts (new), src/lib/print-config.test.ts (new), src/lib/print-density.ts, src/lib/print-density.test.ts (new), src/app/print/[cycleId]/[formCode]/page.tsx, hospital-form-{v,xii,xi,iv}.tsx, shop-form-{w,v,x}.tsx, .env.example (new), docs/superpowers/{specs,plans} for this feature
+- Metrics impact: +3 new lib/test files; +2 env vars (both optional, defaulted)
+- Validation: 179 unit tests pass (164 baseline + 15 new print-config/print-density; 0 regressions). npm run build clean, /print/[cycleId]/[formCode] route compiles. Print e2e (07-print-views) not run in worktree — needs DB/.env + non-headless browser (infra unavailable); unchanged by this work.
+- Next step: set PRINT_MAX_ROWS_PER_SHEET / PRINT_MIN_FILL_ROWS in the deployment .env if non-default values are wanted; merge branch worktree-print-max-employees-per-sheet
