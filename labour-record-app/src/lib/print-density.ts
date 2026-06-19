@@ -9,13 +9,16 @@ import type { CSSProperties } from 'react'
 export function printDensity(
   rowCount: number,
   orientation: 'landscape' | 'portrait',
+  minFillRows: number,
 ): CSSProperties {
   const rows = Math.max(rowCount, 1)
   // Usable vertical band for the table body (mm), after page padding + header.
   const usableMm = orientation === 'landscape' ? 150 : 235
-  // Stretch to fill, but clamp so few rows don't become comically tall and many
-  // rows don't get crushed below legibility.
-  const rowH = Math.min(16, Math.max(6.5, usableMm / rows))
+  // Below the min-fill threshold, lift the upper clamp so the few rows stretch
+  // tall enough to fill the whole sheet. At/above it, keep the 16mm legibility
+  // clamp. Floor at 6.5mm so crowded sheets stay legible.
+  const maxRowH = rows < minFillRows ? usableMm / rows : 16
+  const rowH = Math.min(maxRowH, Math.max(6.5, usableMm / rows))
   const fs = rows <= 12 ? 11 : rows <= 25 ? 9.5 : rows <= 40 ? 8 : 7
   return {
     ['--ts-row-h']: `${rowH.toFixed(1)}mm`,
