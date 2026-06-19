@@ -1,7 +1,7 @@
 import type { CycleContext, MusterRow } from '@/lib/export/form-data'
 import { MONTH_NAMES } from '@/lib/export/form-data'
 
-export function HospitalFormV({ ctx, muster }: { ctx: CycleContext; muster: MusterRow[] }) {
+export function HospitalFormV({ ctx, muster, startIndex = 0 }: { ctx: CycleContext; muster: MusterRow[]; startIndex?: number }) {
   const { establishment, cycle, daysInMonth } = ctx
   const period = `${MONTH_NAMES[cycle.month]} ${cycle.year}`
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
@@ -52,7 +52,7 @@ export function HospitalFormV({ ctx, muster }: { ctx: CycleContext; muster: Must
             const wageDays = workedDays + holidayDays + leaveDays
             return (
               <tr key={row.employeeId}>
-                <td style={{ textAlign: 'center' }}>{i + 1}</td>
+                <td style={{ textAlign: 'center' }}>{startIndex + i + 1}</td>
                 <td>{row.name}</td>
                 <td>{row.fatherSpouseName || 'Nil'}</td>
                 <td style={{ textAlign: 'center' }}>{row.sex}</td>

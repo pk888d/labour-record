@@ -9,7 +9,7 @@ function ageFrom(dob: string): string {
   return age > 0 && age < 100 ? String(age) : ''
 }
 
-export function HospitalFormXI({ ctx, employees }: { ctx: CycleContext; employees: EmployeeRow[] }) {
+export function HospitalFormXI({ ctx, employees, startIndex = 0 }: { ctx: CycleContext; employees: EmployeeRow[]; startIndex?: number }) {
   const { establishment, cycle } = ctx
   const period = `${MONTH_NAMES[cycle.month]} ${cycle.year}`
 
@@ -41,7 +41,7 @@ export function HospitalFormXI({ ctx, employees }: { ctx: CycleContext; employee
             const age = ageFrom(emp.dob)
             return (
               <tr key={emp.employeeId}>
-                <td style={{ textAlign: 'center' }}>{i + 1}</td>
+                <td style={{ textAlign: 'center' }}>{startIndex + i + 1}</td>
                 <td>{emp.name}</td>
                 <td style={{ textAlign: 'center' }}>{age ? `${age} / ${emp.sex}` : emp.sex}</td>
                 <td>{emp.fatherSpouseName || 'Nil'}</td>

@@ -1,7 +1,7 @@
 import type { CycleContext, MusterRow } from '@/lib/export/form-data'
 import { MONTH_NAMES } from '@/lib/export/form-data'
 
-export function ShopFormV({ ctx, muster }: { ctx: CycleContext; muster: MusterRow[] }) {
+export function ShopFormV({ ctx, muster, startIndex = 0 }: { ctx: CycleContext; muster: MusterRow[]; startIndex?: number }) {
   const { establishment, cycle, daysInMonth } = ctx
   const period = `${MONTH_NAMES[cycle.month]} ${cycle.year}`
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
@@ -41,7 +41,7 @@ export function ShopFormV({ ctx, muster }: { ctx: CycleContext; muster: MusterRo
             const absentDays = row.dailyMarks.filter((m) => m === 'A').length
             return (
               <tr key={row.employeeId}>
-                <td style={{ textAlign: 'center' }}>{i + 1}</td>
+                <td style={{ textAlign: 'center' }}>{startIndex + i + 1}</td>
                 <td>{row.name}</td>
                 <td>{row.empId}</td>
                 <td style={{ textAlign: 'center' }}>{row.workStartTime || 'Nil'}</td>

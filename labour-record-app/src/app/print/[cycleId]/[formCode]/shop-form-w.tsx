@@ -3,7 +3,7 @@ import { MONTH_NAMES } from '@/lib/export/form-data'
 
 const fmt = (n: number) => { const v = Number(n); return v ? v.toFixed(2) : 'Nil' }
 
-export function ShopFormW({ ctx, wages }: { ctx: CycleContext; wages: WagesRow[] }) {
+export function ShopFormW({ ctx, wages, startIndex = 0 }: { ctx: CycleContext; wages: WagesRow[]; startIndex?: number }) {
   const { establishment, cycle } = ctx
   const period = `${MONTH_NAMES[cycle.month]} ${cycle.year}`
 
@@ -39,7 +39,7 @@ export function ShopFormW({ ctx, wages }: { ctx: CycleContext; wages: WagesRow[]
         <tbody>
           {wages.map((row, i) => (
             <tr key={row.employeeId}>
-              <td style={{ textAlign: 'center' }}>{i + 1}</td>
+              <td style={{ textAlign: 'center' }}>{startIndex + i + 1}</td>
               <td>{row.name}</td>
               <td>{row.empId}</td>
               <td style={{ textAlign: 'center' }}>{row.daysWorked}</td>

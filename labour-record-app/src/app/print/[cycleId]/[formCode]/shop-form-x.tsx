@@ -3,7 +3,7 @@ import { MONTH_NAMES } from '@/lib/export/form-data'
 
 const n0 = (v: number) => (v ? String(v) : 'Nil')
 
-export function ShopFormX({ ctx, leave }: { ctx: CycleContext; leave: LeaveRow[] }) {
+export function ShopFormX({ ctx, leave, startIndex = 0 }: { ctx: CycleContext; leave: LeaveRow[]; startIndex?: number }) {
   const { establishment, cycle } = ctx
   const period = `${MONTH_NAMES[cycle.month]} ${cycle.year}`
 
@@ -38,7 +38,7 @@ export function ShopFormX({ ctx, leave }: { ctx: CycleContext; leave: LeaveRow[]
         <tbody>
           {leave.map((row, i) => (
             <tr key={row.employeeId}>
-              <td style={{ textAlign: 'center' }}>{i + 1}</td>
+              <td style={{ textAlign: 'center' }}>{startIndex + i + 1}</td>
               <td>{row.name}</td>
               <td>{row.empId}</td>
               <td style={{ textAlign: 'center' }}>{n0(row.earnedLeaveOpening)}</td>

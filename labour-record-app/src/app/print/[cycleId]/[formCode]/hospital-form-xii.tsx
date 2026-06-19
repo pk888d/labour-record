@@ -14,7 +14,7 @@ function kindOf(r: WagesRow): string {
   return parts.length ? parts.join(', ') : 'Nil'
 }
 
-export function HospitalFormXII({ ctx, wages }: { ctx: CycleContext; wages: WagesRow[] }) {
+export function HospitalFormXII({ ctx, wages, startIndex = 0 }: { ctx: CycleContext; wages: WagesRow[]; startIndex?: number }) {
   const { establishment, cycle } = ctx
   const period = `${MONTH_NAMES[cycle.month]} ${cycle.year}`
 
@@ -60,7 +60,7 @@ export function HospitalFormXII({ ctx, wages }: { ctx: CycleContext; wages: Wage
             const amountDeducted = r.pf + r.esi + r.lwf + r.fineDeduction + r.otherDeductions + r.advanceRecovered
             return (
               <tr key={r.employeeId}>
-                <td style={{ textAlign: 'center' }}>{i + 1}</td>
+                <td style={{ textAlign: 'center' }}>{startIndex + i + 1}</td>
                 <td>{r.name}</td>
                 <td>{r.fatherSpouseName || 'Nil'}</td>
                 <td style={{ textAlign: 'center' }}>{r.sex}</td>

@@ -3,7 +3,7 @@ import { MONTH_NAMES } from '@/lib/export/form-data'
 
 const fmt = (n: number) => { const v = Number(n); return v ? v.toFixed(2) : 'Nil' }
 
-export function HospitalFormIV({ ctx, ot }: { ctx: CycleContext; ot: OvertimeRow[] }) {
+export function HospitalFormIV({ ctx, ot, startIndex = 0 }: { ctx: CycleContext; ot: OvertimeRow[]; startIndex?: number }) {
   const { establishment, cycle, daysInMonth } = ctx
   const period = `${MONTH_NAMES[cycle.month]} ${cycle.year}`
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
@@ -42,7 +42,7 @@ export function HospitalFormIV({ ctx, ot }: { ctx: CycleContext; ot: OvertimeRow
             const hasOt = row.totalOtHours > 0
             return (
               <tr key={row.employeeId}>
-                <td style={{ textAlign: 'center' }}>{i + 1}</td>
+                <td style={{ textAlign: 'center' }}>{startIndex + i + 1}</td>
                 <td>{row.name}</td>
                 <td>{row.fatherSpouseName || 'Nil'}</td>
                 <td style={{ textAlign: 'center' }}>{row.sex}</td>
