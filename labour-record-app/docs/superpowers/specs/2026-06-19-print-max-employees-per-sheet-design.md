@@ -154,9 +154,13 @@ export function HospitalFormV({
 
 Affected forms (S.No cell is the only line touched per form):
 `HospitalFormV`, `HospitalFormXII`, `HospitalFormXI`, `HospitalFormIV`,
-`HospitalFormI`, `HospitalFormII`, `ShopFormW`, `ShopFormV`, `ShopFormX`.
+`ShopFormW`, `ShopFormV`, `ShopFormX`.
 
 Default `startIndex = 0` keeps any non-paginated call sites working unchanged.
+
+**Forms I and II** (`HospitalFormI`, `HospitalFormII`) number rows from a data
+field (`r.sno`), not the array index, so their numbering stays correct across
+sheets with **no signature change** — they are paginated by `page.tsx` only.
 
 ## Testing
 
@@ -177,7 +181,7 @@ Default `startIndex = 0` keeps any non-paginated call sites working unchanged.
 | `src/lib/print-config.ts` | **new** — `getPrintConfig`, `chunk`, defaults + clamps |
 | `src/lib/print-density.ts` | add `minFillRows` param, lift clamp below threshold |
 | `src/app/print/[cycleId]/[formCode]/page.tsx` | per-form `data` + `renderSheet`, chunked render with per-sheet density + page breaks |
-| `src/app/print/[cycleId]/[formCode]/hospital-form-*.tsx` (V, XII, XI, IV, I, II) | `startIndex` prop |
+| `src/app/print/[cycleId]/[formCode]/hospital-form-*.tsx` (V, XII, XI, IV) | `startIndex` prop |
 | `src/app/print/[cycleId]/[formCode]/shop-form-*.tsx` (W, V, X) | `startIndex` prop |
 | `.env` | document `PRINT_MAX_ROWS_PER_SHEET`, `PRINT_MIN_FILL_ROWS` |
 | `src/lib/*.test.ts` | unit tests |
