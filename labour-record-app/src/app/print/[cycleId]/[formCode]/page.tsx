@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { getCycleContext, getWagesData, getMusterData, getEmployeeData,
   getOvertimeData, getFinesData, getDeductionsData, getLeaveData } from '@/lib/export/form-data'
 import { printDensity } from '@/lib/print-density'
+import { getPrintConfig, chunk } from '@/lib/print-config'
 import { PrintButton } from './print-button'
 import { HospitalFormXII } from './hospital-form-xii'
 import { HospitalFormV } from './hospital-form-v'
@@ -37,88 +38,107 @@ export default async function PrintPage({
   const ctx = await getCycleContext(cycleId).catch(() => null)
   if (!ctx) notFound()
 
-  let content: React.ReactNode
-  let rowCount = 0
-  // Wage-slip layouts (Form XVII / Form T) lay out per-employee cards, not a row
-  // table, so the row-height density does not apply to them.
-  let densityEligible = true
+  // Row-table registers: chunked across sheets (header repeats per sheet).
+  // `data` is the full row array; `renderSheet` renders one sheet's slice with a
+  // starting index so S.No stays continuous.
+  let data: unknown[] | null = null
+  let renderSheet: ((rows: never[], startIndex: number) => React.ReactNode) | null = null
+  // Card forms (Form XVII / Form T / Form U) render once with all data, no chunking.
+  let content: React.ReactNode = null
 
   switch (formCode) {
     case 'HOSPITAL_FORM_XII': {
       const wages = await getWagesData(ctx)
-      rowCount = wages.length
-      content = <HospitalFormXII ctx={ctx} wages={wages} />
+      data = wages
+      renderSheet = (rows, startIndex) => <HospitalFormXII ctx={ctx} wages={rows} startIndex={startIndex} />
       break
     }
     case 'HOSPITAL_FORM_V': {
       const muster = await getMusterData(ctx)
-      rowCount = muster.length
-      content = <HospitalFormV ctx={ctx} muster={muster} />
+      data = muster
+      renderSheet = (rows, startIndex) => <HospitalFormV ctx={ctx} muster={rows} startIndex={startIndex} />
       break
     }
     case 'HOSPITAL_FORM_XI': {
       const employees = await getEmployeeData(ctx)
-      rowCount = employees.length
-      content = <HospitalFormXI ctx={ctx} employees={employees} />
+      data = employees
+      renderSheet = (rows, startIndex) => <HospitalFormXI ctx={ctx} employees={rows} startIndex={startIndex} />
       break
     }
     case 'HOSPITAL_FORM_XVII': {
       const wages = await getWagesData(ctx)
-      densityEligible = false
       content = <HospitalFormXVII ctx={ctx} wages={wages} />
       break
     }
     case 'HOSPITAL_FORM_IV': {
       const ot = await getOvertimeData(ctx)
-      rowCount = ot.length
-      content = <HospitalFormIV ctx={ctx} ot={ot} />
+      data = ot
+      renderSheet = (rows, startIndex) => <HospitalFormIV ctx={ctx} ot={rows} startIndex={startIndex} />
       break
     }
     case 'HOSPITAL_FORM_I': {
       const fines = await getFinesData(ctx)
-      rowCount = fines.length
-      content = <HospitalFormI ctx={ctx} fines={fines} />
+      data = fines
+      // Form I numbers from r.sno (data field), so no startIndex is needed.
+      renderSheet = (rows) => <HospitalFormI ctx={ctx} fines={rows} />
       break
     }
     case 'HOSPITAL_FORM_II': {
       const ded = await getDeductionsData(ctx)
-      rowCount = ded.length
-      content = <HospitalFormII ctx={ctx} deductions={ded} />
+      data = ded
+      // Form II numbers from r.sno (data field), so no startIndex is needed.
+      renderSheet = (rows) => <HospitalFormII ctx={ctx} deductions={rows} />
       break
     }
     case 'SHOP_FORM_W': {
       const wages = await getWagesData(ctx)
-      rowCount = wages.length
-      content = <ShopFormW ctx={ctx} wages={wages} />
+      data = wages
+      renderSheet = (rows, startIndex) => <ShopFormW ctx={ctx} wages={rows} startIndex={startIndex} />
       break
     }
     case 'SHOP_FORM_T': {
       const wages = await getWagesData(ctx)
-      densityEligible = false
       content = <ShopFormT ctx={ctx} wages={wages} />
       break
     }
     case 'SHOP_FORM_U': {
       const employees = await getEmployeeData(ctx)
-      rowCount = employees.length
       content = <ShopFormU ctx={ctx} employees={employees} />
       break
     }
     case 'SHOP_FORM_V': {
       const muster = await getMusterData(ctx)
-      rowCount = muster.length
-      content = <ShopFormV ctx={ctx} muster={muster} />
+      data = muster
+      renderSheet = (rows, startIndex) => <ShopFormV ctx={ctx} muster={rows} startIndex={startIndex} />
       break
     }
     case 'SHOP_FORM_X': {
       const leave = await getLeaveData(ctx)
-      rowCount = leave.length
-      content = <ShopFormX ctx={ctx} leave={leave} />
+      data = leave
+      renderSheet = (rows, startIndex) => <ShopFormX ctx={ctx} leave={rows} startIndex={startIndex} />
       break
     }
   }
 
-  const densityStyle = densityEligible ? printDensity(rowCount, orientation) : undefined
+  // Build the printable body: chunked sheets for row tables, single node for cards.
+  let body: React.ReactNode
+  if (data && renderSheet) {
+    const { maxRowsPerSheet, minFillRows } = getPrintConfig(orientation)
+    const sheets = chunk(data, maxRowsPerSheet)
+    body = sheets.map((rows, i) => (
+      <div
+        key={i}
+        style={{
+          ...printDensity(rows.length, orientation, minFillRows),
+          breakAfter: i < sheets.length - 1 ? 'page' : 'auto',
+        }}
+      >
+        {renderSheet(rows as never[], i * maxRowsPerSheet)}
+      </div>
+    ))
+  } else {
+    body = content
+  }
 
   // On-screen page width mirrors the chosen orientation (A4 @ 96dpi) so the
   // toggle is visibly WYSIWYG; @page drives the actual print orientation.
@@ -142,7 +162,7 @@ export default async function PrintPage({
         }
       `}</style>
       <PrintButton orientation={orientation} />
-      <div style={densityStyle}>{content}</div>
+      {body}
     </>
   )
 }
