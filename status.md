@@ -410,3 +410,12 @@
 - Metrics impact: +3 new lib/test files; +2 env vars (both optional, defaulted)
 - Validation: 179 unit tests pass (164 baseline + 15 new print-config/print-density; 0 regressions). npm run build clean, /print/[cycleId]/[formCode] route compiles. Print e2e (07-print-views) not run in worktree — needs DB/.env + non-headless browser (infra unavailable); unchanged by this work.
 - Next step: set PRINT_MAX_ROWS_PER_SHEET / PRINT_MIN_FILL_ROWS in the deployment .env if non-default values are wanted; merge branch worktree-print-max-employees-per-sheet
+
+### Task Update — 2026-06-19 — Multi-sheet print pagination e2e + bulk fixture
+- Task: End-to-end test proving print registers paginate across sheets with repeated header + continuous S.No
+- Status: completed
+- Scope: Added "QA Bulk Hospital" (est_hospital_bulk) seed fixture with 25 employees (> landscape single-sheet ceiling 23, so pagination triggers under any valid PRINT_MAX_ROWS_PER_SHEET). New e2e spec creates a cycle for it via API (auto-snapshots employees), asserts Form XI renders >1 .form-page with the REGISTER OF EMPLOYEES heading repeated, exactly 25 body rows, and S.No sequence exactly 1..25 (no per-sheet restart); also asserts Form V (muster) paginates. Cycle torn down in afterAll.
+- Files changed: prisma/seed.ts (bulk fixture), e2e/10-print-pagination.spec.ts (new)
+- Metrics impact: +1 e2e spec (3 tests); seed now 3 establishments / 31 employees
+- Validation: e2e 10-print-pagination 3/3 pass (Playwright auto-starts dev server vs seeded dev.db). Earlier 07-print-views 11/11 pass. No spec asserts exact establishment counts, so the new fixture is non-breaking.
+- Next step: run on branch test/print-multi-sheet-e2e; merge when ready
