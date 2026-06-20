@@ -10,6 +10,9 @@ type Props = {
 
 export function SettingsForm({ initial, ceilings }: Props) {
   const router = useRouter()
+  const inputClass =
+    'w-40 bg-[#1a2a3a] border border-[#2a3a50] rounded px-3 py-1.5 text-sm text-[#c8d8e8] focus:outline-none focus:border-[#4a9eff]'
+  const hintClass = 'block text-xs text-[#5a8ab8] mt-1'
   const [maxRowsPerSheet, setMax] = useState(initial.maxRowsPerSheet?.toString() ?? '')
   const [minFillRows, setMin] = useState(initial.minFillRows?.toString() ?? '')
   const [errors, setErrors] = useState<string[]>([])
@@ -39,29 +42,29 @@ export function SettingsForm({ initial, ceilings }: Props) {
   return (
     <form onSubmit={handleSubmit} className="max-w-xl p-6 space-y-5">
       <div>
-        <h1 className="text-lg font-bold">Settings</h1>
-        <p className="text-xs text-gray-500 mt-1">Print register layout</p>
+        <h1 className="text-lg font-bold text-[#c8d8e8]">Settings</h1>
+        <p className="text-xs text-[#5a8ab8] mt-1">Print register layout</p>
       </div>
 
       {errors.length > 0 && (
-        <ul className="text-sm text-red-600 list-disc pl-5">
-          {errors.map((er, i) => <li key={i}>{er}</li>)}
-        </ul>
+        <div className="bg-[#2a1010] border border-[#5a2020] rounded p-3 text-xs text-[#f07070] space-y-1">
+          {errors.map((er, i) => <p key={i}>{er}</p>)}
+        </div>
       )}
-      {saved && <p className="text-sm text-green-700">Saved.</p>}
+      {saved && <p className="text-xs text-[#5fd38a]">Saved.</p>}
 
       <label className="block">
-        <span className="text-sm font-medium">Max employees per sheet</span>
+        <span className="block text-xs text-[#5a8ab8] mb-1">Max employees per sheet</span>
         <input
           type="number"
           min={1}
           aria-label="Max employees per sheet"
           value={maxRowsPerSheet}
-          onChange={(e) => setMax(e.target.value)}
+          onChange={(e) => { setSaved(false); setMax(e.target.value) }}
           placeholder="Default 20"
-          className="mt-1 block w-40 border rounded px-2 py-1"
+          className={inputClass}
         />
-        <span className="block text-xs text-gray-500 mt-1">
+        <span className={hintClass}>
           Leave blank for the default (20). Values above the per-sheet ceiling
           ({ceilings.landscape} landscape / {ceilings.portrait} portrait) are capped
           so each sheet keeps its own header.
@@ -69,17 +72,17 @@ export function SettingsForm({ initial, ceilings }: Props) {
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium">Min fill rows</span>
+        <span className="block text-xs text-[#5a8ab8] mb-1">Min fill rows</span>
         <input
           type="number"
           min={1}
           aria-label="Min fill rows"
           value={minFillRows}
-          onChange={(e) => setMin(e.target.value)}
+          onChange={(e) => { setSaved(false); setMin(e.target.value) }}
           placeholder="Default 5"
-          className="mt-1 block w-40 border rounded px-2 py-1"
+          className={inputClass}
         />
-        <span className="block text-xs text-gray-500 mt-1">
+        <span className={hintClass}>
           Below this many employees, rows stretch to fill the whole page. Blank uses the default (5).
         </span>
       </label>
@@ -87,7 +90,7 @@ export function SettingsForm({ initial, ceilings }: Props) {
       <button
         type="submit"
         disabled={saving}
-        className="px-4 py-2 rounded bg-[var(--ts-navy-mid)] text-white text-sm disabled:opacity-50"
+        className="px-4 py-1.5 bg-[#1a5adc] text-white text-xs font-medium rounded hover:bg-[#2a6aec] disabled:opacity-50"
       >
         {saving ? 'Saving…' : 'Save'}
       </button>

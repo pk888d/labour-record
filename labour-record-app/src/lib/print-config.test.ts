@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { resolvePrintConfig, parseSettingValue, chunk } from './print-config'
+import { resolvePrintConfig, parseSettingValue, chunk, singleSheetCeiling } from './print-config'
 
 describe('resolvePrintConfig', () => {
   it('uses defaults when raw values are undefined', () => {
@@ -47,6 +47,13 @@ describe('parseSettingValue', () => {
     expect(parseSettingValue('-3').ok).toBe(false)
     expect(parseSettingValue('1.5').ok).toBe(false)
     expect(parseSettingValue('abc').ok).toBe(false)
+  })
+})
+
+describe('singleSheetCeiling', () => {
+  it('is floor(usableMm/6.5): 23 landscape, 36 portrait', () => {
+    expect(singleSheetCeiling('landscape')).toBe(23)
+    expect(singleSheetCeiling('portrait')).toBe(36)
   })
 })
 

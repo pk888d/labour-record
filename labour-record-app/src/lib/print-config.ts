@@ -23,7 +23,7 @@ function posIntOr(value: number | undefined, fallback: number): number {
 
 // Clamp so a chunk can never overflow into an un-headered second page
 // (print-density.ts uses usableMm 150 landscape / 235 portrait and a 6.5mm floor).
-function singleSheetCeiling(orientation: 'landscape' | 'portrait'): number {
+export function singleSheetCeiling(orientation: 'landscape' | 'portrait'): number {
   const usableMm = orientation === 'landscape' ? 150 : 235
   return Math.floor(usableMm / 6.5) // 23 landscape, 36 portrait
 }
