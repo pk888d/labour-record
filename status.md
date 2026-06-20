@@ -428,3 +428,20 @@
 - Metrics impact: +1 DB model; +1 API route; +1 page; +1 e2e spec (4 tests); print-config unit tests now 12
 - Validation: e2e 12-settings 4/4 pass; print regressions 07+10 14/14 pass; 180 unit tests pass; npm run build clean with /settings + /api/settings routes. NOTE during e2e a stale dev server (started pre-migration) served an old Prisma client lacking appSetting → killed it so Playwright started fresh; restart dev server after running new migrations.
 - Next step: merge branch feat/print-config-settings; saved values override env (which now only seeds the initial fallback)
+
+### Task Update — 2026-06-20 — Foundation hardening (test + validation + CI), wave 1 of codebase review
+- Task: Close the critical/high/medium gaps from the codebase review (money-math test coverage, financial input validation, test-config noise, N+1, build/CI)
+- Status: completed
+- Scope:
+  - M1: vitest.config.ts now excludes e2e (`include: src/**/*.test.ts`) + coverage config — `npm test` is clean (no more Playwright-glob "failed files").
+  - M2: extracted src/lib/money.ts (round2 with NaN/Infinity guard + EPSILON half-up; formatINR); the 4 calculators (wage/pf/salary/overtime) now import it instead of 4 duplicate round2 copies.
+  - C1: unit tests for every pure domain fn — money, wage-calculator, pf-calculator (PF cap ₹1,800), salary-breakdown (DA split, ESI threshold), attendance, overtime, leave, kanban-transitions state machine.
+  - C2: src/domain/validations/record-numbers.ts (validateWageRecords + validatePresentMoneyFields + generic validateNonNegativeNumbers) wired into wages (batch), fines, deductions routes → reject negative/NaN/non-numeric money before persist (422).
+  - M3: wages PUT N+1 fixed — overtime now one batched findMany + Map (was findUnique per employee).
+  - H3: build = `prisma generate && next build`; added postinstall prisma generate, test:coverage, typecheck scripts.
+  - H2: .github/workflows/ci.yml (npm ci → migrate deploy → vitest → next build).
+  - H1: e2e/13-wage-calc.spec.ts asserts exact computed totals via the real API pipeline (15000/15360/1810/13550) + negative & NaN rejection.
+- Files changed: vitest.config.ts; src/lib/money.ts (+test); src/domain/calculations/{wage,pf,salary-breakdown,overtime}.ts (+ 6 new *.test.ts); src/domain/calculations/attendance/leave .test.ts; src/domain/workflow/kanban-transitions.test.ts; src/domain/validations/record-numbers.ts (+test); src/app/api/form-tasks/[id]/{wages,fines,deductions}/route.ts; package.json; .github/workflows/ci.yml; e2e/13-wage-calc.spec.ts
+- Metrics impact: unit tests 26 → 65 (11 files); +1 e2e spec (3 tests); +1 CI workflow
+- Validation: 65 unit tests pass; e2e 05-form-entry 11/11 + 13-wage-calc 3/3 pass (incl. fine create — validation non-breaking); npm run build clean.
+- Next step: merge feat/foundation-hardening; then Tier-1 features (bank disbursement file, PF ECR / ESI return, payslip distribution, bonus/gratuity, compliance pre-flight) as subsequent waves

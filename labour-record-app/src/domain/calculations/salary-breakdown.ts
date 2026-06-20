@@ -1,4 +1,5 @@
 import { calculatePf, type PfConfig } from './pf-calculator'
+import { round2 } from '@/lib/money'
 
 export const ESI_DEFAULT_THRESHOLD = 21000
 export const ESI_EMPLOYEE_PCT = 0.75
@@ -56,8 +57,4 @@ export function computeSalaryBreakdown(input: SalaryBreakdownInput): SalaryBreak
   const netSalary = round2(grossWages - totalDeductions)
 
   return { basic, da, hra, otherAllowances, pf, esi, lwf, overtimeEarnings, grossWages, totalDeductions, netSalary }
-}
-
-function round2(n: number): number {
-  return Math.round(n * 100) / 100
 }

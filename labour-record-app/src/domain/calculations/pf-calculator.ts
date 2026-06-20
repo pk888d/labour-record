@@ -1,3 +1,5 @@
+import { round2 } from '@/lib/money'
+
 export type PfMode = 'PERCENT' | 'FIXED' | 'NONE'
 
 export type PfConfig = {
@@ -21,8 +23,4 @@ export function calculatePf(config: PfConfig, pfWage: number): number {
   const ceiling = config.ceiling ?? Infinity
   const cappedWage = Math.min(pfWage, ceiling)
   return round2(cappedWage * (percent / 100))
-}
-
-function round2(n: number): number {
-  return Math.round(n * 100) / 100
 }

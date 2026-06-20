@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: labour-record-app
+    env:
+      # CI uses a throwaway local SQLite file; prisma.config.ts reads DATABASE_URL.
+      DATABASE_URL: "file:./ci.db"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: labour-record-app/package-lock.json
+
+      # npm ci runs the postinstall `prisma generate` automatically.
+      - run: npm ci
+
+      - name: Apply migrations to the CI database
+        run: npx prisma migrate deploy
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Production build
+        run: npm run build
+
+  # NOTE: Playwright e2e (e2e/*.spec.ts) is intentionally not run here yet — it
+  # needs the dev server + a seeded DB and currently runs headed locally. Add a
+  # separate job (with `npx playwright install --with-deps` + `npm run seed`) when
+  # the suite is made headless/CI-ready.

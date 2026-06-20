@@ -1,4 +1,5 @@
 import type { WageFormulaConfig } from '@/types'
+import { round2 } from '@/lib/money'
 
 export type WageInput = {
   basic: number
@@ -51,8 +52,4 @@ export function calculateWages(config: WageFormulaConfig, input: WageInput): Wag
     totalDeductions,
     netWages: round2(grossWages - totalDeductions),
   }
-}
-
-function round2(n: number): number {
-  return Math.round(n * 100) / 100
 }

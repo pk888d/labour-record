@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { calculateWages } from '@/domain/calculations/wage-calculator'
 import { getWageRuleValue } from '@/domain/calculations/wage-defaults'
+import { validateWageRecords } from '@/domain/validations/record-numbers'
 import type { WageFormulaConfig } from '@/types'
 
 type Params = { params: Promise<{ id: string }> }
@@ -69,6 +70,13 @@ export async function PUT(request: Request, { params }: Params) {
       return NextResponse.json({ errors: ['records must be an array'] }, { status: 422 })
     }
 
+    // Reject negative / NaN / non-numeric money or day inputs before they hit the
+    // calculator and persist as corrupt net pay.
+    const recordErrors = validateWageRecords(b.records)
+    if (recordErrors.length > 0) {
+      return NextResponse.json({ errors: recordErrors }, { status: 422 })
+    }
+
     const config = JSON.parse(
       formTask.cycle.establishment.wageFormulaConfig
     ) as WageFormulaConfig
@@ -93,17 +101,13 @@ export async function PUT(request: Request, { params }: Params) {
     const holidayDaySet = new Set(govtHolidays.map((h) => new Date(h.date).getUTCDate()))
     const multiplier = getWageRuleValue(wageRules, 'HOLIDAY_MULTIPLIER')
 
+    // Batch the overtime lookup once (was an N+1 findUnique per employee).
+    const otRecords = await prisma.overtimeRecord.findMany({ where: { cycleId: formTask.cycleId } })
+    const otEarningsByEmployee = new Map(otRecords.map((o) => [o.employeeId, o.totalEarnings]))
+
     const updated = await Promise.all(
       b.records.map(async (r) => {
-        const otRec = await prisma.overtimeRecord.findUnique({
-          where: {
-            cycleId_employeeId: {
-              cycleId: formTask.cycleId,
-              employeeId: r.employeeId,
-            },
-          },
-        })
-        const overtimeEarnings = otRec?.totalEarnings ?? 0
+        const overtimeEarnings = otEarningsByEmployee.get(r.employeeId) ?? 0
 
         const attRec = attendanceRecords.find((a) => a.employeeId === r.employeeId)
         const dailyMarks = attRec ? (JSON.parse(attRec.dailyMarks) as string[]) : []
