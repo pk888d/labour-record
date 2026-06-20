@@ -17,6 +17,9 @@ const navItems = [
   { section: 'Output', items: [
     { href: '/exports', label: 'Exports', icon: '↓' },
   ]},
+  { section: 'System', items: [
+    { href: '/settings', label: 'Settings', icon: '⚙' },
+  ]},
 ]
 
 export function Sidebar() {
