@@ -16,6 +16,11 @@ export default async function DashboardPage() {
   })
   const reminders = await loadReminders()
 
+  const taskGroups = await prisma.formTask.groupBy({ by: ['status'], _count: { _all: true } })
+  const taskCountByStatus = Object.fromEntries(
+    taskGroups.map((t) => [t.status, t._count._all]),
+  ) as Record<string, number>
+
   const rows: EstRow[] = establishments.map((e) => ({
     id: e.id,
     name: e.name,
@@ -51,9 +56,43 @@ export default async function DashboardPage() {
           <SummaryCard label="Monthly Cycles" value={totalCycles} accent="var(--ts-blue)" />
         </div>
 
+        <WorkloadPanel countByStatus={taskCountByStatus} />
+
         <RemindersPanel reminders={reminders} />
 
         <DashboardEstablishments establishments={rows} />
+      </div>
+    </div>
+  )
+}
+
+const WORKFLOW_STATUSES: { key: string; label: string; color: string }[] = [
+  { key: 'NOT_STARTED', label: 'Not Started', color: '#7a9ab8' },
+  { key: 'DATA_ENTRY', label: 'Data Entry', color: '#4a9eff' },
+  { key: 'READY_FOR_REVIEW', label: 'Review', color: '#c0a040' },
+  { key: 'NEEDS_CORRECTION', label: 'Correction', color: '#f07070' },
+  { key: 'APPROVED', label: 'Approved', color: '#40c070' },
+  { key: 'EXPORTED', label: 'Exported', color: '#5fd38a' },
+]
+
+function WorkloadPanel({ countByStatus }: { countByStatus: Record<string, number> }) {
+  const open = WORKFLOW_STATUSES
+    .filter((s) => s.key !== 'EXPORTED')
+    .reduce((sum, s) => sum + (countByStatus[s.key] ?? 0), 0)
+  return (
+    <div className="p-4 rounded-lg bg-[var(--ts-navy-mid)] border border-[var(--ts-border)]">
+      <p className="text-xs text-[var(--ts-text-muted)] mb-3">
+        Form workload — <span className="text-[var(--ts-gold)] font-semibold">{open} open</span> task{open !== 1 ? 's' : ''}
+      </p>
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+        {WORKFLOW_STATUSES.map((s) => (
+          <div key={s.key} className="text-center">
+            <p className="text-2xl font-bold leading-none" style={{ color: s.color }}>
+              {countByStatus[s.key] ?? 0}
+            </p>
+            <p className="text-[10px] text-[var(--ts-text-muted)] mt-1">{s.label}</p>
+          </div>
+        ))}
       </div>
     </div>
   )

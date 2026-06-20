@@ -1,25 +1,40 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { PageHeader } from '@/components/page-header'
+import { Pagination } from '@/components/pagination'
+import { parsePage, pageMeta } from '@/lib/paginate'
 
 export default async function EmployeesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ establishmentId?: string; status?: string }>
+  searchParams: Promise<{ establishmentId?: string; status?: string; q?: string; page?: string }>
 }) {
-  const { establishmentId, status } = await searchParams
+  const { establishmentId, status, q, page } = await searchParams
 
   const VALID_STATUSES = ['ACTIVE', 'SUSPENDED', 'EXITED']
   const statusFilter = status && VALID_STATUSES.includes(status) ? status : 'ACTIVE'
+  const search = q?.trim() ?? ''
 
-  const employees = await prisma.employee.findMany({
-    where: {
-      ...(establishmentId ? { establishmentId } : {}),
-      status: statusFilter as 'ACTIVE' | 'SUSPENDED' | 'EXITED',
-    },
-    orderBy: { name: 'asc' },
-    include: { establishment: { select: { name: true, type: true } } },
-  })
+  const where = {
+    ...(establishmentId ? { establishmentId } : {}),
+    status: statusFilter as 'ACTIVE' | 'SUSPENDED' | 'EXITED',
+    ...(search
+      ? { OR: [{ name: { contains: search } }, { empId: { contains: search } }] }
+      : {}),
+  }
+
+  const { skip, take, page: currentPage } = parsePage(page)
+  const [total, employees] = await Promise.all([
+    prisma.employee.count({ where }),
+    prisma.employee.findMany({
+      where,
+      orderBy: { name: 'asc' },
+      include: { establishment: { select: { name: true, type: true } } },
+      skip,
+      take,
+    }),
+  ])
+  const meta = pageMeta(total, currentPage)
 
   const establishments = await prisma.establishment.findMany({
     where: { isActive: true },
@@ -39,12 +54,20 @@ export default async function EmployeesPage({
     <div>
       <PageHeader
         title={activeEstablishment ? `Employees — ${activeEstablishment.name}` : 'Employees'}
-        subtitle={`${employees.length} employee${employees.length !== 1 ? 's' : ''}`}
+        subtitle={`${total} employee${total !== 1 ? 's' : ''}`}
         action={{ label: '+ New Employee', href: newEmployeeHref }}
       />
       <div className="p-6">
         <div className="flex gap-3 mb-4">
           <form method="GET" className="flex gap-2">
+            <input
+              type="text"
+              name="q"
+              defaultValue={search}
+              placeholder="Search name or ID…"
+              aria-label="Search employees"
+              className="bg-[#1a2a3a] border border-[#2a3a50] rounded px-2 py-1 text-xs text-[#c8d8e8] w-48"
+            />
             <select
               name="establishmentId"
               defaultValue={establishmentId ?? ''}
@@ -71,7 +94,7 @@ export default async function EmployeesPage({
           </form>
         </div>
 
-        {employees.length === 0 ? (
+        {total === 0 ? (
           <p className="text-[#4a6a8a] text-sm">No employees found.</p>
         ) : (
           <table className="w-full text-sm border-collapse">
@@ -116,6 +139,11 @@ export default async function EmployeesPage({
             </tbody>
           </table>
         )}
+        <Pagination
+          meta={meta}
+          basePath="/employees"
+          params={{ establishmentId, status: statusFilter, q: search }}
+        />
       </div>
     </div>
   )

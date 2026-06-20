@@ -42,8 +42,9 @@ test.describe('Employees', () => {
     if (await dobField.count() > 0) await dobField.fill('1990-05-15')
     await page.getByLabel('Date of Entry').fill('2020-01-01')
     await page.getByRole('button', { name: /Add Employee/i }).click()
-    // Navigate to list regardless (handles both success redirect and duplicate-already-exists)
-    await page.goto('/employees')
+    // Search the list (handles success redirect or duplicate-already-exists, and is
+    // robust to pagination — the list is paged at 25 rows).
+    await page.goto('/employees?q=Selvam')
     await expect(page.getByText('Selvam').first()).toBeVisible()
   })
 

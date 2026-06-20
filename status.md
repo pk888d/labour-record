@@ -445,3 +445,17 @@
 - Metrics impact: unit tests 26 → 65 (11 files); +1 e2e spec (3 tests); +1 CI workflow
 - Validation: 65 unit tests pass; e2e 05-form-entry 11/11 + 13-wage-calc 3/3 pass (incl. fine create — validation non-breaking); npm run build clean.
 - Next step: merge feat/foundation-hardening; then Tier-1 features (bank disbursement file, PF ECR / ESI return, payslip distribution, bonus/gratuity, compliance pre-flight) as subsequent waves
+
+### Task Update — 2026-06-20 — M4 + Low polish (audit viewer, list search/pagination, dashboard, loading, README)
+- Task: Close the review's M4 + Low-severity items
+- Status: completed
+- Scope:
+  - M4: new /audit page (entityType filter + pagination) surfacing the AuditLog table; sidebar System → Audit Log entry.
+  - Search + pagination: lib/paginate.ts (pure parsePage/pageMeta, tested) + components/pagination.tsx (param-preserving Prev/Next). Employees list gains name/empId search + 25/page; Cycles list gains establishment filter + pagination.
+  - Dashboard: WorkloadPanel — open form-tasks grouped by workflow status (groupBy), with an "N open" headline.
+  - UX: root app/loading.tsx skeleton for streaming route segments.
+  - Docs: replaced the create-next-app README with real project docs (stack, setup, scripts, architecture, conventions, env, testing).
+- Files changed: src/lib/paginate.ts (+test); src/components/pagination.tsx; src/app/audit/page.tsx (new); src/app/dashboard/page.tsx; src/app/employees/page.tsx; src/app/cycles/page.tsx; src/components/sidebar.tsx; src/app/loading.tsx (new); README.md; e2e/14-admin-views.spec.ts (new); e2e/03-employees.spec.ts (search-based assertion, pagination-robust)
+- Metrics impact: unit tests 65 → 71 (12 files, +6 paginate); +1 page (/audit); +1 e2e spec (3 tests)
+- Validation: 71 unit tests pass; npm run build clean (/audit present); e2e 01-nav + 03-employees + 04-cycles + 14-admin-views all green. NOTE: adding pagination surfaced a data-volume-fragile assertion in 03-employees (created employee fell to page 2) — fixed it to use the new ?q= search.
+- Next step: merge feat/m4-low-polish; remaining work = Tier 1–4 feature set (each its own brainstorm→spec→plan cycle)

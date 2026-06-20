@@ -18,6 +18,7 @@ const navItems = [
     { href: '/exports', label: 'Exports', icon: '↓' },
   ]},
   { section: 'System', items: [
+    { href: '/audit', label: 'Audit Log', icon: '🛡' },
     { href: '/settings', label: 'Settings', icon: '⚙' },
   ]},
 ]
