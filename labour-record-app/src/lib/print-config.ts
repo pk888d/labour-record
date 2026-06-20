@@ -1,34 +1,56 @@
-// Deployment-level controls for how the print registers list employees.
-// Set via env (defaults in parens):
-//   PRINT_MAX_ROWS_PER_SHEET  (20)  max employees listed on one sheet
-//   PRINT_MIN_FILL_ROWS       (5)   below this count, rows stretch to fill the page
-// maxRowsPerSheet is clamped to the single-sheet ceiling per orientation so a
-// chunk can never overflow into an un-headered second page (see print-density.ts:
-// usableMm / 6.5mm floor => 23 landscape, 36 portrait).
+// Pure logic for the print-register pagination config. No DB / env reads here
+// (those live in print-config-server.ts) so this stays unit-testable and safe to
+// import anywhere. Resolution precedence (saved DB value -> env -> default) is
+// applied by the caller; this module only turns raw numbers into a final config.
 
-const DEFAULT_MAX_ROWS_PER_SHEET = 20
-const DEFAULT_MIN_FILL_ROWS = 5
+export const DEFAULT_MAX_ROWS_PER_SHEET = 20
+export const DEFAULT_MIN_FILL_ROWS = 5
 
 export interface PrintConfig {
   maxRowsPerSheet: number
   minFillRows: number
 }
 
-function posIntEnv(value: string | undefined, fallback: number): number {
-  const n = Number(value)
-  return Number.isInteger(n) && n > 0 ? n : fallback
+// Saved raw values as the UI / resolver see them: a positive int, or null (unset).
+export interface RawPrintSettings {
+  maxRowsPerSheet: number | null
+  minFillRows: number | null
 }
 
+function posIntOr(value: number | undefined, fallback: number): number {
+  return value !== undefined && Number.isInteger(value) && value > 0 ? value : fallback
+}
+
+// Clamp so a chunk can never overflow into an un-headered second page
+// (print-density.ts uses usableMm 150 landscape / 235 portrait and a 6.5mm floor).
 function singleSheetCeiling(orientation: 'landscape' | 'portrait'): number {
   const usableMm = orientation === 'landscape' ? 150 : 235
   return Math.floor(usableMm / 6.5) // 23 landscape, 36 portrait
 }
 
-export function getPrintConfig(orientation: 'landscape' | 'portrait'): PrintConfig {
-  const requested = posIntEnv(process.env.PRINT_MAX_ROWS_PER_SHEET, DEFAULT_MAX_ROWS_PER_SHEET)
+export function resolvePrintConfig(
+  rawMax: number | undefined,
+  rawMin: number | undefined,
+  orientation: 'landscape' | 'portrait',
+): PrintConfig {
+  const requested = posIntOr(rawMax, DEFAULT_MAX_ROWS_PER_SHEET)
   const maxRowsPerSheet = Math.min(requested, singleSheetCeiling(orientation))
-  const minFillRows = posIntEnv(process.env.PRINT_MIN_FILL_ROWS, DEFAULT_MIN_FILL_ROWS)
+  const minFillRows = posIntOr(rawMin, DEFAULT_MIN_FILL_ROWS)
   return { maxRowsPerSheet, minFillRows }
+}
+
+export type ParseResult =
+  | { ok: true; value: number | null }
+  | { ok: false }
+
+// Validate one Settings input: blank/null/undefined => clear (null); a positive
+// integer => that number; anything else => invalid.
+export function parseSettingValue(input: string | number | null | undefined): ParseResult {
+  if (input === null || input === undefined) return { ok: true, value: null }
+  if (typeof input === 'string' && input.trim() === '') return { ok: true, value: null }
+  const n = Number(input)
+  if (Number.isInteger(n) && n > 0) return { ok: true, value: n }
+  return { ok: false }
 }
 
 export function chunk<T>(arr: T[], size: number): T[][] {

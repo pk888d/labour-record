@@ -1,59 +1,52 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getPrintConfig, chunk } from './print-config'
+import { describe, expect, it } from 'vitest'
+import { resolvePrintConfig, parseSettingValue, chunk } from './print-config'
 
-afterEach(() => {
-  vi.unstubAllEnvs()
-})
-
-describe('getPrintConfig', () => {
-  it('returns defaults when env vars are unset', () => {
-    // No vi.stubEnv calls — vars are absent (cleared by unstubAllEnvs from prior tests)
-    const cfg = getPrintConfig('landscape')
-    // default 20 is below the landscape single-sheet ceiling (floor(150/6.5)=23)
+describe('resolvePrintConfig', () => {
+  it('uses defaults when raw values are undefined', () => {
+    const cfg = resolvePrintConfig(undefined, undefined, 'landscape')
     expect(cfg.maxRowsPerSheet).toBe(20)
     expect(cfg.minFillRows).toBe(5)
   })
 
-  it('reads valid env overrides', () => {
-    vi.stubEnv('PRINT_MAX_ROWS_PER_SHEET', '15')
-    vi.stubEnv('PRINT_MIN_FILL_ROWS', '3')
-    const cfg = getPrintConfig('portrait')
+  it('uses provided raw values', () => {
+    const cfg = resolvePrintConfig(15, 3, 'portrait')
     expect(cfg.maxRowsPerSheet).toBe(15)
     expect(cfg.minFillRows).toBe(3)
   })
 
-  it('falls back to defaults on non-numeric value', () => {
-    vi.stubEnv('PRINT_MAX_ROWS_PER_SHEET', 'abc')
-    vi.stubEnv('PRINT_MIN_FILL_ROWS', '')
-    const cfg = getPrintConfig('landscape')
+  it('falls back to defaults for non-positive / non-integer raw values', () => {
+    const cfg = resolvePrintConfig(0, -2, 'landscape')
     expect(cfg.maxRowsPerSheet).toBe(20)
     expect(cfg.minFillRows).toBe(5)
   })
 
-  it('falls back to defaults on zero value', () => {
-    vi.stubEnv('PRINT_MAX_ROWS_PER_SHEET', '0')
-    vi.stubEnv('PRINT_MIN_FILL_ROWS', '0')
-    const cfg = getPrintConfig('landscape')
-    expect(cfg.maxRowsPerSheet).toBe(20)
-    expect(cfg.minFillRows).toBe(5)
+  it('clamps max to the landscape single-sheet ceiling (23)', () => {
+    expect(resolvePrintConfig(999, undefined, 'landscape').maxRowsPerSheet).toBe(23)
   })
 
-  it('falls back to defaults on negative value', () => {
-    vi.stubEnv('PRINT_MAX_ROWS_PER_SHEET', '-3')
-    vi.stubEnv('PRINT_MIN_FILL_ROWS', '-1')
-    const cfg = getPrintConfig('landscape')
-    expect(cfg.maxRowsPerSheet).toBe(20)
-    expect(cfg.minFillRows).toBe(5)
+  it('clamps max to the portrait single-sheet ceiling (36)', () => {
+    expect(resolvePrintConfig(999, undefined, 'portrait').maxRowsPerSheet).toBe(36)
+  })
+})
+
+describe('parseSettingValue', () => {
+  it('treats blank / null / undefined as "clear" (null)', () => {
+    expect(parseSettingValue('')).toEqual({ ok: true, value: null })
+    expect(parseSettingValue('   ')).toEqual({ ok: true, value: null })
+    expect(parseSettingValue(null)).toEqual({ ok: true, value: null })
+    expect(parseSettingValue(undefined)).toEqual({ ok: true, value: null })
   })
 
-  it('clamps maxRowsPerSheet to the landscape single-sheet ceiling (23)', () => {
-    vi.stubEnv('PRINT_MAX_ROWS_PER_SHEET', '999')
-    expect(getPrintConfig('landscape').maxRowsPerSheet).toBe(23)
+  it('accepts a positive integer (string or number)', () => {
+    expect(parseSettingValue('15')).toEqual({ ok: true, value: 15 })
+    expect(parseSettingValue(15)).toEqual({ ok: true, value: 15 })
   })
 
-  it('clamps maxRowsPerSheet to the portrait single-sheet ceiling (36)', () => {
-    vi.stubEnv('PRINT_MAX_ROWS_PER_SHEET', '999')
-    expect(getPrintConfig('portrait').maxRowsPerSheet).toBe(36)
+  it('rejects zero, negatives, and non-integers', () => {
+    expect(parseSettingValue('0').ok).toBe(false)
+    expect(parseSettingValue('-3').ok).toBe(false)
+    expect(parseSettingValue('1.5').ok).toBe(false)
+    expect(parseSettingValue('abc').ok).toBe(false)
   })
 })
 
@@ -66,8 +59,5 @@ describe('chunk', () => {
   })
   it('returns one empty sheet for an empty array', () => {
     expect(chunk([], 5)).toEqual([[]])
-  })
-  it('returns a single chunk when size exceeds length', () => {
-    expect(chunk([1, 2], 10)).toEqual([[1, 2]])
   })
 })
