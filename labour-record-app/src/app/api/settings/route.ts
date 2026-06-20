@@ -42,17 +42,18 @@ export async function PUT(request: Request) {
     }
     if (errors.length > 0) return NextResponse.json({ errors }, { status: 422 })
 
-    for (const op of ops) {
-      if (op.value === null) {
-        await prisma.appSetting.deleteMany({ where: { key: op.key } })
-      } else {
-        await prisma.appSetting.upsert({
-          where: { key: op.key },
-          update: { value: String(op.value) },
-          create: { key: op.key, value: String(op.value) },
-        })
-      }
-    }
+    // Apply both writes atomically so a failure can't leave a partial save.
+    await prisma.$transaction(
+      ops.map((op) =>
+        op.value === null
+          ? prisma.appSetting.deleteMany({ where: { key: op.key } })
+          : prisma.appSetting.upsert({
+              where: { key: op.key },
+              update: { value: String(op.value) },
+              create: { key: op.key, value: String(op.value) },
+            }),
+      ),
+    )
 
     const settings = await getRawPrintSettings()
     return NextResponse.json(settings)
