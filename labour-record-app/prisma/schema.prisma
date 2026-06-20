@@ -353,3 +353,9 @@ model WageRule {
 
   @@unique([establishmentId, ruleKey])
 }
+
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
