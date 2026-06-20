@@ -2,7 +2,8 @@ import { notFound } from 'next/navigation'
 import { getCycleContext, getWagesData, getMusterData, getEmployeeData,
   getOvertimeData, getFinesData, getDeductionsData, getLeaveData } from '@/lib/export/form-data'
 import { printDensity } from '@/lib/print-density'
-import { getPrintConfig, chunk } from '@/lib/print-config'
+import { chunk, type PrintConfig } from '@/lib/print-config'
+import { getPrintConfig } from '@/lib/print-config-server'
 import { PrintButton } from './print-button'
 import { HospitalFormXII } from './hospital-form-xii'
 import { HospitalFormV } from './hospital-form-v'
@@ -22,19 +23,19 @@ import { ShopFormX } from './shop-form-x'
 // <div> that fills the page and forces a page break after every sheet but the last.
 function paginateForm<T>(
   data: T[],
+  cfg: PrintConfig,
   orientation: 'landscape' | 'portrait',
   render: (rows: T[], startIndex: number) => React.ReactNode,
 ): React.ReactNode {
-  const { maxRowsPerSheet, minFillRows } = getPrintConfig(orientation)
-  return chunk(data, maxRowsPerSheet).map((rows, i, all) => (
+  return chunk(data, cfg.maxRowsPerSheet).map((rows, i, all) => (
     <div
       key={i}
       style={{
-        ...printDensity(rows.length, orientation, minFillRows),
+        ...printDensity(rows.length, orientation, cfg.minFillRows),
         breakAfter: i < all.length - 1 ? 'page' : 'auto',
       }}
     >
-      {render(rows, i * maxRowsPerSheet)}
+      {render(rows, i * cfg.maxRowsPerSheet)}
     </div>
   ))
 }
@@ -60,22 +61,24 @@ export default async function PrintPage({
   const ctx = await getCycleContext(cycleId).catch(() => null)
   if (!ctx) notFound()
 
+  const cfg = await getPrintConfig(orientation)
+
   let body: React.ReactNode = null
 
   switch (formCode) {
     case 'HOSPITAL_FORM_XII': {
       const wages = await getWagesData(ctx)
-      body = paginateForm(wages, orientation, (rows, si) => <HospitalFormXII ctx={ctx} wages={rows} startIndex={si} />)
+      body = paginateForm(wages, cfg, orientation, (rows, si) => <HospitalFormXII ctx={ctx} wages={rows} startIndex={si} />)
       break
     }
     case 'HOSPITAL_FORM_V': {
       const muster = await getMusterData(ctx)
-      body = paginateForm(muster, orientation, (rows, si) => <HospitalFormV ctx={ctx} muster={rows} startIndex={si} />)
+      body = paginateForm(muster, cfg, orientation, (rows, si) => <HospitalFormV ctx={ctx} muster={rows} startIndex={si} />)
       break
     }
     case 'HOSPITAL_FORM_XI': {
       const employees = await getEmployeeData(ctx)
-      body = paginateForm(employees, orientation, (rows, si) => <HospitalFormXI ctx={ctx} employees={rows} startIndex={si} />)
+      body = paginateForm(employees, cfg, orientation, (rows, si) => <HospitalFormXI ctx={ctx} employees={rows} startIndex={si} />)
       break
     }
     case 'HOSPITAL_FORM_XVII': {
@@ -86,24 +89,24 @@ export default async function PrintPage({
     }
     case 'HOSPITAL_FORM_IV': {
       const ot = await getOvertimeData(ctx)
-      body = paginateForm(ot, orientation, (rows, si) => <HospitalFormIV ctx={ctx} ot={rows} startIndex={si} />)
+      body = paginateForm(ot, cfg, orientation, (rows, si) => <HospitalFormIV ctx={ctx} ot={rows} startIndex={si} />)
       break
     }
     case 'HOSPITAL_FORM_I': {
       const fines = await getFinesData(ctx)
       // Form I numbers from r.sno (data field), so startIndex is unused.
-      body = paginateForm(fines, orientation, (rows, _si) => <HospitalFormI ctx={ctx} fines={rows} />)
+      body = paginateForm(fines, cfg, orientation, (rows, _si) => <HospitalFormI ctx={ctx} fines={rows} />)
       break
     }
     case 'HOSPITAL_FORM_II': {
       const ded = await getDeductionsData(ctx)
       // Form II numbers from r.sno (data field), so startIndex is unused.
-      body = paginateForm(ded, orientation, (rows, _si) => <HospitalFormII ctx={ctx} deductions={rows} />)
+      body = paginateForm(ded, cfg, orientation, (rows, _si) => <HospitalFormII ctx={ctx} deductions={rows} />)
       break
     }
     case 'SHOP_FORM_W': {
       const wages = await getWagesData(ctx)
-      body = paginateForm(wages, orientation, (rows, si) => <ShopFormW ctx={ctx} wages={rows} startIndex={si} />)
+      body = paginateForm(wages, cfg, orientation, (rows, si) => <ShopFormW ctx={ctx} wages={rows} startIndex={si} />)
       break
     }
     case 'SHOP_FORM_T': {
@@ -120,12 +123,12 @@ export default async function PrintPage({
     }
     case 'SHOP_FORM_V': {
       const muster = await getMusterData(ctx)
-      body = paginateForm(muster, orientation, (rows, si) => <ShopFormV ctx={ctx} muster={rows} startIndex={si} />)
+      body = paginateForm(muster, cfg, orientation, (rows, si) => <ShopFormV ctx={ctx} muster={rows} startIndex={si} />)
       break
     }
     case 'SHOP_FORM_X': {
       const leave = await getLeaveData(ctx)
-      body = paginateForm(leave, orientation, (rows, si) => <ShopFormX ctx={ctx} leave={rows} startIndex={si} />)
+      body = paginateForm(leave, cfg, orientation, (rows, si) => <ShopFormX ctx={ctx} leave={rows} startIndex={si} />)
       break
     }
   }
