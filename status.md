@@ -419,3 +419,12 @@
 - Metrics impact: +1 e2e spec (3 tests); seed now 3 establishments / 31 employees
 - Validation: e2e 10-print-pagination 3/3 pass (Playwright auto-starts dev server vs seeded dev.db). Earlier 07-print-views 11/11 pass. No spec asserts exact establishment counts, so the new fixture is non-breaking.
 - Next step: run on branch test/print-multi-sheet-e2e; merge when ready
+
+### Task Update — 2026-06-20 — UI-editable print config Settings page (app-wide, DB-backed)
+- Task: Move print pagination config (max-per-sheet, min-fill) from env vars to an in-app Settings page
+- Status: completed
+- Scope: New AppSetting key/value table + migration. print-config.ts split into pure logic (resolvePrintConfig, parseSettingValue, exported singleSheetCeiling, chunk; no DB/env) and new print-config-server.ts (getRawPrintSettings + async getPrintConfig with precedence saved-DB -> env -> hardcoded default, then clamp). New /api/settings route (GET; PUT validates both fields, atomic prisma.$transaction upsert/clear). New /settings page (force-dynamic) + settings-form.tsx (dark-theme, aria-labelled inputs, server-validated) + sidebar System->Settings entry. Print page now awaits getPrintConfig once and threads cfg into paginateForm.
+- Files changed: prisma/schema.prisma + migration 20260620022602_add_app_setting; src/lib/print-config.ts (pure refactor) + print-config.test.ts; src/lib/print-config-server.ts (new); src/app/api/settings/route.ts (new); src/app/settings/page.tsx (new); src/components/settings-form.tsx (new); src/components/sidebar.tsx; src/app/print/[cycleId]/[formCode]/page.tsx; e2e/12-settings.spec.ts (new)
+- Metrics impact: +1 DB model; +1 API route; +1 page; +1 e2e spec (4 tests); print-config unit tests now 12
+- Validation: e2e 12-settings 4/4 pass; print regressions 07+10 14/14 pass; 180 unit tests pass; npm run build clean with /settings + /api/settings routes. NOTE during e2e a stale dev server (started pre-migration) served an old Prisma client lacking appSetting → killed it so Playwright started fresh; restart dev server after running new migrations.
+- Next step: merge branch feat/print-config-settings; saved values override env (which now only seeds the initial fallback)

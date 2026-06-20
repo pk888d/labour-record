@@ -57,7 +57,6 @@ export function SettingsForm({ initial, ceilings }: Props) {
         <span className="block text-xs text-[#5a8ab8] mb-1">Max employees per sheet</span>
         <input
           type="number"
-          min={1}
           aria-label="Max employees per sheet"
           value={maxRowsPerSheet}
           onChange={(e) => { setSaved(false); setMax(e.target.value) }}
@@ -75,7 +74,6 @@ export function SettingsForm({ initial, ceilings }: Props) {
         <span className="block text-xs text-[#5a8ab8] mb-1">Min fill rows</span>
         <input
           type="number"
-          min={1}
           aria-label="Min fill rows"
           value={minFillRows}
           onChange={(e) => { setSaved(false); setMin(e.target.value) }}
