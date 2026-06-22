@@ -44,14 +44,14 @@ model Employee {
   id                  String         @id @default(cuid())
   empId               String
   name                String
-  sex                 String
-  fatherSpouseName    String
+  sex                 String?
+  fatherSpouseName    String?
   dob                 DateTime?
-  dateOfEntry         DateTime
-  designation         String
+  dateOfEntry         DateTime?
+  designation         String?
   department          String?
-  presentAddress      String
-  permanentAddress    String
+  presentAddress      String?
+  permanentAddress    String?
   uan                 String?
   esiNo               String?
   aadhaar             String?
@@ -79,6 +79,7 @@ model Employee {
   pfAmount            Float          @default(0)
   esiAmount           Float          @default(0)
   lwfAmount           Float          @default(0)
+  paymentMode         String         @default("BANK") // BANK | CASH
   establishmentId     String
   establishment       Establishment  @relation(fields: [establishmentId], references: [id])
   createdAt           DateTime       @default(now())
