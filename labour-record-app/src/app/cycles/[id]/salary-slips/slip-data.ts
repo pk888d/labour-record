@@ -17,7 +17,7 @@ export type SlipData = {
   employeeId: string
   empId: string
   name: string
-  designation: string
+  designation: string | null
   department: string | null
   uan: string | null
   esiNo: string | null

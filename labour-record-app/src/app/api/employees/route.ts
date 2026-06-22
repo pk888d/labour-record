@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { validateEmployee } from '@/domain/validations/employee'
+import { validateEmployee, generateEmpId } from '@/domain/validations/employee'
 
 const VALID_STATUSES = ['ACTIVE', 'SUSPENDED', 'EXITED']
 
@@ -44,30 +44,34 @@ export async function POST(request: Request) {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const b = body as any
+    const empId = b.empId?.trim()
+      ? b.empId.trim()
+      : generateEmpId(await prisma.employee.count({ where: { establishmentId: b.establishmentId } }))
     const employee = await prisma.employee.create({
       data: {
-        empId: b.empId.trim(),
+        empId,
         name: b.name.trim(),
-        sex: b.sex.trim(),
-        fatherSpouseName: b.fatherSpouseName.trim(),
+        sex: b.sex?.trim() || null,
+        fatherSpouseName: b.fatherSpouseName?.trim() || null,
         dob: b.dob ? new Date(b.dob) : null,
-        dateOfEntry: new Date(b.dateOfEntry),
-        designation: b.designation.trim(),
+        dateOfEntry: b.dateOfEntry ? new Date(b.dateOfEntry) : null,
+        designation: b.designation?.trim() || null,
         department: b.department?.trim() || null,
-        presentAddress: b.presentAddress.trim(),
-        permanentAddress: b.permanentAddress.trim(),
+        presentAddress: b.presentAddress?.trim() || null,
+        permanentAddress: b.permanentAddress?.trim() || null,
         uan: b.uan?.trim() || null,
         esiNo: b.esiNo?.trim() || null,
         aadhaar: b.aadhaar?.trim() || null,
-        bankAccount: b.bankAccount?.trim() || null,
-        ifsc: b.ifsc?.trim() || null,
-        bankName: b.bankName?.trim() || null,
+        bankAccount: b.paymentMode === 'CASH' ? null : (b.bankAccount?.trim() || null),
+        ifsc: b.paymentMode === 'CASH' ? null : (b.ifsc?.trim() || null),
+        bankName: b.paymentMode === 'CASH' ? null : (b.bankName?.trim() || null),
         mobile: b.mobile?.trim() || null,
         email: b.email?.trim() || null,
         completionOf480Days: b.completionOf480Days ? new Date(b.completionOf480Days) : null,
         dateMadePermanent: b.dateMadePermanent ? new Date(b.dateMadePermanent) : null,
         periodOfSuspension: b.periodOfSuspension?.trim() || null,
         remarks: b.remarks?.trim() || null,
+        paymentMode: b.paymentMode === 'CASH' ? 'CASH' : 'BANK',
         defaultTotalSalary: parseFloat(b.defaultTotalSalary) || 0,
         basicWage: parseFloat(b.basicWage) || 0,
         daWage: parseFloat(b.daWage) || 0,

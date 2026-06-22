@@ -119,7 +119,7 @@ export default async function EmployeesPage({
                   <td className="py-2 px-3 text-[#7a9ab8]">{emp.designation}</td>
                   <td className="py-2 px-3 text-[#7a9ab8] text-xs">{emp.establishment.name}</td>
                   <td className="py-2 px-3 text-[#7a9ab8] text-xs">
-                    {new Date(emp.dateOfEntry).toLocaleDateString('en-IN')}
+                    {emp.dateOfEntry ? new Date(emp.dateOfEntry).toLocaleDateString('en-IN') : '—'}
                   </td>
                   <td className="py-2 px-3">
                     <span className={`text-xs px-2 py-0.5 rounded ${

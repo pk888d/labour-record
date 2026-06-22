@@ -60,7 +60,7 @@ export function SlipCard({
           { label: 'Emp No', value: slip.empId },
           { label: 'Days Worked', value: String(slip.daysWorked) },
           { label: 'Name', value: slip.name },
-          { label: 'Designation', value: slip.designation },
+          ...(slip.designation ? [{ label: 'Designation', value: slip.designation }] : []),
           ...(slip.department ? [{ label: 'Department', value: slip.department }] : []),
           ...(slip.uan ? [{ label: 'UAN', value: slip.uan }] : []),
           ...(slip.esiNo ? [{ label: 'ESI No', value: slip.esiNo }] : []),

@@ -20,7 +20,7 @@ export interface EventSources {
   holidays: { id: string; date: Date; name: string; doubleWage: boolean }[]
   cycles: { id: string; month: number; year: number; status: string; establishmentName: string; dueDate?: Date | null }[]
   tasks: { id: string; formCode: string; status: string; dueDate: Date | null; establishmentName: string; cycleId: string }[]
-  employees: { id: string; name: string; dateOfEntry: Date; exitDate: Date | null; establishmentName: string }[]
+  employees: { id: string; name: string; dateOfEntry: Date | null; exitDate: Date | null; establishmentName: string }[]
   custom: {
     id: string; title: string; date: Date; time: string | null; type: string
     establishmentName: string | null; remindDaysBefore: number | null; recurring: string | null; notes: string | null
@@ -84,7 +84,7 @@ export function buildCalendarEvents(sources: EventSources, rangeStart: Date, ran
   }
 
   for (const e of sources.employees) {
-    if (inRange(e.dateOfEntry, rangeStart, rangeEnd)) {
+    if (e.dateOfEntry && inRange(e.dateOfEntry, rangeStart, rangeEnd)) {
       out.push({ id: `emp-join-${e.id}`, date: iso(e.dateOfEntry), title: `${e.name} joined — ${e.establishmentName}`, type: 'employee-join', establishmentName: e.establishmentName })
     }
     if (e.exitDate && inRange(e.exitDate, rangeStart, rangeEnd)) {
