@@ -1,32 +1,26 @@
 export type EmployeeInput = {
-  empId: string
+  empId?: string | null
   name: string
-  sex: string
-  fatherSpouseName: string
-  dateOfEntry: Date | null
-  designation: string
-  presentAddress: string
-  permanentAddress: string
+  sex?: string | null
+  fatherSpouseName?: string | null
+  dateOfEntry?: Date | null
+  designation?: string | null
+  presentAddress?: string | null
+  permanentAddress?: string | null
   establishmentId: string
+  defaultTotalSalary?: number | null
   exitDate?: Date | null
   exitReason?: string | null
 }
 
+// Phase-2 (#3): only Name + a salary figure are mandatory (plus the owning
+// establishment). Everything else is optional and entered later / via import.
 export function validateEmployee(input: EmployeeInput): string[] {
   const errors: string[] = []
-  if (!input.empId?.trim()) errors.push('empId is required')
   if (!input.name?.trim()) errors.push('name is required')
-  const VALID_SEX_VALUES = ['M', 'F', 'Male', 'Female']
-  if (!input.sex?.trim()) {
-    errors.push('sex is required')
-  } else if (!VALID_SEX_VALUES.includes(input.sex.trim())) {
-    errors.push('sex must be M or F')
+  if (!(typeof input.defaultTotalSalary === 'number' && input.defaultTotalSalary > 0)) {
+    errors.push('a salary figure is required')
   }
-  if (!input.fatherSpouseName?.trim()) errors.push('fatherSpouseName is required')
-  if (!input.dateOfEntry) errors.push('dateOfEntry is required')
-  if (!input.designation?.trim()) errors.push('designation is required')
-  if (!input.presentAddress?.trim()) errors.push('presentAddress is required')
-  if (!input.permanentAddress?.trim()) errors.push('permanentAddress is required')
   if (!input.establishmentId?.trim()) errors.push('establishmentId is required')
 
   if (input.exitDate && input.dateOfEntry && input.exitDate < input.dateOfEntry) {
@@ -36,4 +30,10 @@ export function validateEmployee(input: EmployeeInput): string[] {
     errors.push('exitReason is required when exitDate is set')
   }
   return errors
+}
+
+// Auto-generate an Employee ID when the operator leaves it blank (#3).
+// `existingCount` is the current number of employees in the establishment.
+export function generateEmpId(existingCount: number): string {
+  return `EMP-${String(existingCount + 1).padStart(4, '0')}`
 }
