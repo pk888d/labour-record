@@ -459,3 +459,16 @@
 - Metrics impact: unit tests 65 → 71 (12 files, +6 paginate); +1 page (/audit); +1 e2e spec (3 tests)
 - Validation: 71 unit tests pass; npm run build clean (/audit present); e2e 01-nav + 03-employees + 04-cycles + 14-admin-views all green. NOTE: adding pagination surfaced a data-volume-fragile assertion in 03-employees (created employee fell to page 2) — fixed it to use the new ?q= search.
 - Next step: merge feat/m4-low-polish; remaining work = Tier 1–4 feature set (each its own brainstorm→spec→plan cycle)
+
+### Task Update — 2026-06-23 — Phase-2 Wave A (employee management: #1–#4)
+- Task: Low-friction employee data entry + delete + import (phase-2 review items 1–4)
+- Status: completed
+- Scope:
+  - #3: migration makes sex/fatherSpouseName/dateOfEntry/designation/present+permanentAddress nullable; validateEmployee now requires only name + positive salary (+establishment); blank empId auto-generates (generateEmpId). Routes coerce the form's string salary to a number before validating.
+  - #4: per-employee paymentMode (BANK|CASH); form select clears + disables bank fields on Cash; routes null the bank fields on Cash.
+  - #1: guarded hard-delete — DELETE ?mode=remove removes the row only if the employee has no cycle/wage/attendance refs, else 409 → UI offers "Mark Exited"; soft-Exit retained as default.
+  - #2: employee import (CSV/TXT/XLSX via SheetJS) — pure parse-employees mapper (header aliases, name+salary required), POST /api/employees/import, /employees/import page + sample download, list "↥ Import" link.
+- Files changed: prisma/schema.prisma + migration; src/domain/validations/employee.ts (+test); src/app/api/employees/route.ts; src/app/api/employees/[id]/route.ts; src/components/employee-form.tsx; src/app/employees/[id]/{page.tsx,delete-employee-button.tsx}; src/lib/import/parse-employees.ts (+test); src/app/api/employees/import/route.ts; src/app/employees/import/{page.tsx,import-client.tsx}; src/app/employees/page.tsx; package.json (xlsx); e2e/15-employee-mgmt.spec.ts
+- Metrics impact: unit tests 71 → 79 (14 files, +employee +parse-employees); +2 routes, +1 page, +1 e2e (3 tests); +xlsx dep
+- Validation: 79 unit tests pass; e2e 15-employee-mgmt 3/3 (create with only name+salary, Cash disables bank, import reachable); 03-employees 6/6 regression; npm run build clean. Caught + fixed a create-blocking bug (form posts salary as string; validator wanted number).
+- Next step: merge feat/phase2-employee-mgmt; then Wave B (#5,#7 wage sync/double-wage) and Wave C (#6,#8,#9,#10 print fidelity)
