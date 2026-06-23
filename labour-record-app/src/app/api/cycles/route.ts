@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { validateNewCycle } from '@/domain/validations/cycle'
 import { getFormCodes } from '@/domain/workflow/kanban-transitions'
+import { computeCycleWages } from '@/domain/calculations/cycle-wage'
+import type { WageFormulaConfig } from '@/types'
 
 export async function GET(request: Request) {
   try {
@@ -97,6 +99,51 @@ export async function POST(request: Request) {
           }),
         })),
       })
+    }
+
+    // Seed a WageRecord per employee from their saved salary so the wages
+    // register / slips reflect it immediately (#7). No attendance yet at
+    // creation → holidayBonus 0; the Wages tab / Sync recompute later.
+    const cfg = JSON.parse(establishment.wageFormulaConfig) as WageFormulaConfig
+    const daysInMonth = new Date(b.year!, b.month!, 0).getDate()
+    const seedRows = employees
+      .filter((emp) => emp.defaultTotalSalary > 0)
+      .map((emp) => {
+        const c = computeCycleWages({
+          employee: {
+            defaultTotalSalary: emp.defaultTotalSalary,
+            daWage: emp.daWage,
+            hraWage: emp.hraWage,
+            pfMode: emp.pfMode,
+            pfPercent: emp.pfPercent,
+            pfWageCeiling: emp.pfWageCeiling,
+            pfAmount: emp.pfAmount,
+            lwfAmount: emp.lwfAmount,
+          },
+          esiApplicable: !!cfg.esiApplicable,
+          daysInMonth,
+        })
+        return {
+          cycleId: cycle.id,
+          employeeId: emp.id,
+          daysWorked: c.daysWorked,
+          basic: c.basic,
+          da: c.da,
+          hra: c.hra,
+          totalNormalWages: c.totalNormalWages,
+          totalEarnings: c.totalEarnings,
+          overtimeEarnings: c.overtimeEarnings,
+          grossWages: c.grossWages,
+          pf: c.pf,
+          esi: c.esi,
+          lwf: c.lwf,
+          totalDeductions: c.totalDeductions,
+          netWages: c.netWages,
+          holidayBonus: c.holidayBonus,
+        }
+      })
+    if (seedRows.length > 0) {
+      await prisma.wageRecord.createMany({ data: seedRows })
     }
 
     const formCodes = getFormCodes(establishment.type)
