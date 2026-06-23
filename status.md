@@ -497,3 +497,12 @@
 - Validation: 07-print-views 11/11, 10-print-pagination 3/3, build clean.
 - DEFERRED (#10 content): the Wages Register's additional columns to reach the user's "29" — the repo template has 17; user will share the authoritative 29-column template, then rebuild the React view + docx template to match.
 - Next step: user shares 29-col wages template + verifies print output for #6/#8/#9; then finish #10.
+
+### Task Update — 2026-06-23 — Wide register 2-page horizontal split (Form IV/V congestion)
+- Task: Split the wide daily-column registers across two landscape pages so Name/identity columns are legible
+- Status: completed
+- Scope: New pure splitDays(daysInMonth) helper (first half = ceil(n/2) days). New generic SplitRegister<T> server component renders two .form-page blocks — Part 1 (identity cols + days 1..mid, break-after:page) and Part 2 ("(continued)" title, identity cols repeated + days mid+1..end + summary cols). Hospital Form IV (Overtime), Hospital Form V (Muster), and Shop Form V (Muster) refactored to thin SplitRegister configs. page.tsx/paginateForm unchanged — each form now emits 2 sheets, composing with the existing vertical (max-per-sheet) pagination into a (chunk × part) grid.
+- Files changed: src/lib/day-split.ts (+test); src/app/print/[cycleId]/[formCode]/split-register.tsx (new); hospital-form-iv.tsx, hospital-form-v.tsx, shop-form-v.tsx (now thin configs); e2e/17-wide-register-split.spec.ts (new)
+- Metrics impact: unit tests 84 → 87 (+3 day-split); +1 component, +1 e2e (2 tests)
+- Validation: e2e 17 2/2 (Form IV & V each render exactly 2 .form-page with "continued" + repeated Name header on DNV's single chunk); 87 unit tests pass; 07-print 11/11; 10-print-pagination 3/3 (Form V now 4 sheets for the 25-emp bulk cycle = 2 chunks × 2 parts); build clean.
+- Next step: merge feat/phase2-wave-c2-daysplit; still pending #10 (user's 29-col wages template).
