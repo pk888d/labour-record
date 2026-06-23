@@ -9,9 +9,14 @@ export default function PrintLayout({ children }: { children: React.ReactNode })
         body { background: white !important; color: black !important; }
         /* @page orientation is injected per-form (landscape default, portrait optional) */
         * { box-sizing: border-box; }
-        /* width:100% always fills the sheet horizontally (item #1). */
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #000; padding: 2px 4px; font-size: 9px; line-height: 1.2; }
+        /* width:100% always fills the sheet horizontally (item #1).
+           table-layout:fixed distributes columns to exactly the page width so wide
+           statutory registers (Wages Form XII, Muster Form V) can't overflow the
+           A4 print area and clip the right-hand columns / shift cells under the
+           wrong headers. Long header words wrap instead of forcing overflow. */
+        table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+        th, td { border: 1px solid #000; padding: 2px 4px; font-size: 9px; line-height: 1.2;
+          overflow-wrap: anywhere; word-break: break-word; }
         /* Fill-the-paper: data cells take the per-row height / font computed from
            the row count (see print-density.ts). Vars cascade from .form-page;
            fall back to the static values when no density wrapper is present. */

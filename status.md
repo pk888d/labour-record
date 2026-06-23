@@ -486,3 +486,14 @@
 - Metrics impact: unit tests 79 → 83 (15 files, +4 cycle-wage); +1 route; +1 e2e (2 tests)
 - Validation: 83 unit tests pass; e2e 16-wage-sync 2/2 (cycle seeds non-zero gross from salary; sync re-pulls); 07-print 11/11 (404 restored) + 13-wage-calc 3/3 (manual override still wins). npm run build clean.
 - Next step: merge feat/phase2-wave-b-wage-sync; then Wave C (#6,#8,#9,#10 print fidelity)
+
+### Task Update — 2026-06-23 — Phase-2 Wave C (print fidelity: #6, #8, #9; #10 partial)
+- Task: Fix print/template fidelity of statutory registers
+- Status: in progress (print-fit done; #10 column content awaits user's template)
+- Root-cause finding: extracted the .docx templates — Wages (Form XII) = 17 columns, Muster (Form V) = details + daily 1–31; the React views already render these. The reported symptoms (#6 "many title columns missing", #8 "name in signature column", #9 "Employee Register not aligned", #10 "only 12 printed") all trace to ONE cause: the wide register tables used CSS table-layout:auto + width:100%, so on A4 print the content-sized columns overflowed the page and clipped the right-hand columns / shifted body cells under the wrong headers (making names appear under the signature column).
+- Fix: src/app/print/layout.tsx — `table { table-layout: fixed }` + `th,td { overflow-wrap:anywhere; word-break:break-word }`. Columns now distribute to exactly the page width (no overflow/clip), header & body columns share widths (aligned), and the empty signature data cells stay under the signature header.
+- Also: made e2e/10-print-pagination drift-tolerant (assert contiguous 1..N and >= seeded roster, not hardcoded 25) after create-employee tests polluted the bulk fixture; cleaned 3 stray rows from dev.db.
+- Files changed: src/app/print/layout.tsx; e2e/10-print-pagination.spec.ts
+- Validation: 07-print-views 11/11, 10-print-pagination 3/3, build clean.
+- DEFERRED (#10 content): the Wages Register's additional columns to reach the user's "29" — the repo template has 17; user will share the authoritative 29-column template, then rebuild the React view + docx template to match.
+- Next step: user shares 29-col wages template + verifies print output for #6/#8/#9; then finish #10.
