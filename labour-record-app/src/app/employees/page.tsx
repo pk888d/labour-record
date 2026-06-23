@@ -92,6 +92,10 @@ export default async function EmployeesPage({
               Filter
             </button>
           </form>
+          <Link href="/employees/import"
+            className="px-3 py-1 bg-[#1a3050] text-[#4a9eff] text-xs rounded hover:bg-[#1a4060]">
+            ↥ Import
+          </Link>
         </div>
 
         {total === 0 ? (
