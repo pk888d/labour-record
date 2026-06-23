@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import type { WageFormulaConfig } from '@/types'
+import { computeCycleWages } from '@/domain/calculations/cycle-wage'
 
 export const MONTH_NAMES = ['','January','February','March','April','May','June',
   'July','August','September','October','November','December']
@@ -237,16 +238,37 @@ export async function getWagesData(ctx: CycleContext): Promise<WagesRow[]> {
   const wages = await prisma.wageRecord.findMany({ where: { cycleId: ctx.cycleId } })
   const fathers = await getFatherNames(ctx)
 
+  const empWage = await prisma.employee.findMany({
+    where: { id: { in: ctx.employees.map((e) => e.employeeId) } },
+    select: { id: true, defaultTotalSalary: true, daWage: true, hraWage: true, pfMode: true, pfPercent: true, pfWageCeiling: true, pfAmount: true, lwfAmount: true },
+  })
+  const empWageById = new Map(empWage.map((e) => [e.id, e]))
+  const att = await prisma.attendanceRecord.findMany({ where: { cycleId: ctx.cycleId } })
+  const attByEmp = new Map(att.map((a) => [a.employeeId, JSON.parse(a.dailyMarks) as string[]]))
+  const hol = await prisma.govtHoliday.findMany({ where: { date: { gte: new Date(ctx.cycle.year, ctx.cycle.month - 1, 1), lte: new Date(ctx.cycle.year, ctx.cycle.month - 1, ctx.daysInMonth) } } })
+  const holidayDays = new Set(hol.map((h) => new Date(h.date).getUTCDate()))
+  const esiApplicable = !!ctx.establishment.wageFormulaConfig.esiApplicable
+
   return ctx.employees.map((emp) => {
     const w = wages.find((r) => r.employeeId === emp.employeeId)
+    const ew = empWageById.get(emp.employeeId)
+    const fb = (w || !ew) ? null : computeCycleWages({
+      employee: {
+        defaultTotalSalary: ew.defaultTotalSalary, daWage: ew.daWage, hraWage: ew.hraWage,
+        pfMode: ew.pfMode, pfPercent: ew.pfPercent, pfWageCeiling: ew.pfWageCeiling,
+        pfAmount: ew.pfAmount, lwfAmount: ew.lwfAmount,
+      },
+      attendance: attByEmp.get(emp.employeeId), holidayDays, esiApplicable,
+      daysInMonth: ctx.daysInMonth,
+    })
     const otherAllowances = w ? sumNumeric(w.otherAllowances) : 0
     const fineDeduction = w?.fineDeduction ?? 0
-    const basic = w?.basic ?? 0
-    const da = w?.da ?? 0
-    const hra = w?.hra ?? 0
-    const pf = w?.pf ?? 0
-    const esi = w?.esi ?? 0
-    const lwf = w?.lwf ?? 0
+    const basic = w?.basic ?? fb?.basic ?? 0
+    const da = w?.da ?? fb?.da ?? 0
+    const hra = w?.hra ?? fb?.hra ?? 0
+    const pf = w?.pf ?? fb?.pf ?? 0
+    const esi = w?.esi ?? fb?.esi ?? 0
+    const lwf = w?.lwf ?? fb?.lwf ?? 0
     const otherDeductions = w?.otherDeductions ?? 0
     const advanceRecovered = w?.advanceRecovered ?? 0
     const gross = basic + da + hra + otherAllowances
@@ -260,19 +282,19 @@ export async function getWagesData(ctx: CycleContext): Promise<WagesRow[]> {
       designation: emp.designation,
       department: emp.department,
       dateOfEntry: emp.dateOfEntry,
-      daysWorked: w?.daysWorked ?? 0,
+      daysWorked: w?.daysWorked ?? fb?.daysWorked ?? 0,
       basic,
       da,
       hra,
       otherAllowances,
-      grossEarnings: w?.grossWages ?? gross,
+      grossEarnings: w?.grossWages ?? fb?.grossWages ?? gross,
       pf,
       esi,
       lwf,
       fineDeduction,
       otherDeductions,
       advanceRecovered,
-      netWage: w?.netWages ?? (gross - totalDed),
+      netWage: w?.netWages ?? fb?.netWages ?? (gross - totalDed),
       paymentDate: w?.paymentDate ? new Date(w.paymentDate).toISOString().split('T')[0] : '',
       receiptRef: w?.receiptRef ?? '',
     }
