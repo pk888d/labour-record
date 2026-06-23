@@ -39,11 +39,12 @@ export async function POST(request: Request) {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const errors = validateEmployee(body as any)
+    const b = body as any
+    // The form posts numeric fields as strings; coerce the salary so the
+    // number-typed validator (name + positive salary) sees a real number.
+    const errors = validateEmployee({ ...b, defaultTotalSalary: parseFloat(b.defaultTotalSalary) || 0 })
     if (errors.length > 0) return NextResponse.json({ errors }, { status: 422 })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const b = body as any
     const empId = b.empId?.trim()
       ? b.empId.trim()
       : generateEmpId(await prisma.employee.count({ where: { establishmentId: b.establishmentId } }))
