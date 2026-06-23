@@ -104,17 +104,49 @@ export async function PUT(request: Request, { params }: Params) {
   }
 }
 
-export async function DELETE(_req: Request, { params }: Params) {
+export async function DELETE(req: Request, { params }: Params) {
   try {
     const { id } = await params
+    const { searchParams } = new URL(req.url)
+    const mode = searchParams.get('mode')
     const employee = await prisma.employee.findUnique({ where: { id } })
     if (!employee) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+    if (mode === 'remove') {
+      const refCount =
+        (await prisma.cycleEmployee.count({ where: { employeeId: id } })) +
+        (await prisma.wageRecord.count({ where: { employeeId: id } })) +
+        (await prisma.attendanceRecord.count({ where: { employeeId: id } }))
+      if (refCount > 0) {
+        return NextResponse.json(
+          {
+            error:
+              'This employee appears in one or more cycles and cannot be permanently deleted. Mark them Exited instead.',
+            canSoftDelete: true,
+          },
+          { status: 409 },
+        )
+      }
+      await prisma.employee.delete({ where: { id } })
+      try {
+        await prisma.auditLog.create({
+          data: {
+            entityType: 'Employee',
+            entityId: id,
+            action: 'DELETED',
+            previousValue: JSON.stringify({ name: employee.name, empId: employee.empId }),
+          },
+        })
+      } catch (auditError) {
+        console.error('Audit log failed:', auditError)
+      }
+      return NextResponse.json({ success: true, removed: true })
+    }
 
     const updated = await prisma.employee.update({
       where: { id },
       data: { status: 'EXITED', exitDate: new Date() },
     })
-
     try {
       await prisma.auditLog.create({
         data: {
@@ -127,7 +159,6 @@ export async function DELETE(_req: Request, { params }: Params) {
     } catch (auditError) {
       console.error('Audit log failed:', auditError)
     }
-
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('DELETE /api/employees/[id] failed:', error)

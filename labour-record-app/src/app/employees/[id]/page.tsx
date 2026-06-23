@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { PageHeader } from '@/components/page-header'
 import { EmployeeForm } from '@/components/employee-form'
+import { DeleteEmployeeButton } from './delete-employee-button'
 
 export default async function EditEmployeePage({
   params,
@@ -22,6 +23,10 @@ export default async function EditEmployeePage({
     <div>
       <PageHeader title={`Edit — ${employee.name}`} />
       <EmployeeForm employee={employee} establishments={establishments} />
+      <div className="px-6 pb-6 border-t border-[#1e2d3d] pt-4 mt-2">
+        <p className="text-xs text-[#5a8ab8] mb-2">Danger zone</p>
+        <DeleteEmployeeButton employeeId={employee.id} name={employee.name} />
+      </div>
     </div>
   )
 }
