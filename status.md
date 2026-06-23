@@ -472,3 +472,17 @@
 - Metrics impact: unit tests 71 → 79 (14 files, +employee +parse-employees); +2 routes, +1 page, +1 e2e (3 tests); +xlsx dep
 - Validation: 79 unit tests pass; e2e 15-employee-mgmt 3/3 (create with only name+salary, Cash disables bank, import reachable); 03-employees 6/6 regression; npm run build clean. Caught + fixed a create-blocking bug (form posts salary as string; validator wanted number).
 - Next step: merge feat/phase2-employee-mgmt; then Wave B (#5,#7 wage sync/double-wage) and Wave C (#6,#8,#9,#10 print fidelity)
+
+### Task Update — 2026-06-23 — Phase-2 Wave B (wage sync + auto double-wage: #5, #7)
+- Task: Make an employee's saved salary flow into wage slips / wages register, with holiday-worked days auto-paid at 2×
+- Status: completed
+- Scope:
+  - B1: new pure computeCycleWages(employee, attendance?, holidayDays?, multiplier?, esiApplicable, daysInMonth) — derives basic/da/hra/pf/esi/lwf from saved salary (computeSalaryBreakdown) and auto-pays holiday-worked days at the multiplier (default 2×, #5). Zero-salary guard. 4 unit tests.
+  - B2 (#7 seed): cycle creation seeds a WageRecord per employee (defaultTotalSalary>0) from computeCycleWages, so the register/slips show salary immediately.
+  - B3 (#7 sync): POST /api/cycles/[id]/sync-wages re-pulls employee salary (+ current attendance double-wage) into WageRecords, preserving manual fine/advance/other-deduction figures; "↻ Sync wages from employees" button on the cycle page.
+  - B4 (#7 fallback): slip-data + getWagesData compute from the employee's saved salary when no manual WageRecord exists; a manual record always overrides.
+  - Fix: removed src/app/loading.tsx — the root loading skeleton (from the M4 wave) made every notFound() stream a 200 instead of 404 (verified empirically; broke 07-print invalid-code test).
+- Files changed: src/domain/calculations/cycle-wage.ts (+test); src/app/api/cycles/route.ts; src/app/api/cycles/[id]/sync-wages/route.ts (new); src/app/cycles/[id]/{sync-wages-button.tsx,page.tsx}; src/app/cycles/[id]/salary-slips/slip-data.ts; src/lib/export/form-data.ts; e2e/16-wage-sync.spec.ts; removed src/app/loading.tsx
+- Metrics impact: unit tests 79 → 83 (15 files, +4 cycle-wage); +1 route; +1 e2e (2 tests)
+- Validation: 83 unit tests pass; e2e 16-wage-sync 2/2 (cycle seeds non-zero gross from salary; sync re-pulls); 07-print 11/11 (404 restored) + 13-wage-calc 3/3 (manual override still wins). npm run build clean.
+- Next step: merge feat/phase2-wave-b-wage-sync; then Wave C (#6,#8,#9,#10 print fidelity)
