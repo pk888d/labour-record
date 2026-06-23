@@ -6,6 +6,7 @@ import { FORM_DISPLAY_NAMES } from '@/types'
 import type { FormCode } from '@/types'
 import { ExportButton } from './export-button'
 import { SyncEmployeesButton } from './sync-employees-button'
+import { SyncWagesButton } from './sync-wages-button'
 
 const MONTH_NAMES = ['','January','February','March','April','May','June',
   'July','August','September','October','November','December']
@@ -90,6 +91,7 @@ export default async function CycleDetailPage({
                 Salary Slips
               </Link>
               <SyncEmployeesButton cycleId={cycle.id} />
+              <SyncWagesButton cycleId={cycle.id} />
             </div>
           </div>
           <table className="w-full text-sm border-collapse">
