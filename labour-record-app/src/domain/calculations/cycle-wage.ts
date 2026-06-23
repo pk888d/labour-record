@@ -42,6 +42,8 @@ export function computeCycleWages(input: {
   holidayMultiplier?: number
   esiApplicable: boolean
   daysInMonth: number
+  preset?: string // wage formula preset; controls the allowance in totalEarnings
+  fixedAllowance?: number // hospital preset's fixed allowance (₹), added to earnings
 }): CycleWageResult {
   const e = input.employee
   const multiplier = input.holidayMultiplier ?? 2
@@ -73,7 +75,11 @@ export function computeCycleWages(input: {
   const holidayBonus = round2(dailyRate * (multiplier - 1) * holidayWorkedDays)
 
   const totalNormalWages = round2(b.basic + b.da)
-  const totalEarnings = round2(b.basic + b.da + b.hra + holidayBonus)
+  // Mirror calculateWages: the hospital minimum-wages preset adds a fixed
+  // allowance (not HRA) on top of Basic+DA; all other presets use HRA.
+  const allowance =
+    input.preset === 'TN_MINIMUM_WAGES_HOSPITAL' ? input.fixedAllowance ?? 0 : b.hra
+  const totalEarnings = round2(b.basic + b.da + allowance + holidayBonus)
   const overtimeEarnings = 0
   const grossWages = round2(totalEarnings + overtimeEarnings)
   // No deductions when there are no wages (avoids negative net for zero-salary employees).

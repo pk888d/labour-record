@@ -53,6 +53,8 @@ export async function POST(_req: Request, { params }: Params) {
         holidayDays,
         holidayMultiplier: multiplier,
         esiApplicable: !!cfg.esiApplicable,
+        preset: cfg.preset,
+        fixedAllowance: cfg.fixedAllowance,
         daysInMonth,
       })
       const prev = existingByEmp.get(ce.employeeId)

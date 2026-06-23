@@ -259,6 +259,8 @@ export async function getWagesData(ctx: CycleContext): Promise<WagesRow[]> {
         pfAmount: ew.pfAmount, lwfAmount: ew.lwfAmount,
       },
       attendance: attByEmp.get(emp.employeeId), holidayDays, esiApplicable,
+      preset: ctx.establishment.wageFormulaConfig.preset,
+      fixedAllowance: ctx.establishment.wageFormulaConfig.fixedAllowance,
       daysInMonth: ctx.daysInMonth,
     })
     const otherAllowances = w ? sumNumeric(w.otherAllowances) : 0

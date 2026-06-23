@@ -121,6 +121,8 @@ export async function POST(request: Request) {
             lwfAmount: emp.lwfAmount,
           },
           esiApplicable: !!cfg.esiApplicable,
+          preset: cfg.preset,
+          fixedAllowance: cfg.fixedAllowance,
           daysInMonth,
         })
         return {

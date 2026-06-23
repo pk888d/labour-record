@@ -87,7 +87,7 @@ export async function getCycleWithSlips(cycleId: string): Promise<{ cycle: Cycle
         pfWageCeiling: ce.employee.pfWageCeiling, pfAmount: ce.employee.pfAmount, lwfAmount: ce.employee.lwfAmount,
       },
       attendance: attByEmp.get(ce.employeeId), holidayDays,
-      esiApplicable: !!cfg.esiApplicable, daysInMonth,
+      esiApplicable: !!cfg.esiApplicable, preset: cfg.preset, fixedAllowance: cfg.fixedAllowance, daysInMonth,
     })
     const basic = w?.basic ?? fb?.basic ?? 0
     const da = w?.da ?? fb?.da ?? 0

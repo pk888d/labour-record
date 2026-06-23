@@ -47,4 +47,13 @@ describe('computeCycleWages', () => {
     expect(r.grossWages).toBe(0)
     expect(r.netWages).toBe(0)
   })
+
+  it('adds the hospital fixed allowance to earnings (matches calculateWages)', () => {
+    const r = computeCycleWages({
+      employee: { ...emp, defaultTotalSalary: 15000, daWage: 5544, hraWage: 0 },
+      esiApplicable: false, daysInMonth: 30,
+      preset: 'TN_MINIMUM_WAGES_HOSPITAL', fixedAllowance: 360,
+    })
+    expect(r.grossWages).toBe(15360) // basic+da (15000) + fixed allowance (360)
+  })
 })
