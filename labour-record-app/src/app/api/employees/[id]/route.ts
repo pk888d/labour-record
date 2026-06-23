@@ -116,7 +116,11 @@ export async function DELETE(req: Request, { params }: Params) {
       const refCount =
         (await prisma.cycleEmployee.count({ where: { employeeId: id } })) +
         (await prisma.wageRecord.count({ where: { employeeId: id } })) +
-        (await prisma.attendanceRecord.count({ where: { employeeId: id } }))
+        (await prisma.attendanceRecord.count({ where: { employeeId: id } })) +
+        (await prisma.leaveRecord.count({ where: { employeeId: id } })) +
+        (await prisma.overtimeRecord.count({ where: { employeeId: id } })) +
+        (await prisma.fineRecord.count({ where: { employeeId: id } })) +
+        (await prisma.deductionRecord.count({ where: { employeeId: id } }))
       if (refCount > 0) {
         return NextResponse.json(
           {

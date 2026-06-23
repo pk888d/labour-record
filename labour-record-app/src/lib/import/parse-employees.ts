@@ -21,7 +21,7 @@ export interface RowError { row: number; messages: string[] }
 
 const ALIASES = {
   name: ['name'],
-  empId: ['emp id', 'empid', 'employee id', 'id'],
+  empId: ['emp id', 'empid', 'employee id', 'employee code', 'emp code'],
   sex: ['sex', 'gender'],
   fatherSpouseName: ['father/spouse', 'father / spouse', 'father/spouse name', 'father name', 'spouse name'],
   designation: ['designation', 'role'],
