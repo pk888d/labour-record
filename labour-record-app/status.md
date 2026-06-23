@@ -71,8 +71,44 @@
 - Seed records: 2 establishments, 6 employees
 
 ## EXECUTION STATUS
-- Current state: ALL 10 tasks of Government Holidays & Wage Rules feature completed — 0 TypeScript errors, 90 unit tests passing
-- Next action: None — feature complete
+- Current state: Phase-2 A7 completed — employee import API route, import page, sample CSV download, Import link on list; build passes clean
+- Next action: A8 — verify + e2e + status
+
+### Task Update — 2026-06-23 IST
+- Task: A7 — employee import (CSV/TXT/XLSX) — route, page, sample, list link
+- Status: completed
+- Scope: Installed xlsx (SheetJS). Created POST /api/employees/import route that parses CSV/TXT/XLSX via SheetJS, calls parseEmployeeRows, bulk-creates valid employees with auto-generated empId. Created /employees/import page with ImportClient (establishment selector, file picker, downloadable sample CSV, success/error display). Added "↥ Import" Link to employees list filter row.
+- Files changed: package.json, package-lock.json, src/app/api/employees/import/route.ts (new), src/app/employees/import/import-client.tsx (new), src/app/employees/import/page.tsx (new), src/app/employees/page.tsx
+- Metrics impact: +2 routes (/api/employees/import, /employees/import)
+- Validation: npm run build — clean; both new routes present in build output; commit 2227225
+- Next step: A8 — verify + e2e + status
+
+### Task Update — 2026-06-23 IST
+- Task: A5 — guarded hard-delete employee (route + UI)
+- Status: completed
+- Scope: DELETE handler extended to support ?mode=remove (hard-delete); 409 returned when employee has cycleEmployee/wageRecord/attendanceRecord references; default DELETE still soft-sets EXITED. New DeleteEmployeeButton client component: "Delete employee" triggers hard-delete; on 409 shows error + "Mark Exited instead" fallback button. Edit page (employees/[id]/page.tsx) renders button in Danger zone section below EmployeeForm.
+- Files changed: src/app/api/employees/[id]/route.ts, src/app/employees/[id]/delete-employee-button.tsx (new), src/app/employees/[id]/page.tsx
+- Metrics impact: none (no new models/endpoints; existing DELETE route extended)
+- Validation: npm run build — clean; 16/16 static + all dynamic routes compiled; commit b9f3f73
+- Next step: A6 — import parser (pure, tested)
+
+### Task Update — 2026-06-22 22:15 IST
+- Task: A3 — null-safe employee create/update routes, auto empId, paymentMode
+- Status: completed
+- Scope: POST + PUT routes now optional-chain all nullable fields; POST auto-generates empId from count; PUT preserves existing empId when blank; paymentMode='CASH' clears bankAccount/ifsc/bankName. Fixed four downstream nullable type errors introduced by A1 schema change (slip-data.ts, slip-card.tsx, employees/page.tsx, calendar/events.ts).
+- Files changed: src/app/api/employees/route.ts, src/app/api/employees/[id]/route.ts, src/app/cycles/[id]/salary-slips/slip-data.ts, src/app/cycles/[id]/salary-slips/[employeeId]/slip-card.tsx, src/app/employees/page.tsx, src/lib/calendar/events.ts
+- Metrics impact: none (no new models/endpoints)
+- Validation: npx tsc --noEmit — 0 errors on employee routes; npm run build — clean (all 46 routes compiled)
+- Next step: A4 — employee form UI required fields + paymentMode toggle
+
+### Task Update — 2026-06-22 21:53 IST
+- Task: A2 — validateEmployee rewrite + generateEmpId (Phase-2 #3)
+- Status: completed
+- Scope: Relaxed EmployeeInput so only name, defaultTotalSalary, establishmentId are required. All other fields optional. Added generateEmpId(existingCount) helper. Added employee.test.ts with 6 vitest unit tests (TDD: red → green).
+- Files changed: src/domain/validations/employee.ts, src/domain/validations/employee.test.ts (new)
+- Metrics impact: +6 unit tests (all passing); EmployeeInput type changed (breaking for routes — fixed in A3)
+- Validation: `npm test -- employee` — 6/6 passed; commit: 9a705c7
+- Next step: A3 — null-safe create/update employee routes
 
 ### Task Update — 2026-06-05 21:45 IST
 - Task: Tasks 8–10 — Sidebar, Form Entry Defaults, Holiday Bonus Wages API
@@ -305,3 +341,12 @@
 - Metrics impact: 0 TypeScript errors
 - Validation: `npx tsc --noEmit` — 0 errors (clean pass)
 - Next step: None — all features complete
+
+### Task Update — 2026-06-23 07:50 IST
+- Task: A6 — Pure employee-import row parser (header mapping + per-row validation)
+- Status: completed
+- Scope: TDD — wrote failing tests first, then implemented parseEmployeeRows(). Handles case-insensitive + trimmed header matching via ALIASES map. Validates required Name and Salary fields (positive finite number). Maps optional fields: empId, sex, fatherSpouseName, designation, dateOfEntry, mobile, bankAccount, ifsc, paymentMode (defaults BANK). Row numbers are 1-based (header = row 1, first data row = row 2). Returns { valid: ParsedEmployee[], errors: RowError[] }.
+- Files changed: src/lib/import/parse-employees.ts, src/lib/import/parse-employees.test.ts
+- Metrics impact: +1 lib module, +2 tests passing
+- Validation: npm test -- parse-employees → 2 passed (2) in 171ms; commit: 2bbe4c3
+- Next step: A7 — Import route + page + sample CSV
