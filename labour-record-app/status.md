@@ -71,8 +71,17 @@
 - Seed records: 2 establishments, 6 employees
 
 ## EXECUTION STATUS
-- Current state: Phase-2 A7 completed — employee import API route, import page, sample CSV download, Import link on list; build passes clean
-- Next action: A8 — verify + e2e + status
+- Current state: DS2 completed — generic SplitRegister component (2-page horizontal split) created and committed
+- Next action: DS3 — wire Hospital Form IV into SplitRegister
+
+### Task Update — 2026-06-23 IST
+- Task: DS2 — generic SplitRegister server component (2-page horizontal split)
+- Status: completed
+- Scope: Created SplitRegister<T> generic server component that renders wide statutory registers as two landscape .form-page blocks. Part 1 = identity cols + first-half days; Part 2 = identity cols repeated + second-half days + summary cols. breakAfter: 'page' on Part 1. Uses splitDays() from @/lib/day-split.
+- Files changed: src/app/print/[cycleId]/[formCode]/split-register.tsx (new, 73 lines)
+- Metrics impact: +1 component
+- Validation: npx tsc --noEmit 2>&1 | grep -i "split-register" → 0 errors; commit: ae53d1d
+- Next step: DS3 — Hospital Form IV → SplitRegister
 
 ### Task Update — 2026-06-23 IST
 - Task: A7 — employee import (CSV/TXT/XLSX) — route, page, sample, list link
