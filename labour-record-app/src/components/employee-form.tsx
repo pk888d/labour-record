@@ -72,6 +72,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
     pfAmount: String(employee?.pfAmount ?? 0),
     esiAmount: String(employee?.esiAmount ?? 0),
     lwfAmount: String(employee?.lwfAmount ?? 0),
+    paymentMode: (employee?.paymentMode ?? 'BANK') as 'BANK' | 'CASH',
   })
 
   const [errors, setErrors] = useState<string[]>([])
@@ -121,7 +122,6 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
 
     const clientErrors: string[] = []
     if (form.name.trim().length < 2) clientErrors.push('Name must be at least 2 characters')
-    if (form.empId.trim().length < 1) clientErrors.push('Employee ID is required')
 
     if (form.dob) {
       const dob = new Date(form.dob)
@@ -206,11 +206,12 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label className={labelClass}>
-              Employee ID *
-              <Info text="Unique ID within this establishment. e.g. EMP001 or H-2024-01. Cannot be changed later without care." />
+              Employee ID
+              <Info text="Unique ID within this establishment. e.g. EMP001 or H-2024-01. Leave blank to auto-generate." />
             </label>
             <input className={inputClass} aria-label="Emp ID" value={form.empId}
-              onChange={(e) => set('empId', e.target.value)} required />
+              onChange={(e) => set('empId', e.target.value)}
+              placeholder="auto-generated if blank" />
           </div>
           <div className="col-span-2">
             <label className={labelClass}>
@@ -222,11 +223,11 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
           </div>
           <div>
             <label className={labelClass}>
-              Sex *
+              Sex
               <Info text="M = Male, F = Female. Used in statutory registers." />
             </label>
             <select className={inputClass} aria-label="Sex" value={form.sex}
-              onChange={(e) => set('sex', e.target.value)} required>
+              onChange={(e) => set('sex', e.target.value)}>
               <option value="">Select</option>
               <option value="M">Male</option>
               <option value="F">Female</option>
@@ -234,11 +235,11 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
           </div>
           <div className="col-span-2">
             <label className={labelClass}>
-              Father / Spouse Name *
+              Father / Spouse Name
               <Info text="Father's name (for unmarried) or spouse name (for married). Required for Form I and PF nomination." />
             </label>
             <input className={inputClass} aria-label="Father / Spouse Name" value={form.fatherSpouseName}
-              onChange={(e) => set('fatherSpouseName', e.target.value)} required />
+              onChange={(e) => set('fatherSpouseName', e.target.value)} />
           </div>
           <div>
             <label className={labelClass}>
@@ -250,11 +251,11 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
           </div>
           <div>
             <label className={labelClass}>
-              Date of Entry *
+              Date of Entry
               <Info text="First day of employment. Used to compute tenure, earned leave, and 480-days milestone." />
             </label>
             <input className={inputClass} aria-label="Date of Entry" type="date" value={form.dateOfEntry}
-              onChange={(e) => set('dateOfEntry', e.target.value)} required />
+              onChange={(e) => set('dateOfEntry', e.target.value)} />
           </div>
           <div>
             <label className={labelClass}>
@@ -267,7 +268,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
               </p>
             ) : (
               <select className={inputClass} aria-label="Establishment" value={form.establishmentId}
-                onChange={(e) => set('establishmentId', e.target.value)} required>
+                onChange={(e) => set('establishmentId', e.target.value)}>
                 <option value="">Select</option>
                 {establishments.map((est) => (
                   <option key={est.id} value={est.id}>{est.name}</option>
@@ -277,11 +278,11 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
           </div>
           <div>
             <label className={labelClass}>
-              Designation *
+              Designation
               <Info text="Job title as per appointment letter. e.g. Staff Nurse, Pharmacist, Lab Technician" />
             </label>
             <input className={inputClass} aria-label="Designation" value={form.designation}
-              onChange={(e) => set('designation', e.target.value)} required />
+              onChange={(e) => set('designation', e.target.value)} />
           </div>
           <div>
             <label className={labelClass}>
@@ -299,19 +300,19 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>
-              Present Address *
+              Present Address
               <Info text="Current residential address. Used in Form I register." />
             </label>
             <textarea className={inputClass} rows={2} aria-label="Present Address" value={form.presentAddress}
-              onChange={(e) => set('presentAddress', e.target.value)} required />
+              onChange={(e) => set('presentAddress', e.target.value)} />
           </div>
           <div>
             <label className={labelClass}>
-              Permanent Address *
+              Permanent Address
               <Info text="Permanent/native address. Used in Form I register." />
             </label>
             <textarea className={inputClass} rows={2} aria-label="Permanent Address" value={form.permanentAddress}
-              onChange={(e) => set('permanentAddress', e.target.value)} required />
+              onChange={(e) => set('permanentAddress', e.target.value)} />
           </div>
         </div>
       </section>
@@ -350,30 +351,51 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
       <section>
         <p className="text-xs font-semibold text-[#c8d8e8] mb-3 uppercase tracking-wide">Bank Details</p>
         <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className={labelClass}>Payment Mode</label>
+            <select
+              className={inputClass}
+              aria-label="Payment Mode"
+              value={form.paymentMode}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  paymentMode: e.target.value as 'BANK' | 'CASH',
+                  ...(e.target.value === 'CASH' ? { bankAccount: '', ifsc: '', bankName: '' } : {}),
+                }))
+              }
+            >
+              <option value="BANK">Bank Transfer</option>
+              <option value="CASH">Cash</option>
+            </select>
+          </div>
           <div className="col-span-2">
             <label className={labelClass}>
               Bank Account No.
               <Info text="Bank account number (9–18 digits). Stored encrypted for salary transfer." />
             </label>
-            <input className={inputClass} type="password" value={form.bankAccount}
+            <input className={`${inputClass} disabled:opacity-40`} type="password" value={form.bankAccount}
               onChange={(e) => set('bankAccount', e.target.value)}
-              placeholder="Stored encrypted" />
+              placeholder="Stored encrypted"
+              disabled={form.paymentMode === 'CASH'} />
           </div>
           <div>
             <label className={labelClass}>
               IFSC Code
               <Info text="11-character bank branch code. Format: 4 letters + 0 + 6 alphanumeric. e.g. SBIN0001234" />
             </label>
-            <input className={inputClass} value={form.ifsc}
-              onChange={(e) => set('ifsc', e.target.value)} />
+            <input className={`${inputClass} disabled:opacity-40`} value={form.ifsc}
+              onChange={(e) => set('ifsc', e.target.value)}
+              disabled={form.paymentMode === 'CASH'} />
           </div>
           <div className="col-span-2">
             <label className={labelClass}>
               Bank Name
               <Info text="e.g. State Bank of India, Indian Bank" />
             </label>
-            <input className={inputClass} value={form.bankName}
-              onChange={(e) => set('bankName', e.target.value)} />
+            <input className={`${inputClass} disabled:opacity-40`} value={form.bankName}
+              onChange={(e) => set('bankName', e.target.value)}
+              disabled={form.paymentMode === 'CASH'} />
           </div>
         </div>
       </section>
@@ -462,13 +484,14 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
         <div className="grid grid-cols-3 gap-4 mb-4">
           <div>
             <label className={labelClass}>
-              Default Total Salary (₹)
+              Default Total Salary (₹) *
               <Info text="Monthly gross target (Basic + DA + HRA + Other). Basic is the remainder after the components below." />
             </label>
             <input className={inputClass} type="number" min="0" step="0.01"
               aria-label="Default Total Salary"
               value={form.defaultTotalSalary}
-              onChange={(e) => set('defaultTotalSalary', e.target.value)} />
+              onChange={(e) => set('defaultTotalSalary', e.target.value)}
+              required />
           </div>
           <div>
             <label className={labelClass}>
