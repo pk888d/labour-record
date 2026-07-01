@@ -563,3 +563,14 @@
 - Metrics impact: +2 e2e specs (46 tests: 41 pass, 5 skip)
 - Validation: e2e/20 → 17/17; e2e/21 → 24/24 pass + 5 skip (print tests skip when no cycles exist)
 - Next step: user-directed
+
+### Task Update — 2026-07-01 21:00 IST — Fix pre-existing e2e failures in 03, 10, 13
+- Task: Fix 5 pre-existing failures in e2e/03-employees, e2e/10-print-pagination, e2e/13-wage-calc
+- Status: completed
+- Root causes:
+  1. 03-employees "create a shop employee": test didn't fill Default Total Salary; POST now enforces requireSalary:true → form rejected, Selvam never created. Fix: add salary fill.
+  2. 10-print-pagination + 13-wage-calc: est_hospital_bulk had 0 employees (25 seeded bulk workers wiped from DB, possibly after prisma migrate reset without re-seeding) → cycles created with empty cycleEmployees. Fix: both tests now create fixture employees in beforeAll if bulk roster is absent, and clean them up in afterAll.
+- Files changed: e2e/03-employees.spec.ts, e2e/10-print-pagination.spec.ts, e2e/13-wage-calc.spec.ts
+- Metrics impact: 0 new tests; 5 previously failing tests now pass
+- Validation: npx playwright test (all 3 specs) → 12/12; full suite → 189 passed, 6 skipped, 0 failed
+- Next step: user-directed
