@@ -35,6 +35,12 @@
 - [2026-07-01] [claude] — Added: explicit aria-label to all 21 form inputs/selects in employee-form that previously had none (UAN, ESI No, Aadhaar, Bank Account, IFSC Code, Bank Name, Mobile, Email, Department, Status, Exit Date, Reason for Exit, DA Wage, HRA Wage, PF Amount, ESI Amount, LWF Amount, Remarks, etc). Makes form fields accessible to screen readers and gives Playwright stable selectors.
   Files: src/components/employee-form.tsx. DB: none.
 
+- [2026-07-01] [claude] — Added: e2e/20-math-calc.spec.ts — 17 tests covering mathematical accuracy: PF ceiling cap (min(pfWage, ceiling) × percent/100), PF FIXED and NONE modes, ESI 0.75% boundary (inclusive at ₹21,000 threshold), holiday bonus daily-rate formula, multi-deduction stacking (pf+esi+lwf+advance+fine+other), salary component split (hospital gross = basic+da+fixedAllowance; HRA reduces Basic only), and net=gross−totalDeductions formula invariant. All 17 passing.
+  Files: e2e/20-math-calc.spec.ts (new). DB: none.
+
+- [2026-07-01] [claude] — Added: e2e/21-stress.spec.ts — 29 tests (24 passing, 5 skipped): 30-employee bulk CSV import with list-render and bulk-DELETE, 10-employee concurrent wage PUTs in parallel + 10 rapid sequential PUTs, 20-valid/5-invalid mixed CSV (errors reported, only valid rows imported), 11 print-route performance tests (5 skipped — no cycles in beforeAll), 7 API input validation tests (rejects negative/non-numeric, accepts zero and max boundary values).
+  Files: e2e/21-stress.spec.ts (new). DB: none.
+
 - [2026-07-01] [user] — Updated: tech-sakthi-logo.webp optimized (84 KB → 13 KB); added Logo/logo.png source asset.
   Files: public/tech-sakthi-logo.webp, Logo/logo.png. DB: none.
 

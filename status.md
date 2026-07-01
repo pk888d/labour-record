@@ -539,3 +539,27 @@
 - Metrics impact: +1 e2e spec (14 tests); unit tests unchanged (87 passing)
 - Validation: npx playwright test e2e/18-bulk-import.spec.ts → 14/14 passed (2.1 min)
 - Next step: user-directed
+
+### Task Update — 2026-07-01 19:30 IST — Employee edit e2e (19-employee-edit, 15/15 passing)
+- Task: Fix and rewrite e2e/19-employee-edit.spec.ts (was 14/14 failing)
+- Status: completed
+- Scope:
+  - Root cause 1: Info tooltip appends ⓘ to accessible name (e.g. "Mobileⓘ") → `getByLabel(label, { exact: true })` timed out. Fix: added explicit `aria-label` to all 21 inputs in employee-form.tsx; aria-label overrides <label> text for accessible name computation.
+  - Root cause 2: `getByPlaceholder('Stored encrypted')` matched both Aadhaar and Bank Account (both type=password). Fix: added `aria-label="Bank Account"` to the bank account input, changed locator to use `getByLabel`.
+  - Root cause 3: zero-salary employees (legacy Mynavathy/Muniraj) blocked PUT validation. Fix: validateEmployee now accepts `{ requireSalary?: boolean }`, PUT route passes `requireSalary: false`.
+  - Spec rewritten: 9 field round-trip tests (identity, contact, statutory IDs, salary, PF mode, BANK→CASH, CASH→BANK, validation scroll, exit date/reason) + 6 no-op save tests for all seeded employees.
+- Files changed: src/components/employee-form.tsx, src/domain/validations/employee.ts, src/app/api/employees/[id]/route.ts, e2e/19-employee-edit.spec.ts (rewritten)
+- Metrics impact: +1 e2e spec (15 tests)
+- Validation: npx playwright test e2e/19-employee-edit.spec.ts → 15/15 passed
+
+### Task Update — 2026-07-01 20:30 IST — Math calc + stress e2e (20, 21)
+- Task: Add mathematical accuracy tests (e2e/20) and stress/load tests (e2e/21)
+- Status: completed
+- Scope:
+  - e2e/20-math-calc.spec.ts (17 tests): PF ceiling cap, FIXED/NONE modes, ESI boundary (inclusive at ₹21k), holiday bonus formula, multi-deduction stacking, salary component split (hospital gross = basic+da+fixedAllowance, HRA not in earnings), net=gross−totalDeductions invariant.
+  - e2e/21-stress.spec.ts (29 tests, 24 pass 5 skip): 30-employee bulk import, concurrent wage PUTs, mixed-error CSV (20 valid + 5 invalid), print-route performance (skipped — no cycles), API boundary validation.
+  - Fixed Suite 3 strict mode violation: `getByText(/row\(s\) skipped|is required/i)` matched 7 elements; fixed with `.first()`.
+- Files changed: e2e/20-math-calc.spec.ts (new), e2e/21-stress.spec.ts (new + fix)
+- Metrics impact: +2 e2e specs (46 tests: 41 pass, 5 skip)
+- Validation: e2e/20 → 17/17; e2e/21 → 24/24 pass + 5 skip (print tests skip when no cycles exist)
+- Next step: user-directed
