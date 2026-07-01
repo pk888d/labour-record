@@ -143,19 +143,6 @@ test.describe('Specific UI Feature Checks', () => {
     await expect(page.getByRole('button', { name: 'Add Holiday' })).toBeVisible()
   })
 
-  test.skip('wage rules page: establishment selector works', async ({ page }) => {
-    // Wage Rules page was removed; test retained as skipped for history.
-    await page.goto('/wage-rules')
-    await page.waitForLoadState('networkidle')
-    const selector = page.getByLabel('Establishment').or(page.locator('select').first())
-    await expect(selector).toBeVisible()
-    await selector.selectOption({ index: 1 })
-    // After selection, some rules content should appear
-    await page.waitForTimeout(500)
-    const hasContent = await page.locator('table, [class*="rule"], [class*="Rule"]').count() > 0
-    expect(hasContent).toBeTruthy()
-  })
-
   test('cycles list: Delete button is present', async ({ page }) => {
     await page.goto('/cycles')
     await page.waitForLoadState('networkidle')

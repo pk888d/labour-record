@@ -290,16 +290,43 @@ test.describe('Large CSV with partial errors', () => {
 test.describe('Print route performance — all 12 forms within 5 s', () => {
   let hospitalCycleId: string
   let shopCycleId: string
+  let createdHospitalCycle = false
+  let createdShopCycle = false
 
   test.beforeAll(async ({ request }) => {
-    // Use latest existing cycle from DNV and SHOP rather than creating new ones
+    // Prefer an existing cycle; create a temporary one if none exists.
     const hList = await request.get(`/api/cycles?establishmentId=${DNV}`)
     const hCycles = (await hList.json()) as { id: string }[]
-    if (hCycles.length) hospitalCycleId = hCycles[0].id
+    if (hCycles.length) {
+      hospitalCycleId = hCycles[0].id
+    } else {
+      const res = await request.post('/api/cycles', {
+        data: { establishmentId: DNV, month: 1, year: 2089 },
+      })
+      if (res.ok()) {
+        hospitalCycleId = ((await res.json()) as { id: string }).id
+        createdHospitalCycle = true
+      }
+    }
 
     const sList = await request.get(`/api/cycles?establishmentId=${SHOP}`)
     const sCycles = (await sList.json()) as { id: string }[]
-    if (sCycles.length) shopCycleId = sCycles[0].id
+    if (sCycles.length) {
+      shopCycleId = sCycles[0].id
+    } else {
+      const res = await request.post('/api/cycles', {
+        data: { establishmentId: SHOP, month: 1, year: 2089 },
+      })
+      if (res.ok()) {
+        shopCycleId = ((await res.json()) as { id: string }).id
+        createdShopCycle = true
+      }
+    }
+  })
+
+  test.afterAll(async ({ request }) => {
+    if (createdHospitalCycle && hospitalCycleId) await request.delete(`/api/cycles/${hospitalCycleId}`)
+    if (createdShopCycle && shopCycleId) await request.delete(`/api/cycles/${shopCycleId}`)
   })
 
   const HOSPITAL_FORMS = [
@@ -313,7 +340,6 @@ test.describe('Print route performance — all 12 forms within 5 s', () => {
 
   for (const formCode of HOSPITAL_FORMS) {
     test(`hospital ${formCode} renders in < 5 s`, async ({ page }) => {
-      test.skip(!hospitalCycleId, 'no DNV cycle available')
       const start = Date.now()
       const res = await page.goto(`/print/${hospitalCycleId}/${formCode}`, {
         waitUntil: 'networkidle',
@@ -327,7 +353,6 @@ test.describe('Print route performance — all 12 forms within 5 s', () => {
 
   for (const formCode of SHOP_FORMS) {
     test(`shop ${formCode} renders in < 5 s`, async ({ page }) => {
-      test.skip(!shopCycleId, 'no Shop cycle available')
       const start = Date.now()
       const res = await page.goto(`/print/${shopCycleId}/${formCode}`, {
         waitUntil: 'networkidle',
