@@ -22,6 +22,6 @@ test.describe('Employee management (phase-2 wave A)', () => {
     await page.goto('/employees')
     await page.getByRole('link', { name: /Import/i }).click()
     await expect(page).toHaveURL(/\/employees\/import/)
-    await expect(page.getByRole('link', { name: /Download sample/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /Download Template/i })).toBeVisible()
   })
 })

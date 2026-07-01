@@ -95,7 +95,7 @@ export function WageSlipForm({ ctx, wages, formTitle, rule }: {
         <div key={p} className="ts-wageslip-page"
           style={{ display: 'flex', flexDirection: 'column', minHeight: '190mm', gap: '6px' }}>
           {pair.map((row, i) => (
-            <div key={row.employeeId}
+            <div key={row.employeeId} className="ts-wageslip-sheet"
               style={{
                 flex: 1, display: 'flex', alignItems: 'stretch',
                 // dashed cut line between the two slips stacked on a page
