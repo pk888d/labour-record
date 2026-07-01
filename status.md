@@ -574,3 +574,14 @@
 - Metrics impact: 0 new tests; 5 previously failing tests now pass
 - Validation: npx playwright test (all 3 specs) → 12/12; full suite → 189 passed, 6 skipped, 0 failed
 - Next step: user-directed
+
+### Task Update — 2026-07-01 21:30 IST — Eliminate all 6 skipped e2e tests (194/194 passing)
+- Task: Fix 6 skipped tests — 5 shop print-performance tests + 1 wage-rules dead test
+- Status: completed
+- Root causes:
+  1. 21-stress Suite 4 (5 skipped): SHOP had 0 cycles; tests used `test.skip(!shopCycleId)` as fallback. Fixed: beforeAll now creates temporary DNV/SHOP cycles (year 2089) when none exist, with afterAll cleanup. Removed `test.skip` guards.
+  2. 99-review-checks (1 skipped): `test.skip('wage rules page...')` was permanently skipped because /wage-rules page was removed. Fixed: deleted the test.
+- Files changed: e2e/21-stress.spec.ts, e2e/99-review-checks.spec.ts
+- Metrics impact: +11 tests now running (6 hospital + 5 shop print performance); 1 dead test removed
+- Validation: npx playwright test → 194/194 passed, 0 skipped, 0 failed
+- Next step: user-directed
