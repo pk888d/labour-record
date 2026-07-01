@@ -40,6 +40,7 @@ test.describe('Employees', () => {
     await page.getByLabel('Permanent Address').fill('12 Main St, Chennai')
     const dobField = page.getByLabel('Date of Birth')
     if (await dobField.count() > 0) await dobField.fill('1990-05-15')
+    await page.getByLabel('Default Total Salary').fill('15000')
     await page.getByLabel('Date of Entry').fill('2020-01-01')
     await page.getByRole('button', { name: /Add Employee/i }).click()
     // Search the list (handles success redirect or duplicate-already-exists, and is

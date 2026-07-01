@@ -30,8 +30,25 @@ test.describe('Wage calculation pipeline (correctness)', () => {
   let cycleId: string
   let wageTaskId: string
   let employeeId: string
+  let createdEmployeeId: string | null = null
 
   test.beforeAll(async ({ request }) => {
+    // Ensure at least one active employee exists in BULK so the cycle snapshot is non-empty.
+    // The bulk seed employees may be absent if the DB was reset without re-seeding.
+    const check = await request.get(`/api/employees?establishmentId=${BULK_ESTABLISHMENT_ID}&limit=1`)
+    const existing = (await check.json()) as { id: string }[]
+    if (!existing.length) {
+      const emp = await request.post('/api/employees', {
+        data: {
+          name: 'Wage Calc Fixture Worker',
+          defaultTotalSalary: 15000,
+          establishmentId: BULK_ESTABLISHMENT_ID,
+          paymentMode: 'CASH',
+        },
+      })
+      createdEmployeeId = ((await emp.json()) as { id: string }).id
+    }
+
     cycleId = await createCycle(request)
     const detail = (await (await request.get(`/api/cycles/${cycleId}`)).json()) as CycleDetail
     wageTaskId = detail.formTasks[0].id
@@ -40,6 +57,7 @@ test.describe('Wage calculation pipeline (correctness)', () => {
 
   test.afterAll(async ({ request }) => {
     if (cycleId) await request.delete(`/api/cycles/${cycleId}`)
+    if (createdEmployeeId) await request.delete(`/api/employees/${createdEmployeeId}?mode=remove`)
   })
 
   test('persists exact computed totals for a hospital wage record', async ({ request }) => {

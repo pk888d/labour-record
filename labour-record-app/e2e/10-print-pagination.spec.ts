@@ -14,6 +14,32 @@ const BULK_EMPLOYEE_COUNT = 25
 const CYCLE_YEAR = 2097
 const CYCLE_MONTH = 6
 
+// IDs of employees created by this run (so afterAll can clean them up).
+const fixtureEmployeeIds: string[] = []
+
+// Create BULK employees via API if the seeded roster was wiped (e.g. after prisma migrate reset
+// without re-seeding). Uses salary=15000 so the cycle seed picks them up.
+async function ensureBulkEmployees(request: APIRequestContext): Promise<void> {
+  const res = await request.get(`/api/employees?establishmentId=${BULK_ESTABLISHMENT_ID}&limit=100`)
+  const existing = (await res.json()) as { id: string }[]
+  if (existing.length >= BULK_EMPLOYEE_COUNT) return
+  const needed = BULK_EMPLOYEE_COUNT - existing.length
+  const created = await Promise.all(
+    Array.from({ length: needed }, async (_, i) => {
+      const r = await request.post('/api/employees', {
+        data: {
+          name: `Bulk Worker ${String(existing.length + i + 1).padStart(2, '0')}`,
+          defaultTotalSalary: 15000,
+          establishmentId: BULK_ESTABLISHMENT_ID,
+          paymentMode: 'CASH',
+        },
+      })
+      return ((await r.json()) as { id: string }).id
+    }),
+  )
+  fixtureEmployeeIds.push(...created)
+}
+
 async function ensureBulkCycle(request: APIRequestContext): Promise<string> {
   // Creating a cycle snapshots all ACTIVE establishment employees into it.
   const res = await request.post('/api/cycles', {
@@ -45,11 +71,15 @@ test.describe('Print Pagination — multi-sheet registers', () => {
   let cycleId: string
 
   test.beforeAll(async ({ request }) => {
+    await ensureBulkEmployees(request)
     cycleId = await ensureBulkCycle(request)
   })
 
   test.afterAll(async ({ request }) => {
     if (cycleId) await request.delete(`/api/cycles/${cycleId}`)
+    if (fixtureEmployeeIds.length) {
+      await Promise.all(fixtureEmployeeIds.map((id) => request.delete(`/api/employees/${id}?mode=remove`)))
+    }
   })
 
   test('Form XI splits across multiple sheets with the header repeated', async ({ page }) => {
