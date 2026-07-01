@@ -101,8 +101,19 @@
 
 ## EXECUTION STATUS
 
-- Current state: Print review fixes complete — Form V/XII/XVII aligned to docx, fill-paper + print-readiness applied across all 12 forms; tsc clean, 11/11 print e2e passing
-- Next action: Optional label spot-check sweep of the remaining 8 forms against their docx templates
+- Current state: Employee edit e2e complete — 15/15 tests passing; all form inputs have stable aria-labels; salary validator updated for UPDATE operations; employee form UX improved with scroll-to-error
+- Next action: Ready for next feature request
+
+---
+
+### Task Update — 2026-07-01 19:30 IST
+- Task: Employee edit e2e — all fields, all seeded employees
+- Status: completed
+- Scope: (1) Added explicit aria-label to every input/select in employee-form.tsx (19 attributes added, covering Department, UAN, ESI No, Aadhaar, Bank Account, IFSC Code, Bank Name, Mobile, Email, 480 Days Completion, Date Made Permanent, Period of Suspension, Status, Exit Date, Reason for Exit, DA Wage, HRA Wage, PF Amount, ESI Amount, LWF Amount, Remarks). (2) Fixed validateEmployee to accept `{ requireSalary?: boolean }` option; PUT route passes `{ requireSalary: false }` so existing employees with legacy 0-salary can save without errors. (3) Created e2e/19-employee-edit.spec.ts with 15 tests: 9 field round-trip tests (identity, contact, statutory IDs, salary, PF mode, payment mode BANK→CASH, CASH→BANK, validation scroll, exit) + 6 no-op saves for all seeded employees. All 15 passing.
+- Files changed: src/domain/validations/employee.ts, src/app/api/employees/[id]/route.ts, src/components/employee-form.tsx, e2e/19-employee-edit.spec.ts (new)
+- Metrics impact: +15 e2e tests
+- Validation: `npx playwright test e2e/19-employee-edit.spec.ts` → 15/15 passed (24.7s)
+- Next step: user's next request
 
 ---
 

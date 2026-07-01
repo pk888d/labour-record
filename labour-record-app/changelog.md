@@ -28,3 +28,12 @@
 
 - [2026-07-01] [claude] — Added: e2e/18-bulk-import.spec.ts — 14 tests covering template download link, template API (xlsx content-type + all 35 column headers), ADD/UPDATE/DELETE requirement rows, ADD/UPDATE/DELETE happy paths with counter assertions and list verification, all 4 validation error cases, UPDATE/DELETE nonexistent empId, mixed CSV, and raw template re-upload safety.
   Files: e2e/18-bulk-import.spec.ts (new). DB: none.
+
+- [2026-07-01] [claude] — Fixed: employees with legacy salary=0 were blocked from saving via the edit form. validateEmployee now accepts { requireSalary?: boolean }; PUT route passes requireSalary: false so existing 0-salary employees can be updated without first setting a salary.
+  Files: src/domain/validations/employee.ts, src/app/api/employees/[id]/route.ts. DB: none.
+
+- [2026-07-01] [claude] — Added: explicit aria-label to all 21 form inputs/selects in employee-form that previously had none (UAN, ESI No, Aadhaar, Bank Account, IFSC Code, Bank Name, Mobile, Email, Department, Status, Exit Date, Reason for Exit, DA Wage, HRA Wage, PF Amount, ESI Amount, LWF Amount, Remarks, etc). Makes form fields accessible to screen readers and gives Playwright stable selectors.
+  Files: src/components/employee-form.tsx. DB: none.
+
+- [2026-07-01] [claude] — Added: e2e/19-employee-edit.spec.ts — 15 tests: 9 field round-trip tests covering every editable category (identity, contact, statutory IDs, salary, PF mode, payment mode BANK→CASH, CASH→BANK, validation scroll UX, exit date/reason) + 6 no-op save tests for every seeded employee. All 15 passing.
+  Files: e2e/19-employee-edit.spec.ts (new). DB: none.

@@ -33,7 +33,7 @@ export async function PUT(request: Request, { params }: Params) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const eb = body as any
     // Coerce the form's string salary to a number for the number-typed validator.
-    const errors = validateEmployee({ ...eb, defaultTotalSalary: parseFloat(eb.defaultTotalSalary) || 0 })
+    const errors = validateEmployee({ ...eb, defaultTotalSalary: parseFloat(eb.defaultTotalSalary) || 0 }, { requireSalary: false })
     if (errors.length > 0) return NextResponse.json({ errors }, { status: 422 })
 
     const previous = await prisma.employee.findUnique({ where: { id } })

@@ -15,10 +15,13 @@ export type EmployeeInput = {
 
 // Phase-2 (#3): only Name + a salary figure are mandatory (plus the owning
 // establishment). Everything else is optional and entered later / via import.
-export function validateEmployee(input: EmployeeInput): string[] {
+// requireSalary defaults true (enforced on CREATE); pass false for UPDATE so
+// existing employees with legacy 0-salary can still be saved without changes.
+export function validateEmployee(input: EmployeeInput, opts?: { requireSalary?: boolean }): string[] {
+  const requireSalary = opts?.requireSalary ?? true
   const errors: string[] = []
   if (!input.name?.trim()) errors.push('name is required')
-  if (!(typeof input.defaultTotalSalary === 'number' && input.defaultTotalSalary > 0)) {
+  if (requireSalary && !(typeof input.defaultTotalSalary === 'number' && input.defaultTotalSalary > 0)) {
     errors.push('a salary figure is required')
   }
   if (!input.establishmentId?.trim()) errors.push('establishmentId is required')

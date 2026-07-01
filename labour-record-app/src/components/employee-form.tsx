@@ -296,7 +296,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
               Department
               <Info text="Section or unit. e.g. OPD, ICU, Pharmacy, Admin (optional)" />
             </label>
-            <input className={inputClass} value={form.department}
+            <input className={inputClass} aria-label="Department" value={form.department}
               onChange={(e) => set('department', e.target.value)} />
           </div>
         </div>
@@ -332,7 +332,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
               EPF UAN
               <Info text="12-digit Universal Account Number from EPFO. e.g. 100234567890" />
             </label>
-            <input className={inputClass} value={form.uan}
+            <input className={inputClass} aria-label="UAN" value={form.uan}
               onChange={(e) => set('uan', e.target.value)} />
           </div>
           <div>
@@ -340,7 +340,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
               ESI No.
               <Info text="17-digit ESI insurance number from ESIC. e.g. 12-00-123456-000-0001" />
             </label>
-            <input className={inputClass} value={form.esiNo}
+            <input className={inputClass} aria-label="ESI No" value={form.esiNo}
               onChange={(e) => set('esiNo', e.target.value)} />
           </div>
           <div>
@@ -348,7 +348,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
               Aadhaar No.
               <Info text="12-digit Aadhaar number. Stored encrypted. e.g. 123456789012" />
             </label>
-            <input className={inputClass} type="password" value={form.aadhaar}
+            <input className={inputClass} type="password" aria-label="Aadhaar" value={form.aadhaar}
               onChange={(e) => set('aadhaar', e.target.value)}
               placeholder="Stored encrypted" />
           </div>
@@ -381,7 +381,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
               Bank Account No.
               <Info text="Bank account number (9–18 digits). Stored encrypted for salary transfer." />
             </label>
-            <input className={`${inputClass} disabled:opacity-40`} type="password" value={form.bankAccount}
+            <input className={`${inputClass} disabled:opacity-40`} type="password" aria-label="Bank Account" value={form.bankAccount}
               onChange={(e) => set('bankAccount', e.target.value)}
               placeholder="Stored encrypted"
               disabled={form.paymentMode === 'CASH'} />
@@ -391,7 +391,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
               IFSC Code
               <Info text="11-character bank branch code. Format: 4 letters + 0 + 6 alphanumeric. e.g. SBIN0001234" />
             </label>
-            <input className={`${inputClass} disabled:opacity-40`} value={form.ifsc}
+            <input className={`${inputClass} disabled:opacity-40`} aria-label="IFSC Code" value={form.ifsc}
               onChange={(e) => set('ifsc', e.target.value)}
               disabled={form.paymentMode === 'CASH'} />
           </div>
@@ -400,7 +400,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
               Bank Name
               <Info text="e.g. State Bank of India, Indian Bank" />
             </label>
-            <input className={`${inputClass} disabled:opacity-40`} value={form.bankName}
+            <input className={`${inputClass} disabled:opacity-40`} aria-label="Bank Name" value={form.bankName}
               onChange={(e) => set('bankName', e.target.value)}
               disabled={form.paymentMode === 'CASH'} />
           </div>
@@ -415,7 +415,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
               Mobile
               <Info text="10-digit mobile number. e.g. 9876543210" />
             </label>
-            <input className={inputClass} value={form.mobile}
+            <input className={inputClass} aria-label="Mobile" value={form.mobile}
               onChange={(e) => set('mobile', e.target.value)} />
           </div>
           <div className="col-span-2">
@@ -423,7 +423,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
               Email
               <Info text="Official contact email. Optional." />
             </label>
-            <input className={inputClass} type="email" value={form.email}
+            <input className={inputClass} type="email" aria-label="Email" value={form.email}
               onChange={(e) => set('email', e.target.value)} />
           </div>
         </div>
@@ -437,7 +437,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
               480 Days Completion
               <Info text="Date when employee completes 480 working days — entitles them to earned leave under TN Shops Act." />
             </label>
-            <input className={inputClass} type="date" value={form.completionOf480Days}
+            <input className={inputClass} type="date" aria-label="480 Days Completion" value={form.completionOf480Days}
               onChange={(e) => set('completionOf480Days', e.target.value)} />
           </div>
           <div>
@@ -445,7 +445,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
               Date Made Permanent
               <Info text="Date of confirmation/regularisation." />
             </label>
-            <input className={inputClass} type="date" value={form.dateMadePermanent}
+            <input className={inputClass} type="date" aria-label="Date Made Permanent" value={form.dateMadePermanent}
               onChange={(e) => set('dateMadePermanent', e.target.value)} />
           </div>
           <div>
@@ -453,7 +453,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
               Period of Suspension
               <Info text="Any suspension period for records. e.g. 15 days — April 2024" />
             </label>
-            <input className={inputClass} value={form.periodOfSuspension}
+            <input className={inputClass} aria-label="Period of Suspension" value={form.periodOfSuspension}
               onChange={(e) => set('periodOfSuspension', e.target.value)} />
           </div>
         </div>
@@ -465,7 +465,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className={labelClass}>Status</label>
-              <select className={inputClass} value={form.status}
+              <select className={inputClass} aria-label="Status" value={form.status}
                 onChange={(e) => set('status', e.target.value)}>
                 <option value="ACTIVE">Active</option>
                 <option value="SUSPENDED">Suspended</option>
@@ -474,12 +474,12 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
             </div>
             <div>
               <label className={labelClass}>Exit Date</label>
-              <input className={inputClass} type="date" value={form.exitDate}
+              <input className={inputClass} type="date" aria-label="Exit Date" value={form.exitDate}
                 onChange={(e) => set('exitDate', e.target.value)} />
             </div>
             <div>
               <label className={labelClass}>Reason for Exit</label>
-              <input className={inputClass} value={form.exitReason}
+              <input className={inputClass} aria-label="Reason for Exit" value={form.exitReason}
                 onChange={(e) => set('exitReason', e.target.value)} />
             </div>
           </div>
@@ -658,7 +658,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
               <Info text="Dearness Allowance per month as per TN govt notification. e.g. ₹1,360" />
             </label>
             <input className={inputClass} type="number" min="0" step="0.01"
-              value={form.daWage}
+              aria-label="DA Wage" value={form.daWage}
               onChange={(e) => set('daWage', e.target.value)} />
           </div>
           <div>
@@ -667,7 +667,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
               <Info text="House Rent Allowance per month (Shop establishments). e.g. ₹500" />
             </label>
             <input className={inputClass} type="number" min="0" step="0.01"
-              value={form.hraWage}
+              aria-label="HRA Wage" value={form.hraWage}
               onChange={(e) => set('hraWage', e.target.value)} />
           </div>
           <div>
@@ -676,7 +676,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
               <Info text="Monthly PF deduction = 12% of Basic. e.g. Basic ₹6,000 → PF ₹720" />
             </label>
             <input className={inputClass} type="number" min="0" step="0.01"
-              value={form.pfAmount}
+              aria-label="PF Amount" value={form.pfAmount}
               onChange={(e) => set('pfAmount', e.target.value)} />
           </div>
           <div>
@@ -685,7 +685,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
               <Info text="Monthly ESI deduction = 0.75% of gross wages. e.g. Gross ₹7,360 → ESI ₹55.20" />
             </label>
             <input className={inputClass} type="number" min="0" step="0.01"
-              value={form.esiAmount}
+              aria-label="ESI Amount" value={form.esiAmount}
               onChange={(e) => set('esiAmount', e.target.value)} />
           </div>
           <div>
@@ -694,7 +694,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
               <Info text="Labour Welfare Fund monthly deduction. TN employee share: ₹0.25/month" />
             </label>
             <input className={inputClass} type="number" min="0" step="0.01"
-              value={form.lwfAmount}
+              aria-label="LWF Amount" value={form.lwfAmount}
               onChange={(e) => set('lwfAmount', e.target.value)} />
           </div>
         </div>
@@ -702,7 +702,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
 
       <div>
         <label className={labelClass}>Remarks</label>
-        <input className={inputClass} value={form.remarks}
+        <input className={inputClass} aria-label="Remarks" value={form.remarks}
           onChange={(e) => set('remarks', e.target.value)} />
       </div>
 
