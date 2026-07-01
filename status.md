@@ -506,3 +506,16 @@
 - Metrics impact: unit tests 84 → 87 (+3 day-split); +1 component, +1 e2e (2 tests)
 - Validation: e2e 17 2/2 (Form IV & V each render exactly 2 .form-page with "continued" + repeated Name header on DNV's single chunk); 87 unit tests pass; 07-print 11/11; 10-print-pagination 3/3 (Form V now 4 sheets for the 25-emp bulk cycle = 2 chunks × 2 parts); build clean.
 - Next step: merge feat/phase2-wave-c2-daysplit; still pending #10 (user's 29-col wages template).
+
+### Task Update — 2026-07-01 — Bulk employee import e2e (all 14 passing)
+- Task: E2E test suite for bulk employee import (ADD/UPDATE/DELETE CSV/XLSX)
+- Status: completed
+- Scope:
+  - New e2e/18-bulk-import.spec.ts — 14 tests: template download link, template API (xlsx content-type + all column headers present), ADD/UPDATE/DELETE requirement rows, ADD workflow (counter=1, visible in list), UPDATE workflow (name+salary patched), DELETE workflow (hard or exited), all 4 validation error cases (ADD missing name/salary, UPDATE/DELETE missing Emp ID), UPDATE/DELETE nonexistent empId, mixed CSV (2 ADD + 1 invalid), raw template re-upload safety.
+  - Fixed counter() helper: previous locator resolved to the label div itself (`.last()` on matching divs picked the label `<div>Added</div>`), then finding a child div timed out. Now uses `previousElementSibling` evaluate to read the adjacent number.
+  - Fixed Emp-ID-required assertion: `/Emp ID is required/i` matched the Step-1 hint paragraph as well as the error. Changed to `/Row \d+: Emp ID is required/i` which only matches error-format messages.
+  - Import client expanded to full-field template download + step legend UI (already in import-client.tsx from earlier wave).
+- Files changed: labour-record-app/e2e/18-bulk-import.spec.ts (new), labour-record-app/src/app/employees/import/import-client.tsx
+- Metrics impact: +1 e2e spec (14 tests); unit tests unchanged (87 passing)
+- Validation: npx playwright test e2e/18-bulk-import.spec.ts → 14/14 passed (2.1 min)
+- Next step: user-directed
