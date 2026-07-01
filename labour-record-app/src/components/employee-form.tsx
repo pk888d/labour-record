@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Employee, Establishment } from '@/generated/prisma/client'
 import { Info } from '@/components/info-tooltip'
@@ -77,6 +77,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
 
   const [errors, setErrors] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
+  const errorRef = useRef<HTMLDivElement>(null)
 
   const set = (field: string, value: unknown) =>
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -168,7 +169,12 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
 
     if (parseFloat(form.basicWage) > 200000) clientErrors.push('Basic wage seems too high (max ₹2,00,000)')
 
-    if (clientErrors.length > 0) { setErrors(clientErrors); setSaving(false); return }
+    if (clientErrors.length > 0) {
+      setErrors(clientErrors)
+      setSaving(false)
+      setTimeout(() => errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0)
+      return
+    }
 
     const url = isEdit ? `/api/employees/${employee.id}` : '/api/employees'
     const res = await fetch(url, {
@@ -182,6 +188,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
 
     if (!res.ok) {
       setErrors(data.errors ?? [data.error ?? 'Save failed'])
+      setTimeout(() => errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0)
       return
     }
 
@@ -196,7 +203,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
   return (
     <form onSubmit={handleSubmit} className="max-w-3xl p-6 space-y-6">
       {errors.length > 0 && (
-        <div className="bg-[#2a1010] border border-[#5a2020] rounded p-3 text-xs text-[#f07070] space-y-1">
+        <div ref={errorRef} className="bg-[#2a1010] border border-[#5a2020] rounded p-3 text-xs text-[#f07070] space-y-1">
           {errors.map((e) => <p key={e}>{e}</p>)}
         </div>
       )}
@@ -699,15 +706,22 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
           onChange={(e) => set('remarks', e.target.value)} />
       </div>
 
-      <div className="flex gap-3 pt-2">
-        <button type="submit" disabled={saving}
-          className="px-4 py-1.5 bg-[#1a5adc] text-white text-xs font-medium rounded hover:bg-[#2a6aec] disabled:opacity-50">
-          {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Add Employee'}
-        </button>
-        <button type="button" onClick={() => router.push('/employees')}
-          className="px-4 py-1.5 bg-transparent border border-[#2a3a50] text-[#7a9ab8] text-xs rounded">
-          Cancel
-        </button>
+      <div className="flex flex-col gap-2 pt-2">
+        {errors.length > 0 && (
+          <p className="text-xs text-[#f07070]">
+            ⚠ {errors.length} error{errors.length > 1 ? 's' : ''} — scroll up to see details
+          </p>
+        )}
+        <div className="flex gap-3">
+          <button type="submit" disabled={saving}
+            className="px-4 py-1.5 bg-[#1a5adc] text-white text-xs font-medium rounded hover:bg-[#2a6aec] disabled:opacity-50">
+            {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Add Employee'}
+          </button>
+          <button type="button" onClick={() => router.push('/employees')}
+            className="px-4 py-1.5 bg-transparent border border-[#2a3a50] text-[#7a9ab8] text-xs rounded">
+            Cancel
+          </button>
+        </div>
       </div>
     </form>
   )
