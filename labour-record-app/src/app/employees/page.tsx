@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { PageHeader } from '@/components/page-header'
 import { Pagination } from '@/components/pagination'
 import { parsePage, pageMeta } from '@/lib/paginate'
+import { EmployeeFilters } from './employee-filters'
 
 export default async function EmployeesPage({
   searchParams,
@@ -58,40 +59,13 @@ export default async function EmployeesPage({
         action={{ label: '+ New Employee', href: newEmployeeHref }}
       />
       <div className="p-6">
-        <div className="flex gap-3 mb-4">
-          <form method="GET" className="flex gap-2">
-            <input
-              type="text"
-              name="q"
-              defaultValue={search}
-              placeholder="Search name or ID…"
-              aria-label="Search employees"
-              className="bg-[#1a2a3a] border border-[#2a3a50] rounded px-2 py-1 text-xs text-[#c8d8e8] w-48"
-            />
-            <select
-              name="establishmentId"
-              defaultValue={establishmentId ?? ''}
-              className="bg-[#1a2a3a] border border-[#2a3a50] rounded px-2 py-1 text-xs text-[#c8d8e8]"
-            >
-              <option value="">All Establishments</option>
-              {establishments.map((e) => (
-                <option key={e.id} value={e.id}>{e.name}</option>
-              ))}
-            </select>
-            <select
-              name="status"
-              defaultValue={statusFilter}
-              className="bg-[#1a2a3a] border border-[#2a3a50] rounded px-2 py-1 text-xs text-[#c8d8e8]"
-            >
-              <option value="ACTIVE">Active</option>
-              <option value="EXITED">Exited</option>
-              <option value="SUSPENDED">Suspended</option>
-            </select>
-            <button type="submit"
-              className="px-3 py-1 bg-[#1a3050] text-[#4a9eff] text-xs rounded hover:bg-[#1a4060]">
-              Filter
-            </button>
-          </form>
+        <div className="flex items-center gap-3 mb-4">
+          <EmployeeFilters
+            establishments={establishments}
+            initialQ={search}
+            initialEstablishmentId={establishmentId ?? ''}
+            initialStatus={statusFilter}
+          />
           <Link href="/employees/import"
             className="px-3 py-1 bg-[#1a3050] text-[#4a9eff] text-xs rounded hover:bg-[#1a4060]">
             ↥ Import

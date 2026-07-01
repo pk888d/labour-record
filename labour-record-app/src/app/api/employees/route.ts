@@ -45,6 +45,9 @@ export async function POST(request: Request) {
     const errors = validateEmployee({ ...b, defaultTotalSalary: parseFloat(b.defaultTotalSalary) || 0 })
     if (errors.length > 0) return NextResponse.json({ errors }, { status: 422 })
 
+    const est = await prisma.establishment.findUnique({ where: { id: b.establishmentId } })
+    if (!est) return NextResponse.json({ errors: ['Establishment not found'] }, { status: 422 })
+
     const empId = b.empId?.trim()
       ? b.empId.trim()
       : generateEmpId(await prisma.employee.count({ where: { establishmentId: b.establishmentId } }))
