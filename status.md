@@ -106,6 +106,15 @@
 
 ---
 
+### Task Update — 2026-07-01 20:00 IST
+- Task: Logo asset update
+- Status: completed
+- Scope: Replaced tech-sakthi-logo.webp with optimized version (84 KB → 13 KB); added Logo/logo.png source asset
+- Files changed: labour-record-app/public/tech-sakthi-logo.webp, Logo/logo.png
+- Metrics impact: none
+- Validation: visual check in app
+- Next step: none
+
 ### Task Update — 2026-07-01 19:30 IST
 - Task: Employee edit e2e — all fields, all seeded employees
 - Status: completed

@@ -35,5 +35,8 @@
 - [2026-07-01] [claude] — Added: explicit aria-label to all 21 form inputs/selects in employee-form that previously had none (UAN, ESI No, Aadhaar, Bank Account, IFSC Code, Bank Name, Mobile, Email, Department, Status, Exit Date, Reason for Exit, DA Wage, HRA Wage, PF Amount, ESI Amount, LWF Amount, Remarks, etc). Makes form fields accessible to screen readers and gives Playwright stable selectors.
   Files: src/components/employee-form.tsx. DB: none.
 
+- [2026-07-01] [user] — Updated: tech-sakthi-logo.webp optimized (84 KB → 13 KB); added Logo/logo.png source asset.
+  Files: public/tech-sakthi-logo.webp, Logo/logo.png. DB: none.
+
 - [2026-07-01] [claude] — Added: e2e/19-employee-edit.spec.ts — 15 tests: 9 field round-trip tests covering every editable category (identity, contact, statutory IDs, salary, PF mode, payment mode BANK→CASH, CASH→BANK, validation scroll UX, exit date/reason) + 6 no-op save tests for every seeded employee. All 15 passing.
   Files: e2e/19-employee-edit.spec.ts (new). DB: none.
