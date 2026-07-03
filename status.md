@@ -101,7 +101,7 @@
 
 ## EXECUTION STATUS
 
-- Current state: Employee edit e2e complete — 15/15 tests passing; all form inputs have stable aria-labels; salary validator updated for UPDATE operations; employee form UX improved with scroll-to-error
+- Current state: Employee export feature complete — mirrors the bulk-import template exactly (same COLS, Action pre-filled UPDATE, Emp ID filled), establishment-wise via ⭳ Export link on the employees list, round-trip verified through parseEmployeeRows and via re-import.
 - Next action: Ready for next feature request
 
 ---
@@ -585,3 +585,29 @@
 - Metrics impact: +11 tests now running (6 hospital + 5 shop print performance); 1 dead test removed
 - Validation: npx playwright test → 194/194 passed, 0 skipped, 0 failed
 - Next step: user-directed
+
+### Task Update — 2026-07-03 19:45 IST — Verify GitHub→Slack notification integration
+- Task: Test and troubleshoot GitHub commit notifications to Slack
+- Status: completed
+- Scope:
+  - Confirmed via `gh api repos/pk888d/labour-record/hooks` that no repo webhook existed and no Slack step was present in `.github/workflows/ci.yml` — root cause of missing notifications was that the integration was never wired up, not a delivery failure.
+  - Guided setup of the official GitHub Slack app: `/github signin` (connected account pk888d) and `/github subscribe pk888d/labour-record` (subscribed to issues, pulls, commits, releases, deployments) run in the target Slack channel.
+  - Pushed two test commits (6064aca, 700ef59) to origin/main to validate; second commit's Slack notification confirmed received by user.
+- Files changed: slack-integration-test.md (new, test-only file)
+- Metrics impact: none (no application code changed)
+- Validation: user confirmed Slack notification received for commit 700ef59
+- Next step: completed — slack-integration-test.md removed via commit ebf3f50 (2026-07-03 19:50 IST), pushed to origin/main
+
+### Task Update — 2026-07-03 20:30 IST — Employee export (establishment-wise), mirrors import template
+- Task: Add an export feature for bulk employee data, reusing the exact import-template column schema so exports are directly re-importable for bulk edit/delete
+- Status: completed
+- Scope:
+  - Exported `COLS`/`ColDef` from `src/app/api/employees/import/template/route.ts` (was a local `const`) so the export route reuses the same column list instead of duplicating it — template and export can never drift apart.
+  - New `GET /api/employees/export` (`src/app/api/employees/export/route.ts`): query params `establishmentId` (required), `status` (defaults ACTIVE, mirrors the employees list filter), `q` (search, mirrors the list's search). Validates establishment exists, queries employees, builds an `.xlsx` with the import template's exact header row + a legend row (Action ADD/UPDATE/DELETE — silently skipped on re-import, same as template instruction rows) + one data row per employee with `Action=UPDATE` and `Emp ID` pre-filled, dates formatted `YYYY-MM-DD`. Filename `employees-export-<establishment>-<status>.xlsx`.
+  - Frontend: added a "⭳ Export" link next to the existing "↥ Import" link on `src/app/employees/page.tsx`, active (linking to the export endpoint with the current establishmentId/status/q) only when an establishment is selected in the filter; shows a disabled-look placeholder otherwise (export is one-establishment-per-file, matching import's model).
+  - Native in-cell Excel dropdown for the Action column was explicitly descoped after confirming with the user: the project's xlsx dependency (SheetJS Community Edition) can only read data-validation dropdowns, not write them — writing one needs paid SheetJS Pro or hand-crafted OOXML injection. Went with plain-text `UPDATE` + legend row instead.
+  - New `e2e/19-employee-export.spec.ts` (5 tests): Export link presence/disabled-without-establishment, link href correctness, header-row parity with the import template, exported row correctness (Action=UPDATE, Emp ID, Name) for a freshly-added employee, and a round-trip test feeding exported rows straight into `parseEmployeeRows` to prove immediate re-importability.
+- Files changed: `labour-record-app/src/app/api/employees/import/template/route.ts` (export COLS/ColDef), `labour-record-app/src/app/api/employees/export/route.ts` (new), `labour-record-app/src/app/employees/page.tsx`, `labour-record-app/e2e/19-employee-export.spec.ts` (new)
+- Metrics impact: +1 API route; +1 e2e spec (5 tests, all passing)
+- Validation: `npx playwright test e2e/19-employee-export.spec.ts` → 5/5 passed; `npx playwright test e2e/18-bulk-import.spec.ts` → 14/14 passed (no regression); `npx vitest run` → 92 passed (16 files); `npx tsc --noEmit` clean (one pre-existing unrelated error in `e2e/19-employee-edit.spec.ts:67` re: Playwright `test.fn`, not touched by this change)
+- Next step: user-directed — optionally verify the downloaded file opens correctly in Excel/LibreOffice and try a real bulk edit+delete round trip in the UI

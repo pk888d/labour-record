@@ -66,6 +66,19 @@ export default async function EmployeesPage({
             initialEstablishmentId={establishmentId ?? ''}
             initialStatus={statusFilter}
           />
+          {establishmentId ? (
+            <a
+              href={`/api/employees/export?establishmentId=${establishmentId}&status=${statusFilter}&q=${encodeURIComponent(search)}`}
+              className="px-3 py-1 bg-[#1a3050] text-[#4a9eff] text-xs rounded hover:bg-[#1a4060]">
+              ⭳ Export
+            </a>
+          ) : (
+            <span
+              title="Select an establishment to export"
+              className="px-3 py-1 bg-[#0f1923] text-[#3a5a78] text-xs rounded cursor-not-allowed">
+              ⭳ Export
+            </span>
+          )}
           <Link href="/employees/import"
             className="px-3 py-1 bg-[#1a3050] text-[#4a9eff] text-xs rounded hover:bg-[#1a4060]">
             ↥ Import

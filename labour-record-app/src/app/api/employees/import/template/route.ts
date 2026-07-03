@@ -7,9 +7,9 @@ const AUTO = 'Optional (auto-generated)'
 const X    = '— Not used'
 
 // [header, ADD, UPDATE, DELETE, notes]
-type ColDef = [string, string, string, string, string]
+export type ColDef = [string, string, string, string, string]
 
-const COLS: ColDef[] = [
+export const COLS: ColDef[] = [
   // ── Core ──────────────────────────────────────────────────────────────────
   ['Action',               M,    M,    M,    'ADD / UPDATE / DELETE'],
   ['Emp ID',               AUTO, M,    M,    'Your employee code e.g. EMP-0001'],
