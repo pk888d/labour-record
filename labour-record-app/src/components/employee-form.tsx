@@ -66,7 +66,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
     pfPercent: String(employee?.pfPercent ?? 12),
     pfWageCeiling: String(employee?.pfWageCeiling ?? 15000),
     pfFixedAmount: String(employee?.pfAmount || 1800),
-    esiApplicable: true,
+    esiApplicable: employee ? (employee.esiAmount ?? 0) > 0 : true,
     esiPercent: '0.75',
     esiThreshold: '21000',
     pfAmount: String(employee?.pfAmount ?? 0),
@@ -596,7 +596,14 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
           <div className="col-span-3 flex items-center gap-2 pt-1">
             <label className="flex items-center gap-2 text-xs text-[#7a9ab8] cursor-pointer whitespace-nowrap">
               <input type="checkbox" checked={form.esiApplicable}
-                onChange={(e) => set('esiApplicable', e.target.checked)} />
+                onChange={(e) => {
+                  const checked = e.target.checked
+                  setForm((prev) => ({
+                    ...prev,
+                    esiApplicable: checked,
+                    ...(checked ? {} : { esiAmount: '0' }),
+                  }))
+                }} />
               ESI Applicable
               <Info text="ESI = employee % of gross wages, only when gross ≤ the threshold. TN statutory default: 0.75% with a ₹21,000 threshold — both editable here." />
             </label>

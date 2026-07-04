@@ -359,3 +359,12 @@
 - Metrics impact: +1 lib module, +2 tests passing
 - Validation: npm test -- parse-employees → 2 passed (2) in 171ms; commit: 2bbe4c3
 - Next step: A7 — Import route + page + sample CSV
+
+### Task Update — 2026-07-04 16:05 IST
+- Task: Fix — ESI disabled on Employee form still saved as ESI-applicable (reported in Slack #mustearly by Tamil Selvan)
+- Status: completed
+- Scope: employee-form.tsx's "ESI Applicable" checkbox was hardcoded to `true` on every mount (never read from the saved employee) and unchecking it did not touch `esiAmount` (the field actually persisted) unless the user separately clicked "Apply to wage defaults ↓". Fixed by (1) initializing `esiApplicable` from `employee.esiAmount > 0` so the checkbox reflects real saved state on edit, and (2) zeroing `esiAmount` immediately in the checkbox's onChange when unchecked, so disabling ESI and saving actually removes the deduction.
+- Files changed: src/components/employee-form.tsx
+- Metrics impact: none (no schema/API change)
+- Validation: `npx tsc --noEmit` — 0 new errors (1 pre-existing unrelated error in e2e/19-employee-edit.spec.ts); `npx vitest run` — 92/92 passed; `npm run build` — success
+- Next step: Push fix to main and notify #mustearly
