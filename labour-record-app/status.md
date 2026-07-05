@@ -368,3 +368,12 @@
 - Metrics impact: none (no schema/API change)
 - Validation: `npx tsc --noEmit` — 0 new errors (1 pre-existing unrelated error in e2e/19-employee-edit.spec.ts); `npx vitest run` — 92/92 passed; `npm run build` — success
 - Next step: Push fix to main and notify #mustearly
+
+### Task Update — 2026-07-05 12:25 IST
+- Task: Fix — gross wage calculation wrong + "days worked" total inconsistent across documents
+- Status: completed
+- Scope: Root cause was a single shared function, `calculateAttendanceTotals` (attendance-calculator.ts), computing `wageDays = daysWorked + leaveDays` — silently excluding paid holiday/weekly-off (`H`) marks. This undercounted `wageDays` fed two places: (1) `page.tsx`'s wage proration (`monthly * wageDays / daysInMonth`), producing understated gross wages for any employee with holiday/weekly-off days in the cycle; (2) `AttendanceRecord.wageDays` persisted via the attendance PUT route, which disagreed with the Muster Roll's independently-computed `worked + holiday + leave` total (form-data.ts's getMusterData), so the Wage Register/Wage Slip and the Muster Roll showed different "days worked" totals for the same employee/cycle. Fixed by including `holidayDays` in `wageDays` (now `daysWorked + leaveDays + holidayDays`), matching the Muster Roll's formula exactly. Added `holidayDays` to the `AttendanceTotals` return type.
+- Files changed: src/domain/calculations/attendance-calculator.ts, src/domain/calculations/attendance-calculator.test.ts
+- Metrics impact: none (no schema/API shape change; existing consumers unaffected structurally)
+- Validation: `npx tsc --noEmit` — 0 new errors (same 1 pre-existing unrelated e2e error); `npx vitest run` — 92/92 passed; `npm run build` — success
+- Next step: Push fix to main and notify #mustearly

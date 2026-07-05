@@ -4,21 +4,29 @@ export type AttendanceTotals = {
   daysWorked: number
   leaveDays: number
   absentDays: number
+  holidayDays: number
   wageDays: number
 }
 
+// wageDays = worked + leave + holiday: paid holidays and weekly-offs (H) are
+// paid days for a monthly-salaried employee and must count toward wages,
+// same as getMusterData's formula (worked + holiday + leave) used on printed
+// documents — the two must stay in sync or wage proration and the Muster
+// Roll's "days counted for wages" will disagree.
 export function calculateAttendanceTotals(dailyMarks: string[]): AttendanceTotals {
   let daysWorked = 0
   let leaveDays = 0
   let absentDays = 0
+  let holidayDays = 0
 
   for (const mark of dailyMarks) {
     if (mark === 'P' || mark === 'OT') daysWorked++
     else if (mark === 'L') leaveDays++
     else if (mark === 'A') absentDays++
+    else if (mark === 'H') holidayDays++
   }
 
-  return { daysWorked, leaveDays, absentDays, wageDays: daysWorked + leaveDays }
+  return { daysWorked, leaveDays, absentDays, holidayDays, wageDays: daysWorked + leaveDays + holidayDays }
 }
 
 // Round-robin weekly offs (item 7): stagger each employee's weekly off across

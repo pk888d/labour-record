@@ -6,17 +6,18 @@ import {
 } from './attendance-calculator'
 
 describe('calculateAttendanceTotals', () => {
-  it('counts P/OT as worked, L as leave, A as absent; wageDays = worked + leave', () => {
+  it('counts P/OT as worked, L as leave, A as absent, H as holiday; wageDays = worked + leave + holiday (paid days)', () => {
     const t = calculateAttendanceTotals(['P', 'P', 'OT', 'L', 'A', 'H', ''])
     expect(t.daysWorked).toBe(3)
     expect(t.leaveDays).toBe(1)
     expect(t.absentDays).toBe(1)
-    expect(t.wageDays).toBe(4)
+    expect(t.holidayDays).toBe(1)
+    expect(t.wageDays).toBe(5)
   })
 
   it('returns zeros for an empty month', () => {
     expect(calculateAttendanceTotals([])).toEqual({
-      daysWorked: 0, leaveDays: 0, absentDays: 0, wageDays: 0,
+      daysWorked: 0, leaveDays: 0, absentDays: 0, holidayDays: 0, wageDays: 0,
     })
   })
 })
