@@ -377,3 +377,12 @@
 - Metrics impact: none (no schema/API shape change; existing consumers unaffected structurally)
 - Validation: `npx tsc --noEmit` — 0 new errors (same 1 pre-existing unrelated e2e error); `npx vitest run` — 92/92 passed; `npm run build` — success
 - Next step: Push fix to main and notify #mustearly
+
+### Task Update — 2026-07-05 13:35 IST
+- Task: Update user guide for current build + add in-app Help page linked from sidebar
+- Status: completed
+- Scope: Found the existing guide at `man/user_guide.md` (505 lines, written for an earlier build under the old product name "LabourRecord"). Rewrote it to match the current build: rebranded to "Mustearly"; added all 6 establishment types (Shop/Hospital/Hotel/Petrol Bunk/Medical/Oil Mill) with DA rates; replaced the fictitious dedicated "Wage Rules" page/chapter (no `/wage-rules` route exists in the codebase) with accurate documentation of where that functionality actually lives today — Establishment's "Wage Formula Configuration" section and Employee's "Salary Setup + Live Breakdown Preview" simulator; corrected the Wage Days proration formula to `Days Worked + Leave Days + Holiday Days` (matching the recent bug fix); expanded Employees/Establishments chapters to cover every field with validation rules; added previously-undocumented chapters for Bulk Import/Export, Dashboard, Calendar, Settings, and Audit Log. Also created a new in-app Help page (`src/app/help/page.tsx`) mirroring the guide as collapsible `<details>` sections with an in-page table of contents, using the existing `PageHeader` component and the app's dark theme (no new dependency needed — content authored directly as JSX). Linked it from the sidebar's System group (`src/components/sidebar.tsx`), next to Settings, with a ❓ icon.
+- Files changed: man/user_guide.md, src/app/help/page.tsx (new), src/components/sidebar.tsx
+- Metrics impact: +1 route (`/help`, static)
+- Validation: `npx tsc --noEmit` — 0 new errors (same 1 pre-existing unrelated e2e error); `npx vitest run` — 92/92 passed; `npm run build` — success (`/help` prerenders as static); manually verified via dev server that `/help` returns 200, renders guide content, and the sidebar Help link is present and points to `/help`
+- Next step: None — feature complete; consider regenerating `man/user_guide.html` from the updated markdown if that static copy is still distributed anywhere

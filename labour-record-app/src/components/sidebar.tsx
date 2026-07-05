@@ -20,6 +20,7 @@ const navItems = [
   { section: 'System', items: [
     { href: '/audit', label: 'Audit Log', icon: '🛡' },
     { href: '/settings', label: 'Settings', icon: '⚙' },
+    { href: '/help', label: 'Help', icon: '❓' },
   ]},
 ]
 
