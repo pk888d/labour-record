@@ -20,7 +20,7 @@ export function HospitalFormI({ ctx, fines }: { ctx: CycleContext; fines: FineRo
             <th>S.No</th>
             <th>Name</th>
             <th>Father&apos;s / Husband&apos;s Name</th>
-            <th>Age &amp; Sex</th>
+            <th>Sex</th>
             <th>Department</th>
             <th>Nature and Date of the offence for which Fine imposed</th>
             <th>Whether show cause notice was served</th>
