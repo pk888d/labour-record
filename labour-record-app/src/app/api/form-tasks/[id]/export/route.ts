@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateDocx } from '@/lib/export/docx-generator'
-import { generatePdf } from '@/lib/export/pdf-generator'
+import { generatePdf, isPdfAvailable, PDF_UNAVAILABLE_MESSAGE } from '@/lib/export/pdf-generator'
 
 export async function POST(
   req: NextRequest,
@@ -36,6 +36,7 @@ export async function POST(
   let docxPath: string | undefined
   let pdfPath: string | undefined
   const generateErrors: string[] = []
+  let pdfUnavailable = false
 
   try {
     docxPath = await generateDocx(cycleId, formCode, baseFileName, orientation)
@@ -44,10 +45,17 @@ export async function POST(
   }
 
   if (docxPath) {
-    try {
-      pdfPath = await generatePdf(docxPath)
-    } catch (err) {
-      generateErrors.push(`PDF: ${err instanceof Error ? err.message : String(err)}`)
+    if (await isPdfAvailable()) {
+      try {
+        pdfPath = await generatePdf(docxPath)
+      } catch (err) {
+        generateErrors.push(`PDF: ${err instanceof Error ? err.message : String(err)}`)
+      }
+    } else {
+      // Never shell out to a missing binary — surface a clear, actionable
+      // message instead of letting an ENOENT-style error leak into warnings.
+      pdfUnavailable = true
+      generateErrors.push(`PDF: ${PDF_UNAVAILABLE_MESSAGE}`)
     }
   }
 
@@ -73,6 +81,20 @@ export async function POST(
       where: { id },
       data: { status: 'EXPORTED' },
     })
+  }
+
+  // DOCX generated fine, but PDF can't be produced because LibreOffice isn't
+  // installed on this server — tell the client explicitly (501) instead of a
+  // generic success, so it can point the user at the DOCX it already has.
+  if (pdfUnavailable) {
+    return NextResponse.json({
+      error: PDF_UNAVAILABLE_MESSAGE,
+      id: doc.id,
+      fileName: doc.fileName,
+      docxPath: doc.docxPath,
+      pdfPath: doc.pdfPath,
+      versionNo: doc.versionNo,
+    }, { status: 501 })
   }
 
   return NextResponse.json({

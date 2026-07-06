@@ -91,3 +91,12 @@ src/
 
 CI (`.github/workflows/ci.yml`) runs install → migrate → unit tests → build on
 every push/PR.
+
+### PDF export (optional)
+
+PDF export shells out to LibreOffice (`soffice --headless`). It's optional —
+DOCX export always works. If `soffice` isn't on `PATH`, the export API returns
+`501` with a message pointing the user at the DOCX instead of failing with a
+raw error. Install LibreOffice (e.g. `dnf install libreoffice-core` or your
+distro's equivalent) to enable PDF export; see `man/deploy-server.sh` for the
+deploy-time check.

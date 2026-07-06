@@ -34,6 +34,11 @@ fi
 if ! grep -q '^APP_PASSWORD=.\+' .env 2>/dev/null; then
   echo -e "${YELLOW}[!]${NC} APP_PASSWORD not set in .env — auth is DISABLED. Set APP_PASSWORD (and SESSION_SECRET) for production."
 fi
+# PDF export shells out to LibreOffice's `soffice` binary. If it's missing,
+# the app still runs fine — exports just fall back to DOCX-only (501 on PDF).
+if ! command -v soffice >/dev/null 2>&1; then
+  echo -e "${YELLOW}[!]${NC} soffice (LibreOffice) not found on PATH — PDF export is DISABLED (DOCX export still works). Install it with 'dnf install libreoffice-core' (or your distro's equivalent) to enable PDF export."
+fi
 
 step "2/5  npm ci"
 npm ci
