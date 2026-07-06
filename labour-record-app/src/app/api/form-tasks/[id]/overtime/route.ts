@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { calculateOvertimeTotals } from '@/domain/calculations/overtime-calculator'
+import { validateDateFields } from '@/domain/validations/dates'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -53,6 +54,16 @@ export async function PUT(request: Request, { params }: Params) {
     const b = body as { records?: OvertimeRecordInput[] }
     if (!Array.isArray(b.records)) {
       return NextResponse.json({ errors: ['records must be an array'] }, { status: 422 })
+    }
+
+    const dateErrors: string[] = []
+    b.records.forEach((r, i) => {
+      dateErrors.push(
+        ...validateDateFields(r as unknown as Record<string, unknown>, ['paymentDate'], `Row ${i + 1}`),
+      )
+    })
+    if (dateErrors.length > 0) {
+      return NextResponse.json({ errors: dateErrors }, { status: 422 })
     }
 
     const updated = await Promise.all(

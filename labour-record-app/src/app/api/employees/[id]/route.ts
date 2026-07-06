@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { validateEmployee } from '@/domain/validations/employee'
+import { validateDateFields } from '@/domain/validations/dates'
+
+const EMPLOYEE_DATE_FIELDS = ['dob', 'dateOfEntry', 'completionOf480Days', 'dateMadePermanent', 'exitDate']
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -34,6 +37,7 @@ export async function PUT(request: Request, { params }: Params) {
     const eb = body as any
     // Coerce the form's string salary to a number for the number-typed validator.
     const errors = validateEmployee({ ...eb, defaultTotalSalary: parseFloat(eb.defaultTotalSalary) || 0 }, { requireSalary: false })
+    errors.push(...validateDateFields(eb, EMPLOYEE_DATE_FIELDS))
     if (errors.length > 0) return NextResponse.json({ errors }, { status: 422 })
 
     const previous = await prisma.employee.findUnique({ where: { id } })

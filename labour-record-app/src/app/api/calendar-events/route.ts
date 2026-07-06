@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { parseDateInput } from '@/domain/validations/dates'
 
 const RECURRING = ['none', 'monthly', 'yearly']
 
@@ -29,8 +30,8 @@ export async function POST(request: Request) {
     const errors: string[] = []
     if (!b.title?.trim()) errors.push('title is required')
     if (!b.date) errors.push('date is required')
-    const date = b.date ? new Date(b.date) : null
-    if (date && isNaN(date.getTime())) errors.push('invalid date')
+    const { date, error: dateError } = parseDateInput(b.date, 'date')
+    if (dateError) errors.push(dateError)
     if (b.recurring && !RECURRING.includes(b.recurring)) errors.push('recurring must be none, monthly or yearly')
     if (b.remindDaysBefore != null && (!Number.isInteger(b.remindDaysBefore) || b.remindDaysBefore < 0)) {
       errors.push('remindDaysBefore must be a non-negative integer')
