@@ -29,6 +29,11 @@ if [[ ! -f .env ]]; then
 else
   info ".env already present — left untouched"
 fi
+# Auth: APP_PASSWORD must be set in production .env (unset = login disabled).
+# Also set SESSION_SECRET (cookie-signing key; falls back to APP_PASSWORD).
+if ! grep -q '^APP_PASSWORD=.\+' .env 2>/dev/null; then
+  echo -e "${YELLOW}[!]${NC} APP_PASSWORD not set in .env — auth is DISABLED. Set APP_PASSWORD (and SESSION_SECRET) for production."
+fi
 
 step "2/5  npm ci"
 npm ci
