@@ -115,6 +115,15 @@
 
 ---
 
+### Task Update — 2026-07-06 13:20 IST
+- Task: TEC-23 — otherAllowances corruption guarded at write, read, and repair
+- Status: completed (on integration branch; PR pending network)
+- Scope: New validateOtherAllowances() in record-numbers.ts (TDD; rejects the historical `["[]"]` shape, nested arrays/objects, NaN/Infinity, negatives; normalizes numeric strings, round2). Wages PUT 422s per-row and persists the normalized array; GET and the wage-entry page's initial values re-normalize defensively (both previously collapsed corrupt JSON to NaN via `[0] ?? 0` — NaN survives `?? 0`). New scripts/fix-other-allowances.ts (--dry-run default, --apply) repairs existing rows; applied to local dev.db: 6 corrupt rows fixed, 5 untouched. NOTE: run the script with --apply on the production DB at /database/web/musterly when the server is reachable.
+- Files changed: src/domain/validations/record-numbers.ts (+test), src/app/api/form-tasks/[id]/wages/route.ts, src/app/forms/[taskId]/page.tsx, scripts/fix-other-allowances.ts (new), e2e/25-other-allowances.spec.ts (new)
+- Metrics impact: +12 unit tests (134→146), +1 e2e spec, +1 maintenance script
+- Validation: vitest 146/146; e2e 25+13+05 16/16; extra regression 20-math+21-stress 46/46; tsc exit 0; npm run build ✓
+- Next step: push integration branch + single PR when network holds; then TEC-31
+
 ### Task Update — 2026-07-06 12:10 IST
 - Task: TEC-22 — graceful PDF export when LibreOffice (soffice) is missing
 - Status: completed (on integration branch; PR pending network)
