@@ -110,8 +110,8 @@
 
 ## EXECUTION STATUS
 
-- Current state: Employee export feature complete — mirrors the bulk-import template exactly (same COLS, Action pre-filled UPDATE, Emp ID filled), establishment-wise via ⭳ Export link on the employees list, round-trip verified through parseEmployeeRows and via re-import.
-- Next action: Ready for next feature request
+- Current state: TEC-18 auth shipped as PR #1 (feat/auth-login) — awaiting review/merge; 16-item backlog created in Linear (TEC-18…TEC-33)
+- Next action: merge PR #1, set APP_PASSWORD + SESSION_SECRET in server .env, redeploy; then TEC-19 (TLS)
 
 ---
 
@@ -123,6 +123,24 @@
 - Metrics impact: +1 API route, +6 unit tests (92→98), +1 e2e spec (5 tests)
 - Validation: vitest 98/98; e2e/23-disbursement 5/5; e2e/04-cycles regression 7/7; tsc clean except pre-existing TEC-21 error; npm run build ✓ (route registered)
 - Next step: review/merge PR #3; continue backlog (TEC-32 backups)
+
+### Task Update — 2026-07-06 05:45 IST
+- Task: TEC-21 — fix tsc --noEmit failure (e2e test.fn) + add typecheck to CI
+- Status: completed (PR open)
+- Scope: e2e/19-employee-edit.spec.ts:67 typed the fill() helper's page param via `Parameters<typeof test['fn']>` — Playwright's test has no `fn` property (TS2339), keeping `npx tsc --noEmit` red since 2026-07-01. Replaced with the proper `type Page` import from @playwright/test. Added a "Typecheck" step (npm run typecheck) to .github/workflows/ci.yml before unit tests so regressions can't hide again. Also found stale .next/types validators (from the feat/auth-login branch build) breaking tsc locally — removed the stale artifact; CI is unaffected (typecheck runs before build).
+- Files changed: labour-record-app/e2e/19-employee-edit.spec.ts, .github/workflows/ci.yml
+- Metrics impact: none (type-only fix + 1 CI step)
+- Validation: npx tsc --noEmit → exit 0 (zero errors); npx playwright test e2e/19-employee-edit.spec.ts → 15/15; npx vitest run → 92/92
+- Next step: review/merge PR; then next backlog ticket (TEC-29 bank disbursement or TEC-19 TLS)
+
+### Task Update — 2026-07-05 18:15 IST
+- Task: TEC-18 — single-user password auth (login page, session cookie, proxy gate) + Linear backlog creation
+- Status: completed (PR open)
+- Scope: Analyzed codebase → 16 categorized issues created in Linear project Masterly (TEC-18…TEC-33: 3 security, 5 bugs, 3 deferred features, 3 roadmap, 2 ops) with priorities + acceptance criteria; Slack #mustearly updates posted. Implemented TEC-18: dependency-free auth — APP_PASSWORD/SESSION_SECRET env vars, HMAC-SHA256 signed 7-day session cookie via Web Crypto (src/lib/auth.ts), src/proxy.ts gate (Next 16 middleware convention; pages → /login redirect, /api/* → 401 JSON), standalone branded /login page (AppShell hides sidebar), POST /api/auth/login + /api/auth/logout, sidebar Logout, deploy-server.sh APP_PASSWORD warning. APP_PASSWORD unset = auth disabled (dev/test escape hatch — existing 194 e2e unaffected).
+- Files changed: src/lib/auth.ts (+auth.test.ts), src/proxy.ts, src/app/api/auth/{login,logout}/route.ts, src/app/login/{page,login-form}.tsx, src/components/{app-shell,sidebar}.tsx, src/app/layout.tsx, next.config.ts, tsconfig.json, .env.example, .gitignore, e2e/22-auth.spec.ts, man/deploy-server.sh
+- Metrics impact: +13 unit tests (92→105), +1 e2e spec (10 tests), +2 API routes, +1 page (/login)
+- Validation: vitest 105/105; e2e/22-auth 10/10 (incl. full flow vs second server with APP_PASSWORD set); e2e 01+03 regression 14/14; tsc clean except pre-existing TEC-21 error; npm run build ✓ 23/23 pages
+- Next step: review/merge PR #1 (https://github.com/pk888d/labour-record/pull/1); set APP_PASSWORD + SESSION_SECRET on server; then TEC-19 TLS
 
 ### Task Update — 2026-07-01 20:00 IST
 - Task: Logo asset update
