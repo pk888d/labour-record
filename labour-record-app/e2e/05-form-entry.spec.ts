@@ -1,4 +1,41 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect, type Page, type APIRequestContext } from '@playwright/test'
+
+// A fresh (CI-seeded) DB has no cycles at all, so the DNV Orthocare row this
+// spec relies on may not exist. Bootstrap one via the API (idempotent — reuses
+// an existing cycle for this period if present) and clean it up only if this
+// run created it, matching the pattern in 10-print-pagination/13-wage-calc/etc.
+const DNV_ESTABLISHMENT_ID = 'est_hospital_dnv'
+const CYCLE_YEAR = 2091
+const CYCLE_MONTH = 6
+
+let fixtureCycleId = ''
+let fixtureCycleCreated = false
+
+async function ensureDnvCycle(request: APIRequestContext): Promise<void> {
+  const res = await request.post('/api/cycles', {
+    data: { establishmentId: DNV_ESTABLISHMENT_ID, month: CYCLE_MONTH, year: CYCLE_YEAR },
+  })
+  if (res.ok()) {
+    fixtureCycleId = ((await res.json()) as { id: string }).id
+    fixtureCycleCreated = true
+    return
+  }
+  const list = await request.get(`/api/cycles?establishmentId=${DNV_ESTABLISHMENT_ID}`)
+  const cycles = (await list.json()) as { id: string; year: number; month: number }[]
+  const existing = cycles.find((c) => c.year === CYCLE_YEAR && c.month === CYCLE_MONTH)
+  if (!existing) {
+    throw new Error(`Could not create or find a DNV cycle (POST status ${res.status()}). Is the DB seeded?`)
+  }
+  fixtureCycleId = existing.id
+}
+
+test.beforeAll(async ({ request }) => {
+  await ensureDnvCycle(request)
+})
+
+test.afterAll(async ({ request }) => {
+  if (fixtureCycleCreated && fixtureCycleId) await request.delete(`/api/cycles/${fixtureCycleId}`)
+})
 
 async function openFirstCycleFormTask(page: Page) {
   await page.goto('/cycles')

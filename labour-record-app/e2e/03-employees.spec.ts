@@ -32,7 +32,10 @@ test.describe('Employees', () => {
     await page.goto('/employees/new')
     await page.getByLabel('Emp ID').fill('S001')
     await page.getByLabel('Name', { exact: true }).fill('Selvam')
-    await page.getByLabel('Establishment').selectOption({ index: 2 })
+    // Select by label, not position: seed.ts's alphabetical establishment order is
+    // DNV Orthocare, QA Bulk Hospital, Sri Ranga Department Store — a positional
+    // index would silently pick the wrong (non-shop) establishment.
+    await page.getByLabel('Establishment').selectOption({ label: 'Sri Ranga Department Store' })
     await page.getByLabel('Sex').selectOption('M')
     await page.getByLabel('Designation').fill('Sales Staff')
     await page.getByLabel('Father / Spouse Name').fill('Raman')

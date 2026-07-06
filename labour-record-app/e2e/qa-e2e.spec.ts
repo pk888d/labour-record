@@ -1,10 +1,47 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect, type Page, type APIRequestContext } from '@playwright/test'
 
 /**
  * Autonomous-QA validated end-to-end flows for Mustearly.
  * Derives record IDs through the UI so it runs against any seeded DB.
  * Ignores browser-extension console noise; fails on app-origin errors.
  */
+
+// A fresh (CI-seeded) DB has no cycles at all, but several tests below need
+// `firstCycleId()` to resolve to *some* cycle. Bootstrap one for DNV Orthocare
+// if the /cycles list is empty (idempotent; reused if already present), and
+// clean it up only if this run created it.
+const DNV_ESTABLISHMENT_ID = 'est_hospital_dnv'
+const CYCLE_YEAR = 2084
+const CYCLE_MONTH = 6
+
+let fixtureCycleId = ''
+let fixtureCycleCreated = false
+
+test.beforeAll(async ({ request }: { request: APIRequestContext }) => {
+  const list = await request.get('/api/cycles')
+  const cycles = list.ok() ? ((await list.json()) as { id: string }[]) : []
+  if (cycles.length > 0) return // a cycle already exists — nothing to bootstrap
+
+  const res = await request.post('/api/cycles', {
+    data: { establishmentId: DNV_ESTABLISHMENT_ID, month: CYCLE_MONTH, year: CYCLE_YEAR },
+  })
+  if (res.ok()) {
+    fixtureCycleId = ((await res.json()) as { id: string }).id
+    fixtureCycleCreated = true
+    return
+  }
+  const retry = await request.get(`/api/cycles?establishmentId=${DNV_ESTABLISHMENT_ID}`)
+  const found = (await retry.json()) as { id: string; year: number; month: number }[]
+  const existing = found.find((c) => c.year === CYCLE_YEAR && c.month === CYCLE_MONTH)
+  if (!existing) {
+    throw new Error(`Could not create or find a fixture cycle (POST status ${res.status()}). Is the DB seeded?`)
+  }
+  fixtureCycleId = existing.id
+})
+
+test.afterAll(async ({ request }) => {
+  if (fixtureCycleCreated && fixtureCycleId) await request.delete(`/api/cycles/${fixtureCycleId}`)
+})
 
 function guardConsole(page: Page): string[] {
   const errors: string[] = []

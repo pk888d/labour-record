@@ -3,6 +3,15 @@ import { test, expect } from '@playwright/test'
 const TEST_TITLE = 'E2E Reminder Event'
 
 test.describe('Calendar & notifications', () => {
+  // A fresh (CI-seeded) DB has zero GovtHoliday rows — the "auto-derived
+  // events" test below needs January 2026 statutory holidays to render as
+  // chips. /api/holidays/seed-defaults is idempotent (skips dates that already
+  // exist), so this is safe to run unconditionally and needs no cleanup: it's
+  // populating real default holiday data, not throwaway test fixtures.
+  test.beforeAll(async ({ request }) => {
+    await request.post('/api/holidays/seed-defaults', { data: { year: 2026 } })
+  })
+
   // remove any custom events this spec created so it doesn't pollute reminders
   test.afterAll(async ({ request }) => {
     const res = await request.get('/api/calendar-events')

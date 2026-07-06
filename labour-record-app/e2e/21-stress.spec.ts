@@ -64,12 +64,19 @@ async function getCounter(page: Page, label: 'Added' | 'Updated' | 'Deleted' | '
 }
 
 async function deleteAllStressEmployees(request: APIRequestContext) {
-  // Search for stress test employees and delete them
-  const res = await request.get(`/api/employees?q=${STRESS_EMP_ID_PREFIX}&limit=100`)
+  // IMPORTANT: GET /api/employees does not implement `q` (search) or `limit`
+  // filtering — it always returns the full, unfiltered employee list (see
+  // src/app/api/employees/route.ts). Passing `?q=...&limit=100` here silently
+  // no-ops the filter, so this used to fetch and hard-delete EVERY unreferenced
+  // employee in the database as an afterAll "safety net" — including seed data
+  // and other specs' fixtures once their cycles were torn down. Filter
+  // client-side by empId prefix so this only ever touches employees this suite
+  // created, regardless of what the API does with unknown query params.
+  const res = await request.get(`/api/employees`)
   if (!res.ok()) return
-  const data = await res.json() as { employees?: { id: string }[]; data?: { id: string }[] } | { id: string }[]
-  const employees = Array.isArray(data) ? data : (data as { employees?: { id: string }[] }).employees ?? []
-  await Promise.all(employees.map((e) => request.delete(`/api/employees/${e.id}?mode=remove`)))
+  const all = (await res.json()) as { id: string; empId?: string }[]
+  const stressOnly = all.filter((e) => (e.empId ?? '').startsWith(STRESS_EMP_ID_PREFIX))
+  await Promise.all(stressOnly.map((e) => request.delete(`/api/employees/${e.id}?mode=remove`)))
 }
 
 // ── Suite 1: 30-employee bulk import ─────────────────────────────────────────
