@@ -115,6 +115,33 @@
 
 ---
 
+### Task Update — 2026-07-06 13:20 IST
+- Task: TEC-23 — otherAllowances corruption guarded at write, read, and repair
+- Status: completed (on integration branch; PR pending network)
+- Scope: New validateOtherAllowances() in record-numbers.ts (TDD; rejects the historical `["[]"]` shape, nested arrays/objects, NaN/Infinity, negatives; normalizes numeric strings, round2). Wages PUT 422s per-row and persists the normalized array; GET and the wage-entry page's initial values re-normalize defensively (both previously collapsed corrupt JSON to NaN via `[0] ?? 0` — NaN survives `?? 0`). New scripts/fix-other-allowances.ts (--dry-run default, --apply) repairs existing rows; applied to local dev.db: 6 corrupt rows fixed, 5 untouched. NOTE: run the script with --apply on the production DB at /database/web/musterly when the server is reachable.
+- Files changed: src/domain/validations/record-numbers.ts (+test), src/app/api/form-tasks/[id]/wages/route.ts, src/app/forms/[taskId]/page.tsx, scripts/fix-other-allowances.ts (new), e2e/25-other-allowances.spec.ts (new)
+- Metrics impact: +12 unit tests (134→146), +1 e2e spec, +1 maintenance script
+- Validation: vitest 146/146; e2e 25+13+05 16/16; extra regression 20-math+21-stress 46/46; tsc exit 0; npm run build ✓
+- Next step: push integration branch + single PR when network holds; then TEC-31
+
+### Task Update — 2026-07-06 12:10 IST
+- Task: TEC-22 — graceful PDF export when LibreOffice (soffice) is missing
+- Status: completed (on integration branch; PR pending network)
+- Scope: New isPdfAvailable() in src/lib/export/pdf-generator.ts — probes `which soffice` once per process (injectable exec fn for tests), exported PDF_UNAVAILABLE_MESSAGE. Export route (form-tasks/[id]/export) no longer shells out to a missing binary: DOCX still generated + GeneratedDocument saved, response is 501 with an actionable message; the existing export-button error display shows it with zero UI changes. deploy-server.sh warns when soffice absent (next to the APP_PASSWORD check); README gains a "PDF export (optional)" note. Trade-off: availability cached per process — installing LibreOffice later needs an app restart.
+- Files changed: src/lib/export/pdf-generator.ts (+test, new), src/app/api/form-tasks/[id]/export/route.ts, man/deploy-server.sh, README.md
+- Metrics impact: +7 unit tests
+- Validation: vitest 134/134 on integration branch (with TEC-20); e2e/08-exports 5/5 exercising the real soffice-missing path (this Mac has none); tsc exit 0
+- Next step: TEC-23 on same integration branch; push + single PR when network returns
+
+### Task Update — 2026-07-06 11:15 IST
+- Task: TEC-20 — validate client-submitted dates on all API routes
+- Status: completed (commit local; PR pending network)
+- Scope: New pure helpers src/domain/validations/dates.ts (parseDateInput + validateDateFields; TDD) — reject garbage ("banana"), non-strings, and silently-rolling-over calendar dates ("2026-02-30" → JS Date makes Mar 2; caught via UTC round-trip check); empty/absent stays optional. Wired into calendar-events, holidays, employees (POST/PUT), establishments (POST/PUT), fines, deductions, overtime (per-row), wages (per-row) routes — each 422s in its existing error shape; valid-input behaviour unchanged. Cycles routes confirmed already safe (validateNewCycle integer checks); bulk import's silent-skip toDate left as-is by design.
+- Files changed: src/domain/validations/dates.ts (+test, new), e2e/24-date-validation.spec.ts (new), 10 API route files under src/app/api/
+- Metrics impact: +16 unit tests (105→121), +1 e2e spec (8 tests)
+- Validation: vitest 121/121; e2e/24 8/8; regression 11-calendar+03-employees+09-holidays+02-establishments 20/20 and 05-form-entry+13-wage-calc 14/14; tsc exit 0; npm run build ✓
+- Next step: push + PR when GitHub connectivity returns; then TEC-22 (PDF guard)
+
 ### Task Update — 2026-07-06 06:30 IST
 - Task: TEC-29 — bank disbursement XLSX export per cycle
 - Status: completed (PR open)

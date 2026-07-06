@@ -2,10 +2,24 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { calculateWages } from '@/domain/calculations/wage-calculator'
 import { getWageRuleValue } from '@/domain/calculations/wage-defaults'
-import { validateWageRecords } from '@/domain/validations/record-numbers'
+import { validateWageRecords, validateOtherAllowances } from '@/domain/validations/record-numbers'
+import { validateDateFields } from '@/domain/validations/dates'
+import { round2 } from '@/lib/money'
 import type { WageFormulaConfig } from '@/types'
 
 type Params = { params: Promise<{ id: string }> }
+
+// otherAllowances is persisted as a JSON-serialized number[] (see PUT below).
+// Defensively re-normalize on read too, so a legacy corrupt row (e.g. the
+// historical `["[]"]` value) can never crash a caller — junk entries are
+// dropped rather than surfaced.
+function readOtherAllowances(raw: string): number[] {
+  try {
+    return validateOtherAllowances(JSON.parse(raw)).normalized
+  } catch {
+    return []
+  }
+}
 
 export async function GET(_req: Request, { params }: Params) {
   try {
@@ -22,7 +36,7 @@ export async function GET(_req: Request, { params }: Params) {
     return NextResponse.json(
       records.map((r) => ({
         ...r,
-        otherAllowances: Number((JSON.parse(r.otherAllowances) as number[])[0] ?? 0),
+        otherAllowances: readOtherAllowances(r.otherAllowances),
       }))
     )
   } catch (error) {
@@ -37,7 +51,7 @@ type WageRecordInput = {
   basic: number
   da: number
   hra: number
-  otherAllowances: number
+  otherAllowances: unknown
   pf: number
   esi: number
   lwf: number
@@ -73,6 +87,16 @@ export async function PUT(request: Request, { params }: Params) {
     // Reject negative / NaN / non-numeric money or day inputs before they hit the
     // calculator and persist as corrupt net pay.
     const recordErrors = validateWageRecords(b.records)
+    const otherAllowancesByRow: number[][] = []
+    b.records.forEach((r, i) => {
+      const rowRef = `Row ${i + 1}`
+      recordErrors.push(
+        ...validateDateFields(r as unknown as Record<string, unknown>, ['paymentDate'], rowRef),
+      )
+      const { errors, normalized } = validateOtherAllowances(r.otherAllowances, rowRef)
+      recordErrors.push(...errors)
+      otherAllowancesByRow[i] = normalized
+    })
     if (recordErrors.length > 0) {
       return NextResponse.json({ errors: recordErrors }, { status: 422 })
     }
@@ -106,8 +130,10 @@ export async function PUT(request: Request, { params }: Params) {
     const otEarningsByEmployee = new Map(otRecords.map((o) => [o.employeeId, o.totalEarnings]))
 
     const updated = await Promise.all(
-      b.records.map(async (r) => {
+      b.records.map(async (r, i) => {
         const overtimeEarnings = otEarningsByEmployee.get(r.employeeId) ?? 0
+        const otherAllowancesArr = otherAllowancesByRow[i]
+        const otherAllowancesTotal = round2(otherAllowancesArr.reduce((sum, n) => sum + n, 0))
 
         const attRec = attendanceRecords.find((a) => a.employeeId === r.employeeId)
         const dailyMarks = attRec ? (JSON.parse(attRec.dailyMarks) as string[]) : []
@@ -119,7 +145,7 @@ export async function PUT(request: Request, { params }: Params) {
           basic: r.basic,
           da: r.da,
           hra: r.hra,
-          otherAllowances: r.otherAllowances,
+          otherAllowances: otherAllowancesTotal,
           holidayBonus,
           overtimeEarnings,
           pf: r.pf,
@@ -135,7 +161,7 @@ export async function PUT(request: Request, { params }: Params) {
           basic: r.basic,
           da: r.da,
           hra: r.hra,
-          otherAllowances: JSON.stringify([r.otherAllowances]),
+          otherAllowances: JSON.stringify(otherAllowancesArr),
           holidayBonus,
           totalNormalWages: calc.totalNormalWages,
           totalEarnings: calc.totalEarnings,
@@ -169,7 +195,7 @@ export async function PUT(request: Request, { params }: Params) {
     return NextResponse.json(
       updated.map((r) => ({
         ...r,
-        otherAllowances: Number((JSON.parse(r.otherAllowances) as number[])[0] ?? 0),
+        otherAllowances: readOtherAllowances(r.otherAllowances),
       }))
     )
   } catch (error) {
