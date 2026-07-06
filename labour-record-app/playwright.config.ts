@@ -1,9 +1,11 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const isCI = !!process.env.CI
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
-  retries: 1,
+  retries: isCI ? 2 : 1,
   workers: 1,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
@@ -11,9 +13,9 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    headless: false,
+    headless: isCI ? true : false,
     launchOptions: {
-      slowMo: 100,
+      slowMo: isCI ? 0 : 100,
     },
     actionTimeout: 15000,
   },
@@ -27,7 +29,7 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:3000',
-    reuseExistingServer: true,
+    reuseExistingServer: isCI ? false : true,
     timeout: 60000,
   },
 })

@@ -16,8 +16,8 @@ test.describe('Form Entry — Attendance Tab', () => {
     await openFirstCycleFormTask(page)
     const attTab = page.getByRole('button', { name: 'Attendance', exact: true })
     if (await attTab.isVisible()) await attTab.click()
-    await expect(page.getByText('Alagurani')).toBeVisible()
-    await expect(page.getByText('Ambika')).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'Alagurani' })).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'Ambika' })).toBeVisible()
   })
 
   test('can mark attendance day 1 as Present', async ({ page }) => {

@@ -115,6 +115,15 @@
 
 ---
 
+### Task Update — 2026-07-06 16:05 IST
+- Task: TEC-33 — CI Playwright e2e job + CI-aware Playwright config
+- Status: completed (on feat/tec-33-ci-e2e, stacked on TEC-31 branch)
+- Scope: ci.yml gains an `e2e` job (needs build-and-test): npm ci → prisma migrate deploy → seed (npx tsx prisma/seed.ts) → playwright install --with-deps chromium → npx playwright test, with playwright-report/ + test-results/ uploaded as artifacts on failure (7-day retention). playwright.config.ts is now CI-aware (CI env → headless, no slowMo, retries 2, reuseExistingServer false) with local behaviour unchanged. Fixed one data-drift-fragile locator in e2e/05 (accumulated fine records made getByText('Alagurani') ambiguous → scoped to table cell). Slack failure notifications: user must run `/github subscribe pk888d/labour-record workflows` in #mustearly (noted in ci.yml header).
+- Files changed: .github/workflows/ci.yml, labour-record-app/playwright.config.ts, labour-record-app/e2e/05-form-entry.spec.ts
+- Metrics impact: +1 CI job; no test-count change
+- Validation: full suite headless CI-mode: 226 passed + fixed spec re-run 11/11 (net all green); vitest 175/175; tsc exit 0; ci.yml YAML validated
+- Next step: PR the TEC-31+TEC-33 stack, merge; then TEC-30 (PF ECR/ESI)
+
 ### Task Update — 2026-07-06 14:30 IST
 - Task: TEC-31 — compliance pre-flight checklist per cycle
 - Status: completed (on feat/tec-31-preflight, stacked on hardening branch; PR pending)
