@@ -115,6 +115,15 @@
 
 ---
 
+### Task Update — 2026-07-06 12:10 IST
+- Task: TEC-22 — graceful PDF export when LibreOffice (soffice) is missing
+- Status: completed (on integration branch; PR pending network)
+- Scope: New isPdfAvailable() in src/lib/export/pdf-generator.ts — probes `which soffice` once per process (injectable exec fn for tests), exported PDF_UNAVAILABLE_MESSAGE. Export route (form-tasks/[id]/export) no longer shells out to a missing binary: DOCX still generated + GeneratedDocument saved, response is 501 with an actionable message; the existing export-button error display shows it with zero UI changes. deploy-server.sh warns when soffice absent (next to the APP_PASSWORD check); README gains a "PDF export (optional)" note. Trade-off: availability cached per process — installing LibreOffice later needs an app restart.
+- Files changed: src/lib/export/pdf-generator.ts (+test, new), src/app/api/form-tasks/[id]/export/route.ts, man/deploy-server.sh, README.md
+- Metrics impact: +7 unit tests
+- Validation: vitest 134/134 on integration branch (with TEC-20); e2e/08-exports 5/5 exercising the real soffice-missing path (this Mac has none); tsc exit 0
+- Next step: TEC-23 on same integration branch; push + single PR when network returns
+
 ### Task Update — 2026-07-06 11:15 IST
 - Task: TEC-20 — validate client-submitted dates on all API routes
 - Status: completed (commit local; PR pending network)

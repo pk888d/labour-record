@@ -73,3 +73,6 @@
 
 - [2026-07-06] [claude] — Fixed: client-submitted dates are now validated on every API route (TEC-20). New src/domain/validations/dates.ts (parseDateInput/validateDateFields) rejects garbage, non-strings and rolled-over calendar dates ("2026-02-30") via UTC round-trip check; optional fields stay optional. Wired into calendar-events, holidays, employees, establishments, fines, deductions, overtime and wages routes (422 in each route's existing error shape).
   Files: src/domain/validations/dates.ts (+test), e2e/24-date-validation.spec.ts (new, 8 tests), 10 route files under src/app/api/. DB: none. Tests: vitest 121/121 (16 new); e2e 24 8/8; regressions 34/34; tsc 0; build ✓.
+
+- [2026-07-06] [claude] — Fixed: PDF export no longer breaks when LibreOffice is missing (TEC-22). New isPdfAvailable() probe (cached per process, injectable exec for tests); export route skips the soffice call when unavailable, still saves the DOCX, and answers 501 with an actionable message the existing export button already displays. deploy-server.sh warns when soffice is absent; README documents the optional dependency.
+  Files: src/lib/export/pdf-generator.ts (+test), src/app/api/form-tasks/[id]/export/route.ts, ../man/deploy-server.sh, README.md. DB: none. Tests: vitest 134/134 (7 new); e2e 08-exports 5/5 (real soffice-missing path); tsc 0.
