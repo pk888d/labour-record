@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+/.next-auth-e2e/
 /out/
 
 # production
