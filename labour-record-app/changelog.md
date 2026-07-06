@@ -67,3 +67,6 @@
 
 - [2026-07-06] [claude] — Fixed: `npx tsc --noEmit` red since 2026-07-01 (TEC-21). e2e/19-employee-edit.spec.ts typed a helper param via non-existent `test.fn`; now uses `type Page` from @playwright/test. Added a Typecheck step to the CI workflow (runs before unit tests).
   Files: e2e/19-employee-edit.spec.ts, ../.github/workflows/ci.yml. DB: none. Tests: tsc exit 0; e2e 19-employee-edit 15/15; vitest 92/92.
+
+- [2026-07-06] [claude] — Fixed: client-submitted dates are now validated on every API route (TEC-20). New src/domain/validations/dates.ts (parseDateInput/validateDateFields) rejects garbage, non-strings and rolled-over calendar dates ("2026-02-30") via UTC round-trip check; optional fields stay optional. Wired into calendar-events, holidays, employees, establishments, fines, deductions, overtime and wages routes (422 in each route's existing error shape).
+  Files: src/domain/validations/dates.ts (+test), e2e/24-date-validation.spec.ts (new, 8 tests), 10 route files under src/app/api/. DB: none. Tests: vitest 121/121 (16 new); e2e 24 8/8; regressions 34/34; tsc 0; build ✓.

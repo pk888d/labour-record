@@ -115,6 +115,15 @@
 
 ---
 
+### Task Update — 2026-07-06 11:15 IST
+- Task: TEC-20 — validate client-submitted dates on all API routes
+- Status: completed (commit local; PR pending network)
+- Scope: New pure helpers src/domain/validations/dates.ts (parseDateInput + validateDateFields; TDD) — reject garbage ("banana"), non-strings, and silently-rolling-over calendar dates ("2026-02-30" → JS Date makes Mar 2; caught via UTC round-trip check); empty/absent stays optional. Wired into calendar-events, holidays, employees (POST/PUT), establishments (POST/PUT), fines, deductions, overtime (per-row), wages (per-row) routes — each 422s in its existing error shape; valid-input behaviour unchanged. Cycles routes confirmed already safe (validateNewCycle integer checks); bulk import's silent-skip toDate left as-is by design.
+- Files changed: src/domain/validations/dates.ts (+test, new), e2e/24-date-validation.spec.ts (new), 10 API route files under src/app/api/
+- Metrics impact: +16 unit tests (105→121), +1 e2e spec (8 tests)
+- Validation: vitest 121/121; e2e/24 8/8; regression 11-calendar+03-employees+09-holidays+02-establishments 20/20 and 05-form-entry+13-wage-calc 14/14; tsc exit 0; npm run build ✓
+- Next step: push + PR when GitHub connectivity returns; then TEC-22 (PDF guard)
+
 ### Task Update — 2026-07-06 05:45 IST
 - Task: TEC-21 — fix tsc --noEmit failure (e2e test.fn) + add typecheck to CI
 - Status: completed (PR open)
