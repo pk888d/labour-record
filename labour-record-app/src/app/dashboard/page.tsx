@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { PageHeader } from '@/components/page-header'
+import { pluralize } from '@/lib/utils'
 import { getDaRate } from '@/domain/calculations/da-rates'
 import type { EstablishmentType } from '@/types'
 import { DashboardEstablishments, type EstRow } from './dashboard-establishments'
@@ -45,7 +46,7 @@ export default async function DashboardPage() {
     <div>
       <PageHeader
         title="Dashboard"
-        subtitle={`${rows.length} firm${rows.length !== 1 ? 's' : ''} · ${totalEmployees} employees`}
+        subtitle={`${pluralize(rows.length, 'firm')} · ${pluralize(totalEmployees, 'employee')}`}
         action={{ label: '+ New Establishment', href: '/establishments/new' }}
       />
 

@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { pluralize } from '@/lib/utils'
 
 export function SyncEmployeesButton({ cycleId }: { cycleId: string }) {
   const router = useRouter()
@@ -14,7 +15,7 @@ export function SyncEmployeesButton({ cycleId }: { cycleId: string }) {
     setSyncing(false)
     const data = await res.json()
     if (res.ok) {
-      setMessage(data.added === 0 ? 'Already up to date' : `Added ${data.added} employee(s)`)
+      setMessage(data.added === 0 ? 'Already up to date' : `Added ${pluralize(data.added, 'employee')}`)
       if (data.added > 0) router.refresh()
     } else {
       setMessage(data.error ?? 'Sync failed')

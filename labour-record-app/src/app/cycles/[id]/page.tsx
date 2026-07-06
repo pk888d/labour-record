@@ -152,6 +152,14 @@ export default async function CycleDetailPage({
                 className="text-xs px-3 py-1 rounded bg-[#2a2010] text-[#c0a040] border border-[#4a3a1a] hover:bg-[#3a2c14]">
                 ₹ Bank Disbursement
               </a>
+              <a href={`/api/cycles/${cycle.id}/pf-ecr`}
+                className="text-xs px-3 py-1 rounded bg-[#2a2010] text-[#c0a040] border border-[#4a3a1a] hover:bg-[#3a2c14]">
+                PF ECR
+              </a>
+              <a href={`/api/cycles/${cycle.id}/esi-return`}
+                className="text-xs px-3 py-1 rounded bg-[#2a2010] text-[#c0a040] border border-[#4a3a1a] hover:bg-[#3a2c14]">
+                ESI Return
+              </a>
               <SyncEmployeesButton cycleId={cycle.id} />
               <SyncWagesButton cycleId={cycle.id} />
             </div>

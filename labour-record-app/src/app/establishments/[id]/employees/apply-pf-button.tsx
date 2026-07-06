@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { pluralize } from '@/lib/utils'
 
 export function ApplyPfButton({ establishmentId }: { establishmentId: string }) {
   const router = useRouter()
@@ -28,7 +29,7 @@ export function ApplyPfButton({ establishmentId }: { establishmentId: string }) 
     const data = await res.json()
     setBusy(false)
     if (res.ok) {
-      setMsg(`Applied to ${data.updated} employee(s)`)
+      setMsg(`Applied to ${pluralize(data.updated, 'employee')}`)
       router.refresh()
       setTimeout(() => setOpen(false), 1200)
     } else {

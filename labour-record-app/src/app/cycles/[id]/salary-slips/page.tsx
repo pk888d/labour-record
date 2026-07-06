@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { pluralize } from '@/lib/utils'
 import { getCycleWithSlips, MONTH_NAMES } from './slip-data'
 import { PrintAllButton } from './print-all-button'
 
@@ -31,7 +32,7 @@ export default async function SalarySlipsPage({
             {' › Salary Slips'}
           </p>
           <h1 className="text-lg font-semibold text-white mt-0.5">Salary Slips — {period}</h1>
-          <p className="text-xs text-[#4a6a8a] mt-0.5">{cycle.establishmentName} · {slips.length} employee(s)</p>
+          <p className="text-xs text-[#4a6a8a] mt-0.5">{cycle.establishmentName} · {pluralize(slips.length, 'employee')}</p>
         </div>
         <PrintAllButton />
       </div>

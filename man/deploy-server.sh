@@ -46,6 +46,13 @@ npm ci
 step "3/5  database (migrate + generate; seed only when DB is new)"
 FRESH=0
 [[ -f prisma/dev.db ]] || FRESH=1
+# Safety backup BEFORE migrations touch the DB (TEC-32). Uses the repo's
+# backup script (better-sqlite3 online backup + integrity check + rotation).
+if [[ "$FRESH" -eq 0 && -f ../man/backup-musterly.sh ]]; then
+  MUSTERLY_APP_DIR="$(pwd)" MUSTERLY_DB="$(pwd)/prisma/dev.db" bash ../man/backup-musterly.sh \
+    && info "pre-migrate safety backup taken (~/backups/musterly)" \
+    || { echo -e "${YELLOW}[!]${NC} pre-migrate backup FAILED — aborting deploy to protect the DB"; exit 1; }
+fi
 npx prisma migrate deploy
 npx prisma generate
 if [[ "$FRESH" -eq 1 ]]; then

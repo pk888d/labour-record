@@ -20,7 +20,7 @@ export function HospitalFormII({ ctx, deductions }: { ctx: CycleContext; deducti
             <th>S.No</th>
             <th>Name</th>
             <th>Father&apos;s / Husband&apos;s Name</th>
-            <th>Age &amp; Sex</th>
+            <th>Sex</th>
             <th>Department</th>
             <th>Damage or Loss Caused with Date</th>
             <th>Whether worker showed cause against deduction (if so, date)</th>
