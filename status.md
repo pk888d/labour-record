@@ -115,6 +115,24 @@
 
 ---
 
+### Task Update — 2026-07-06 16:05 IST
+- Task: TEC-33 — CI Playwright e2e job + CI-aware Playwright config
+- Status: completed (on feat/tec-33-ci-e2e, stacked on TEC-31 branch)
+- Scope: ci.yml gains an `e2e` job (needs build-and-test): npm ci → prisma migrate deploy → seed (npx tsx prisma/seed.ts) → playwright install --with-deps chromium → npx playwright test, with playwright-report/ + test-results/ uploaded as artifacts on failure (7-day retention). playwright.config.ts is now CI-aware (CI env → headless, no slowMo, retries 2, reuseExistingServer false) with local behaviour unchanged. Fixed one data-drift-fragile locator in e2e/05 (accumulated fine records made getByText('Alagurani') ambiguous → scoped to table cell). Slack failure notifications: user must run `/github subscribe pk888d/labour-record workflows` in #mustearly (noted in ci.yml header).
+- Files changed: .github/workflows/ci.yml, labour-record-app/playwright.config.ts, labour-record-app/e2e/05-form-entry.spec.ts
+- Metrics impact: +1 CI job; no test-count change
+- Validation: full suite headless CI-mode: 226 passed + fixed spec re-run 11/11 (net all green); vitest 175/175; tsc exit 0; ci.yml YAML validated
+- Next step: PR the TEC-31+TEC-33 stack, merge; then TEC-30 (PF ECR/ESI)
+
+### Task Update — 2026-07-06 14:30 IST
+- Task: TEC-31 — compliance pre-flight checklist per cycle
+- Status: completed (on feat/tec-31-preflight, stacked on hardening branch; PR pending)
+- Scope: Pure runComplianceChecks (src/domain/compliance/preflight.ts; TDD 29 tests) — errors: MISSING_UAN (PF applies per pf-calculator semantics), MISSING_ESI_NUMBER (esiAmount>0, blank esiNo); warnings: NO_ATTENDANCE (no record or all-blank dailyMarks), ZERO_WAGES (no/zero WageRecord AND defaultTotalSalary<=0), FORMS_PENDING (any FormTask not EXPORTED), EXITED_EMPLOYEE (EXITED or exitDate before cycle start). Prisma loader src/lib/compliance/load.ts (calendar-style split). Cycle page: grouped red/amber "Compliance Pre-flight" panel + green all-clear + non-blocking ⚠ badge beside print/export controls; printed documents untouched.
+- Files changed: src/domain/compliance/{preflight.ts,preflight.test.ts} (new), src/lib/compliance/load.ts (new), src/app/cycles/[id]/page.tsx, e2e/26-preflight.spec.ts (new), e2e/04-cycles.spec.ts (2 locators scoped for strict mode)
+- Metrics impact: +29 unit tests (146→175), +1 e2e spec
+- Validation: vitest 175/175; e2e 26+04 10/10; tsc exit 0; npm run build ✓
+- Next step: fold into PR flow once hardening PR merges; then TEC-33 (CI e2e)
+
 ### Task Update — 2026-07-06 13:20 IST
 - Task: TEC-23 — otherAllowances corruption guarded at write, read, and repair
 - Status: completed (on integration branch; PR pending network)
