@@ -90,6 +90,10 @@ export default async function CycleDetailPage({
                 className="text-xs px-3 py-1 rounded bg-[#0f2a1a] text-[#40c070] border border-[#1a4a2a] hover:bg-[#1a3a20]">
                 Salary Slips
               </Link>
+              <a href={`/api/cycles/${cycle.id}/disbursement`}
+                className="text-xs px-3 py-1 rounded bg-[#2a2010] text-[#c0a040] border border-[#4a3a1a] hover:bg-[#3a2c14]">
+                ₹ Bank Disbursement
+              </a>
               <SyncEmployeesButton cycleId={cycle.id} />
               <SyncWagesButton cycleId={cycle.id} />
             </div>

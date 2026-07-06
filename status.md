@@ -115,6 +115,15 @@
 
 ---
 
+### Task Update — 2026-07-06 06:30 IST
+- Task: TEC-29 — bank disbursement XLSX export per cycle
+- Status: completed (PR open)
+- Scope: New GET /api/cycles/[id]/disbursement builds a salary-transfer workbook — "Bank Transfer" sheet (S.No, Name, Emp ID, Account, IFSC, Bank, Net Pay + TOTAL), "Cash Payment" sheet (+ TOTAL), and a "Warnings" sheet when any employee has zero/negative net pay or is BANK-mode with missing account/IFSC (nobody silently dropped). Net pay reuses the Wage Register's derivation (getWagesData: manual WageRecord override → salary fallback) so the file reconciles with register/slips. Pure builder src/lib/export/disbursement.ts (TDD). "₹ Bank Disbursement" button added to the cycle detail page. ACTIVE employees only.
+- Files changed: src/lib/export/disbursement.ts (+test, new), src/app/api/cycles/[id]/disbursement/route.ts (new), src/app/cycles/[id]/page.tsx, e2e/23-disbursement.spec.ts (new)
+- Metrics impact: +1 API route, +6 unit tests (92→98), +1 e2e spec (5 tests)
+- Validation: vitest 98/98; e2e/23-disbursement 5/5; e2e/04-cycles regression 7/7; tsc clean except pre-existing TEC-21 error; npm run build ✓ (route registered)
+- Next step: review/merge PR #3; continue backlog (TEC-32 backups)
+
 ### Task Update — 2026-07-06 05:45 IST
 - Task: TEC-21 — fix tsc --noEmit failure (e2e test.fn) + add typecheck to CI
 - Status: completed (PR open)

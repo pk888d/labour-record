@@ -67,3 +67,6 @@
 
 - [2026-07-06] [claude] — Fixed: `npx tsc --noEmit` red since 2026-07-01 (TEC-21). e2e/19-employee-edit.spec.ts typed a helper param via non-existent `test.fn`; now uses `type Page` from @playwright/test. Added a Typecheck step to the CI workflow (runs before unit tests).
   Files: e2e/19-employee-edit.spec.ts, ../.github/workflows/ci.yml. DB: none. Tests: tsc exit 0; e2e 19-employee-edit 15/15; vitest 92/92.
+
+- [2026-07-06] [claude] — Added: bank disbursement XLSX export per cycle (TEC-29). GET /api/cycles/[id]/disbursement → "Bank Transfer" sheet (account/IFSC/net pay + TOTAL), "Cash Payment" sheet, "Warnings" sheet for zero/negative net or missing bank details (never silently dropped). Net pay from the Wage Register's own source (getWagesData) so the file reconciles with register/slips; pure builder in src/lib/export/disbursement.ts. "₹ Bank Disbursement" button on the cycle page.
+  Files: src/lib/export/disbursement.ts (+test), src/app/api/cycles/[id]/disbursement/route.ts, src/app/cycles/[id]/page.tsx, e2e/23-disbursement.spec.ts (new, 5 tests). DB: none. Tests: vitest 98/98 (6 new); e2e 23-disbursement 5/5; 04-cycles 7/7; build ✓.
