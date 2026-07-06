@@ -115,6 +115,15 @@
 
 ---
 
+### Task Update — 2026-07-06 18:40 IST
+- Task: TEC-32 — SQLite backup strategy for the production server (installed live)
+- Status: completed (server side live; repo files on feat/tec-32-backups)
+- Scope: New man/backup-musterly.sh — online backup via the app's own better-sqlite3 (server has no sqlite3 CLI; source opened rw because readonly raises SQLITE_IOERR_READ there), PRAGMA integrity_check before gzip, 14-copy rotation, backup.log; env overrides use MUSTERLY_-prefixed names (server login env exports DB=/database which hijacked ${DB:-}). Installed to ~/backups/bin/ on 192.168.0.91; destination /home/praveen/backups/musterly is a different LVM volume from /database (same physical disk — off-machine copy documented as follow-up). First backup taken (28K gz, integrity ok). Restore procedure tested live: gunzip → integrity ok, employees 19/19 and wage rows 7/7 match production. Nightly cron installed (02:00, crond active). man/deploy-server.sh now takes a safety backup BEFORE prisma migrate deploy and aborts the deploy if the backup fails. man/backup-restore.md documents restore + verify.
+- Files changed: man/backup-musterly.sh (new), man/backup-restore.md (new), man/deploy-server.sh; server: ~/backups/bin/backup-musterly.sh, crontab entry
+- Metrics impact: none (ops)
+- Validation: live run BACKUP_OK + integrity ok; restore test counts match; crontab -l shows the 02:00 entry; crond active
+- Next step: production still has TEC-23 corrupt otherAllowances rows — awaiting user approval to run the one-line repair (backup exists); off-machine backup copy as future improvement
+
 ### Task Update — 2026-07-06 17:20 IST
 - Task: TEC-30 — PF ECR + ESI return file generation per cycle
 - Status: completed (on feat/tec-30-ecr-esi, stacked on TEC-33 branch; PR pending)
