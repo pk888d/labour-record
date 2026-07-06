@@ -40,7 +40,8 @@ test.describe('Monthly Cycles', () => {
     await page.goto('/cycles')
     await page.locator('tr', { hasText: 'DNV Orthocare' }).getByRole('link', { name: 'View' }).first().click()
     await expect(page.getByText('Form Tasks')).toBeVisible()
-    await expect(page.getByText(/Form XII|Wages Register/i)).toBeVisible()
+    // .first(): the compliance pre-flight panel may also mention form names
+    await expect(page.getByText(/Form XII|Wages Register/i).first()).toBeVisible()
     await expect(page.getByText(/Form V — Register|Register of Muster Roll/i).first()).toBeVisible()
   })
 
@@ -48,7 +49,8 @@ test.describe('Monthly Cycles', () => {
     await page.goto('/cycles')
     await page.locator('tr', { hasText: 'DNV Orthocare' }).getByRole('link', { name: 'View' }).first().click()
     await expect(page.getByText(/Employees in this Cycle/i)).toBeVisible()
-    await expect(page.getByText('Alagurani')).toBeVisible()
+    // Scope to the roster cell: the pre-flight panel may also name employees.
+    await expect(page.getByRole('cell', { name: 'Alagurani' })).toBeVisible()
   })
 
   test('cycle detail has Print and Export buttons on form tasks', async ({ page }) => {

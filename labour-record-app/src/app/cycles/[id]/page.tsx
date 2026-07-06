@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma'
 import { PageHeader } from '@/components/page-header'
 import { FORM_DISPLAY_NAMES } from '@/types'
 import type { FormCode } from '@/types'
+import { loadComplianceChecks } from '@/lib/compliance/load'
+import type { PreflightFinding } from '@/domain/compliance/preflight'
 import { ExportButton } from './export-button'
 import { SyncEmployeesButton } from './sync-employees-button'
 import { SyncWagesButton } from './sync-wages-button'
@@ -39,6 +41,10 @@ export default async function CycleDetailPage({
   })
   if (!cycle) notFound()
 
+  const findings = (await loadComplianceChecks(id)) ?? []
+  const preflightErrors = findings.filter((f) => f.severity === 'error')
+  const preflightWarnings = findings.filter((f) => f.severity === 'warning')
+
   const periodLabel = `${MONTH_NAMES[cycle.month]} ${cycle.year}`
 
   return (
@@ -48,8 +54,60 @@ export default async function CycleDetailPage({
         subtitle={`${cycle.establishment.type} · ${cycle.cycleEmployees.length} employees · ${cycle.status}`}
       />
       <div className="p-6 space-y-6">
+        <section data-testid="preflight-panel">
+          <h2 className="text-xs font-semibold text-[#c8d8e8] uppercase tracking-wide mb-3">
+            Compliance Pre-flight
+          </h2>
+          {findings.length === 0 ? (
+            <div data-testid="preflight-pass"
+              className="px-3 py-2 rounded bg-[#0f2a1a] border border-[#1a4a2a] text-sm text-[#40c070]">
+              All checks passed — this cycle looks ready for print &amp; export.
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {preflightErrors.length > 0 && (
+                <div className="rounded bg-[#2a1010] border border-[#4a1a1a] px-3 py-2">
+                  <p className="text-xs font-semibold text-[#f07070] uppercase tracking-wide mb-1">
+                    Errors ({preflightErrors.length})
+                  </p>
+                  <ul className="space-y-0.5">
+                    {preflightErrors.map((f, i) => (
+                      <PreflightRow key={`e-${i}`} finding={f} textColor="text-[#f0a0a0]" />
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {preflightWarnings.length > 0 && (
+                <div className="rounded bg-[#2a2010] border border-[#4a3a1a] px-3 py-2">
+                  <p className="text-xs font-semibold text-[#c0a040] uppercase tracking-wide mb-1">
+                    Warnings ({preflightWarnings.length})
+                  </p>
+                  <ul className="space-y-0.5">
+                    {preflightWarnings.map((f, i) => (
+                      <PreflightRow key={`w-${i}`} finding={f} textColor="text-[#d8c080]" />
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
         <section>
-          <h2 className="text-xs font-semibold text-[#c8d8e8] uppercase tracking-wide mb-3">Form Tasks</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-semibold text-[#c8d8e8] uppercase tracking-wide">Form Tasks</h2>
+            {findings.length > 0 && (
+              <span data-testid="preflight-export-warning"
+                className={`text-xs px-2 py-0.5 rounded ${
+                  preflightErrors.length > 0
+                    ? 'bg-[#2a1010] text-[#f07070] border border-[#4a1a1a]'
+                    : 'bg-[#2a2010] text-[#c0a040] border border-[#4a3a1a]'
+                }`}>
+                ⚠ {findings.length} compliance issue{findings.length === 1 ? '' : 's'} — review
+                pre-flight before printing or exporting
+              </span>
+            )}
+          </div>
           <div className="space-y-1">
             {cycle.formTasks.map((task) => {
               const display = FORM_DISPLAY_NAMES[task.formCode as FormCode]
@@ -129,5 +187,17 @@ export default async function CycleDetailPage({
         </section>
       </div>
     </div>
+  )
+}
+
+function PreflightRow({ finding, textColor }: { finding: PreflightFinding; textColor: string }) {
+  return (
+    <li data-testid="preflight-finding" data-severity={finding.severity}
+      className={`text-sm ${textColor}`}>
+      {finding.employeeName ? (
+        <span className="font-medium text-white">{finding.employeeName}: </span>
+      ) : null}
+      {finding.message}
+    </li>
   )
 }
