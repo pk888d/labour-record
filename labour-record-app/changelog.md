@@ -91,3 +91,6 @@
 
 - [2026-07-06] [claude] — Added: nightly SQLite backups on the production server (TEC-32). man/backup-musterly.sh (better-sqlite3 online backup — no sqlite3 CLI on the server; integrity-checked, gzipped, 14-copy rotation, MUSTERLY_-prefixed env overrides because the server exports DB=/database) installed to ~/backups/bin with an 02:00 cron; backups land on a separate LVM volume (/home). Restore procedure documented in man/backup-restore.md and tested live (integrity ok, row counts match). deploy-server.sh now takes a safety backup before prisma migrate deploy and aborts if it fails.
   Files: ../man/backup-musterly.sh (new), ../man/backup-restore.md (new), ../man/deploy-server.sh. DB: none (server cron + first backup installed live). Tests: live BACKUP_OK + restore verification on 192.168.0.91.
+
+- [2026-07-06] [claude] — Fixed: hospital Forms I/II print column 4 header "Age & Sex" → statutory "Sex" (TEC-27 label sweep of all 9 never-verified forms vs forms-template/ docx). Structural gaps + two official-template defects documented on the Linear ticket; Shop W part-2 (Net Wages etc.) spun out as TEC-38.
+  Files: src/app/print/[cycleId]/[formCode]/hospital-form-{i,ii}.tsx. DB: none. Tests: vitest 191/191; print e2e 07+10+17 16/16; tsc 0.

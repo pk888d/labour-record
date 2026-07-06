@@ -115,6 +115,15 @@
 
 ---
 
+### Task Update — 2026-07-06 19:30 IST
+- Task: TEC-27 — per-form label sweep vs statutory docx templates (9 forms)
+- Status: completed (on fix/tec-27-form-labels)
+- Scope: Compared header + every column/field label of hospital I/II/IV/XI and shop U/V/W/X/T against forms-template/ docx (text extracted from document.xml; screenshots captured per form). Real fixes: Forms I & II col 4 said "Age & Sex" — statutory column is "Sex" (XI genuinely is Age & Sex, untouched). Structural gaps documented on the ticket (biggest: Shop W part-2 cols 15–29 incl. Net Wages/Date of Payment omitted → new ticket TEC-38; also IV/V/X/T gaps tied to data model). Two defects in the official docx templates flagged (Form II cites Rules 1963 vs 1953; Form W "Rund" typo). Cosmetic wording diffs catalogued, left as-is.
+- Files changed: src/app/print/[cycleId]/[formCode]/hospital-form-i.tsx, hospital-form-ii.tsx (+2/−2)
+- Metrics impact: none; +1 backlog ticket (TEC-38)
+- Validation: vitest 191/191; print regressions 07+10+17 16/16; tsc exit 0
+- Next step: P4 batch (TEC-24 pluralization, TEC-25 hygiene, TEC-28 decision), then PR the stacked branches
+
 ### Task Update — 2026-07-06 18:40 IST
 - Task: TEC-32 — SQLite backup strategy for the production server (installed live)
 - Status: completed (server side live; repo files on feat/tec-32-backups)
