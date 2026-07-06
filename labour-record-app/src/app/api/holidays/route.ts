@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { parseDateInput } from '@/domain/validations/dates'
 
 export async function GET(request: Request) {
   try {
@@ -28,9 +29,9 @@ export async function POST(request: Request) {
     if (!b.date || !b.name?.trim()) {
       return NextResponse.json({ errors: ['date and name are required'] }, { status: 422 })
     }
-    const date = new Date(b.date)
-    if (isNaN(date.getTime())) {
-      return NextResponse.json({ errors: ['invalid date'] }, { status: 422 })
+    const { date, error: dateError } = parseDateInput(b.date, 'date')
+    if (dateError || !date) {
+      return NextResponse.json({ errors: [dateError ?? 'invalid date'] }, { status: 422 })
     }
     const year = date.getFullYear()
     const holiday = await prisma.govtHoliday.create({

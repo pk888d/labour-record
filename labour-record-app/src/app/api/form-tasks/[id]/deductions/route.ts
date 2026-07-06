@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { validatePresentMoneyFields, DEDUCTION_MONEY_FIELDS } from '@/domain/validations/record-numbers'
+import { validateDateFields } from '@/domain/validations/dates'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -54,6 +55,10 @@ export async function POST(request: Request, { params }: Params) {
     }
     if (!b.description?.trim()) {
       return NextResponse.json({ errors: ['description is required'] }, { status: 422 })
+    }
+    const dateErrors = validateDateFields(b as Record<string, unknown>, ['damageDate'])
+    if (dateErrors.length > 0) {
+      return NextResponse.json({ errors: dateErrors }, { status: 422 })
     }
     const moneyErrors = validatePresentMoneyFields(b as Record<string, unknown>, DEDUCTION_MONEY_FIELDS)
     if (moneyErrors.length > 0) {

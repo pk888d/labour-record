@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { calculateWages } from '@/domain/calculations/wage-calculator'
 import { getWageRuleValue } from '@/domain/calculations/wage-defaults'
 import { validateWageRecords } from '@/domain/validations/record-numbers'
+import { validateDateFields } from '@/domain/validations/dates'
 import type { WageFormulaConfig } from '@/types'
 
 type Params = { params: Promise<{ id: string }> }
@@ -73,6 +74,11 @@ export async function PUT(request: Request, { params }: Params) {
     // Reject negative / NaN / non-numeric money or day inputs before they hit the
     // calculator and persist as corrupt net pay.
     const recordErrors = validateWageRecords(b.records)
+    b.records.forEach((r, i) => {
+      recordErrors.push(
+        ...validateDateFields(r as unknown as Record<string, unknown>, ['paymentDate'], `Row ${i + 1}`),
+      )
+    })
     if (recordErrors.length > 0) {
       return NextResponse.json({ errors: recordErrors }, { status: 422 })
     }

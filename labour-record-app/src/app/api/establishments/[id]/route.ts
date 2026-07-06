@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { validateEstablishment } from '@/domain/validations/establishment'
+import { validateDateFields } from '@/domain/validations/dates'
 import type { EstablishmentType } from '@/generated/prisma/enums'
 
 type Params = { params: Promise<{ id: string }> }
@@ -33,6 +34,7 @@ export async function PUT(request: Request, { params }: Params) {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const errors = validateEstablishment(body as any)
+    errors.push(...validateDateFields(body as Record<string, unknown>, ['serviceStartDate']))
     if (errors.length > 0) return NextResponse.json({ errors }, { status: 422 })
 
     const previous = await prisma.establishment.findUnique({ where: { id } })
