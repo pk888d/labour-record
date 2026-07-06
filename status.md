@@ -115,6 +115,15 @@
 
 ---
 
+### Task Update — 2026-07-06 05:45 IST
+- Task: TEC-21 — fix tsc --noEmit failure (e2e test.fn) + add typecheck to CI
+- Status: completed (PR open)
+- Scope: e2e/19-employee-edit.spec.ts:67 typed the fill() helper's page param via `Parameters<typeof test['fn']>` — Playwright's test has no `fn` property (TS2339), keeping `npx tsc --noEmit` red since 2026-07-01. Replaced with the proper `type Page` import from @playwright/test. Added a "Typecheck" step (npm run typecheck) to .github/workflows/ci.yml before unit tests so regressions can't hide again. Also found stale .next/types validators (from the feat/auth-login branch build) breaking tsc locally — removed the stale artifact; CI is unaffected (typecheck runs before build).
+- Files changed: labour-record-app/e2e/19-employee-edit.spec.ts, .github/workflows/ci.yml
+- Metrics impact: none (type-only fix + 1 CI step)
+- Validation: npx tsc --noEmit → exit 0 (zero errors); npx playwright test e2e/19-employee-edit.spec.ts → 15/15; npx vitest run → 92/92
+- Next step: review/merge PR; then next backlog ticket (TEC-29 bank disbursement or TEC-19 TLS)
+
 ### Task Update — 2026-07-05 18:15 IST
 - Task: TEC-18 — single-user password auth (login page, session cookie, proxy gate) + Linear backlog creation
 - Status: completed (PR open)

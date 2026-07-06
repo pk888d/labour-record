@@ -7,7 +7,7 @@
  *  - The "all seeded employees" suite just does a load + no-op save to prove
  *    no employee's existing data fails validation.
  */
-import { test, expect, type APIRequestContext } from '@playwright/test'
+import { test, expect, type APIRequestContext, type Page } from '@playwright/test'
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -64,7 +64,7 @@ async function restoreEmployee(request: APIRequestContext, snapshot: Record<stri
 }
 
 // Fill a labelled text/number input by its aria-label (exact match).
-async function fill(page: Parameters<typeof import('@playwright/test')['test']['fn']>[0]['page'], label: string, value: string) {
+async function fill(page: Page, label: string, value: string) {
   await page.getByLabel(label, { exact: true }).fill(value)
 }
 
