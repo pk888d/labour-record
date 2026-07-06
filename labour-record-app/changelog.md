@@ -94,3 +94,6 @@
 
 - [2026-07-06] [claude] — Fixed: hospital Forms I/II print column 4 header "Age & Sex" → statutory "Sex" (TEC-27 label sweep of all 9 never-verified forms vs forms-template/ docx). Structural gaps + two official-template defects documented on the Linear ticket; Shop W part-2 (Net Wages etc.) spun out as TEC-38.
   Files: src/app/print/[cycleId]/[formCode]/hospital-form-{i,ii}.tsx. DB: none. Tests: vitest 191/191; print e2e 07+10+17 16/16; tsc 0.
+
+- [2026-07-06] [claude] — Fixed: pluralization polish (TEC-24) — new pluralize() helper; "1 employee(s)" and always-plural counts corrected on salary-slips, sync-employees toast, apply-PF toast, dashboard subtitle. Repo hygiene (TEC-25): status.md header regenerated to a real snapshot (18 models / 35 routes / 194 unit tests / 30 e2e specs); test-results/ + .next-auth-e2e/ gitignored. TEC-28 decision recorded on the ticket: keep plain-text Action column (SheetJS CE limitation; import validates per-row anyway).
+  Files: src/lib/utils.ts (+utils.test.ts), 4 UI files, ../status.md, ../.gitignore. DB: none. Tests: vitest 194/194 (3 new); tsc 0.

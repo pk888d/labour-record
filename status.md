@@ -1,30 +1,29 @@
-# Labour Record Compliance Management App — Status
+# Mustearly (Labour Record Compliance Management) — Status
 
-## Overall Progress: 10% [█░░░░░░░░░]
+## Overall: Feature-complete core, active backlog in Linear [█████████░]
 
-## Phase Progress
+The original 10-task scaffold plan (May 2026) shipped long ago. Work is now
+tracked ticket-by-ticket in Linear (project **Mustearly**, team Tech Sakthi,
+TEC-nn issues); this file keeps the append-only Task Update log below plus a
+snapshot here (last regenerated 2026-07-06, TEC-25).
 
-| Phase | Status | Notes |
-|-------|--------|-------|
-| Task 1: Scaffold Next.js project | ✅ Completed | |
-| Task 2: Prisma schema + migration | ⬜ Pending | |
-| Task 3: Establishment domain validation | ⬜ Pending | |
-| Task 4: Employee domain validation | ⬜ Pending | |
-| Task 5: Establishment API routes | ⬜ Pending | |
-| Task 6: Employee API routes | ⬜ Pending | |
-| Task 7: Root layout + sidebar | ⬜ Pending | |
-| Task 8: Establishments UI | ⬜ Pending | |
-| Task 9: Employees UI | ⬜ Pending | |
-| Task 10: Seed data | ⬜ Pending | |
+## Snapshot
 
-## Project Metrics
+| Area | State |
+|------|-------|
+| Core features | Establishments (6 types), employees (bulk import/export), monthly cycles + kanban form tasks, attendance/wages/OT/fines/deductions/leave entry, all 12 statutory forms (HTML print + tagged DOCX), salary slips, calendar + notifications, dashboard, audit log, settings, in-app help |
+| Recent (Jul 2026) | Auth (supported, disabled until APP_PASSWORD set), bank disbursement export, compliance pre-flight per cycle, PF ECR + ESI return files, API date/money hardening, CI typecheck + full e2e job, nightly server DB backups |
+| Deployment | 192.168.0.91 (pm2 "musterly", nginx :8080, LAN-only per TEC-19 deferral); deploy = git pull + man/deploy-server.sh (auto safety-backup before migrations) |
+| Backlog | Linear: TEC-26 (blocked on 29-col template), TEC-38 (Form W part-2), TEC-19 (TLS, deferred), TEC-28 (Excel dropdown decision) |
+
+## Project Metrics (2026-07-06)
 
 | Metric | Value |
 |--------|-------|
-| Files created | 8 |
-| Models | 0 |
-| API endpoints | 0 |
-| Permissions | 0 |
+| Prisma models | 18 |
+| API endpoints (route.ts) | 35 |
+| Unit tests (vitest) | 194 |
+| E2E specs (Playwright) | 30 files (~230 tests, run in CI) |
 
 ## COMPLETED ITEMS
 
@@ -114,6 +113,15 @@
 - Next action: merge PR #1, set APP_PASSWORD + SESSION_SECRET in server .env, redeploy; then TEC-19 (TLS)
 
 ---
+
+### Task Update — 2026-07-06 20:00 IST
+- Task: TEC-24 + TEC-25 + TEC-28 — polish batch (pluralization, repo hygiene, dropdown decision)
+- Status: completed (on chore/tec-24-25-28-polish)
+- Scope: TEC-24: new pluralize() in src/lib/utils.ts (+3 tests); fixed all four "employee(s)"/always-plural sites (salary-slips subtitle, sync-employees + apply-pf toasts, dashboard subtitle — firms too); grep confirms zero "(s)" count labels remain. TEC-25: status.md header regenerated (was "10%" scaffold-era; now snapshot + real metrics: 18 models, 35 API routes, 194 unit tests, 30 e2e specs); root .gitignore gains test-results/ and .next-auth-e2e/. TEC-28: decision recorded on the ticket — keep plain-text Action column (SheetJS CE can't write dataValidation; OOXML injection brittle; import already validates per-row), reopen with exceljs if users mistype in practice.
+- Files changed: src/lib/utils.ts (+utils.test.ts new), src/app/cycles/[id]/salary-slips/page.tsx, src/app/cycles/[id]/sync-employees-button.tsx, src/app/establishments/[id]/employees/apply-pf-button.tsx, src/app/dashboard/page.tsx, status.md (header), .gitignore
+- Metrics impact: +3 unit tests (191→194)
+- Validation: vitest 194/194; tsc exit 0; grep sweep clean
+- Next step: single PR for the stacked TEC-30/32/27/24/25 branches once PR #5 (TEC-31/33) merges
 
 ### Task Update — 2026-07-06 19:30 IST
 - Task: TEC-27 — per-form label sweep vs statutory docx templates (9 forms)
