@@ -115,6 +115,15 @@
 
 ---
 
+### Task Update — 2026-07-06 14:30 IST
+- Task: TEC-31 — compliance pre-flight checklist per cycle
+- Status: completed (on feat/tec-31-preflight, stacked on hardening branch; PR pending)
+- Scope: Pure runComplianceChecks (src/domain/compliance/preflight.ts; TDD 29 tests) — errors: MISSING_UAN (PF applies per pf-calculator semantics), MISSING_ESI_NUMBER (esiAmount>0, blank esiNo); warnings: NO_ATTENDANCE (no record or all-blank dailyMarks), ZERO_WAGES (no/zero WageRecord AND defaultTotalSalary<=0), FORMS_PENDING (any FormTask not EXPORTED), EXITED_EMPLOYEE (EXITED or exitDate before cycle start). Prisma loader src/lib/compliance/load.ts (calendar-style split). Cycle page: grouped red/amber "Compliance Pre-flight" panel + green all-clear + non-blocking ⚠ badge beside print/export controls; printed documents untouched.
+- Files changed: src/domain/compliance/{preflight.ts,preflight.test.ts} (new), src/lib/compliance/load.ts (new), src/app/cycles/[id]/page.tsx, e2e/26-preflight.spec.ts (new), e2e/04-cycles.spec.ts (2 locators scoped for strict mode)
+- Metrics impact: +29 unit tests (146→175), +1 e2e spec
+- Validation: vitest 175/175; e2e 26+04 10/10; tsc exit 0; npm run build ✓
+- Next step: fold into PR flow once hardening PR merges; then TEC-33 (CI e2e)
+
 ### Task Update — 2026-07-06 13:20 IST
 - Task: TEC-23 — otherAllowances corruption guarded at write, read, and repair
 - Status: completed (on integration branch; PR pending network)
