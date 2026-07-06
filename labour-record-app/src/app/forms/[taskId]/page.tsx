@@ -4,7 +4,20 @@ import { FORM_DISPLAY_NAMES } from '@/types'
 import type { FormCode, WageFormulaConfig } from '@/types'
 import { applyRotatingAttendanceDefaults, calculateAttendanceTotals } from '@/domain/calculations/attendance-calculator'
 import { getWageRuleValue } from '@/domain/calculations/wage-defaults'
+import { validateOtherAllowances } from '@/domain/validations/record-numbers'
 import { FormEntryClient } from './form-entry-client'
+
+// otherAllowances is stored as a JSON-serialized number[]. Re-normalize on
+// read so a legacy corrupt row (e.g. the historical `["[]"]` value) can't
+// surface as NaN in the wage-entry form — junk entries are dropped and the
+// remaining valid amounts are summed for the single editable field.
+function sumOtherAllowances(raw: string): number {
+  try {
+    return validateOtherAllowances(JSON.parse(raw)).normalized.reduce((sum, n) => sum + n, 0)
+  } catch {
+    return 0
+  }
+}
 
 const MONTH_NAMES = ['','January','February','March','April','May','June',
   'July','August','September','October','November','December']
@@ -160,9 +173,7 @@ export default async function FormEntryPage({
           basic: rec?.basic ?? proratedBasic,
           da: rec?.da ?? proratedDa,
           hra: rec?.hra ?? prorate(emp.hraWage),
-          otherAllowances: rec
-            ? Number((JSON.parse(rec.otherAllowances) as number[])[0] ?? 0)
-            : 0,
+          otherAllowances: rec ? sumOtherAllowances(rec.otherAllowances) : 0,
           pf: rec?.pf ?? round2(proratedBasic * pfPct),
           esi: rec?.esi ?? round2(proratedGross * esiPct),
           lwf: rec?.lwf ?? emp.lwfAmount,

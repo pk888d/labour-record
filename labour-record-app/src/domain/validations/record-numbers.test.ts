@@ -3,6 +3,7 @@ import {
   validateNonNegativeNumbers,
   validateWageRecords,
   validatePresentMoneyFields,
+  validateOtherAllowances,
   FINE_MONEY_FIELDS,
   DEDUCTION_MONEY_FIELDS,
 } from './record-numbers'
@@ -52,6 +53,67 @@ describe('validateWageRecords', () => {
 
   it('rejects NaN net-pay inputs that would corrupt a register', () => {
     expect(validateWageRecords([{ ...ok, pf: NaN }])).toContain('Row 1: PF must be a number')
+  })
+})
+
+describe('validateOtherAllowances', () => {
+  it('treats undefined/null/empty array as no allowances', () => {
+    expect(validateOtherAllowances(undefined)).toEqual({ errors: [], normalized: [] })
+    expect(validateOtherAllowances(null)).toEqual({ errors: [], normalized: [] })
+    expect(validateOtherAllowances([])).toEqual({ errors: [], normalized: [] })
+  })
+
+  it('accepts a plain scalar number (current form-entry shape) and wraps it', () => {
+    expect(validateOtherAllowances(0)).toEqual({ errors: [], normalized: [0] })
+    expect(validateOtherAllowances(150)).toEqual({ errors: [], normalized: [150] })
+  })
+
+  it('accepts an array of finite numbers and rounds to 2dp', () => {
+    expect(validateOtherAllowances([100, 50.555])).toEqual({ errors: [], normalized: [100, 50.56] })
+  })
+
+  it('accepts numeric strings like "150"', () => {
+    expect(validateOtherAllowances(['150', '20.5'])).toEqual({ errors: [], normalized: [150, 20.5] })
+  })
+
+  it('rejects the historical corruption shape ["[]"] (stringified empty array inside an array)', () => {
+    const result = validateOtherAllowances(['[]'], 'Row 1')
+    expect(result.errors).toContain('Row 1: Other allowances must be a number')
+  })
+
+  it('rejects a bare "[]" string scalar', () => {
+    const result = validateOtherAllowances('[]', 'Row 1')
+    expect(result.errors).toContain('Row 1: Other allowances must be a number')
+  })
+
+  it('rejects nested arrays', () => {
+    const result = validateOtherAllowances([[1, 2]], 'Row 1')
+    expect(result.errors).toContain('Row 1: Other allowances must be a number')
+  })
+
+  it('rejects objects', () => {
+    const result = validateOtherAllowances([{ amount: 5 }], 'Row 1')
+    expect(result.errors).toContain('Row 1: Other allowances must be a number')
+  })
+
+  it('rejects NaN/Infinity', () => {
+    expect(validateOtherAllowances([NaN], 'Row 1').errors).toContain('Row 1: Other allowances must be a number')
+    expect(validateOtherAllowances([Infinity], 'Row 1').errors).toContain('Row 1: Other allowances must be a number')
+  })
+
+  it('rejects negative allowances, like other money fields', () => {
+    expect(validateOtherAllowances(-1, 'Row 1').errors).toContain('Row 1: Other allowances cannot be negative')
+    expect(validateOtherAllowances([10, -5], 'Row 1').errors).toContain('Row 1: Other allowances cannot be negative')
+  })
+
+  it('still normalizes the valid entries alongside errors (best-effort, for read-path/cleanup reuse)', () => {
+    const result = validateOtherAllowances([100, '[]', 50], 'Row 1')
+    expect(result.errors.length).toBeGreaterThan(0)
+    expect(result.normalized).toEqual([100, 50])
+  })
+
+  it('omits the row prefix when rowRef is not given', () => {
+    expect(validateOtherAllowances('[]').errors).toContain('Other allowances must be a number')
   })
 })
 
