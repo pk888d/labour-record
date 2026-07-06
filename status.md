@@ -115,6 +115,15 @@
 
 ---
 
+### Task Update — 2026-07-06 17:20 IST
+- Task: TEC-30 — PF ECR + ESI return file generation per cycle
+- Status: completed (on feat/tec-30-ecr-esi, stacked on TEC-33 branch; PR pending)
+- Scope: Pure builders src/lib/export/statutory-returns.ts (TDD, 16 golden-file tests): buildEcrLines → EPFO ECR 2.0 text (11 fields #~#-delimited, whole-rupee, CRLF; EPS 8.33% capped at ₹15k; member names sanitized) and buildEsiReturnRows → ESIC MC upload rows (IP number/name, days, wages, zero-day reason code, last working day). Missing UAN/ESI number → employee listed in `skipped`, never an invalid line. Routes GET /api/cycles/[id]/pf-ecr (text/plain, X-Skipped-Count) and /esi-return (XLSX + Skipped sheet). "PF ECR" + "ESI Return" links on the cycle page. Wage figures reuse getWagesData (reconciles with Wage Register). NINE documented simplifications to review before first real filing (EPS membership flag absent, employee-share-only PF, mid-month leavers ECR exclusion, etc.) — recorded on the Linear ticket.
+- Files changed: src/lib/export/statutory-returns.ts (+test, new), src/app/api/cycles/[id]/{pf-ecr,esi-return}/route.ts (new), src/app/cycles/[id]/page.tsx, e2e/27-statutory-returns.spec.ts (new)
+- Metrics impact: +2 API routes, +16 unit tests (175→191), +1 e2e spec (6 tests)
+- Validation: vitest 191/191; e2e 27+23 11/11; tsc exit 0; npm run build ✓
+- Next step: merge PR #5 (TEC-31/33) once its CI is green, then PR this branch
+
 ### Task Update — 2026-07-06 16:05 IST
 - Task: TEC-33 — CI Playwright e2e job + CI-aware Playwright config
 - Status: completed (on feat/tec-33-ci-e2e, stacked on TEC-31 branch)
