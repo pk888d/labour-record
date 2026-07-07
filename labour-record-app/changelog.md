@@ -100,3 +100,6 @@
 
 - [2026-07-07] [claude] — Added: Shop Form W (Wages Register) print view now renders all 29 statutory columns (TEC-38). Part 2 (cols 15–29: Advance Recovered, Deduction Made on Damages/Loss/Fines, Any Other Deductions, Total Deductions, Net Wages, Date of Payment, Receipt by Employee/Bank) added as a second form-page, reusing the fragment-per-chunk pattern from Hospital Form IV/V's SplitRegister. Fields with no backing data model render Nil. Total Deductions intentionally repeats PF/ESI/LWF so it reconciles with Net Wages = Gross Wages − Total Deductions. DOCX export stays at 14 tagged columns (divergence documented on the Linear ticket, not implemented here).
   Files: src/app/print/[cycleId]/[formCode]/shop-form-w.tsx. DB: none. Tests: vitest 194/194; print regressions 07+10+17 16/16; tsc 0; visual screenshot verified.
+
+- [2026-07-07] [claude] — Fixed: GET /api/employees now implements q (name/empId search) and limit (validated, capped at 500) instead of silently ignoring them and returning the full table (TEC-39) — the gap that let a test cleanup helper hard-delete every unreferenced employee. No q/limit keeps the existing full-table default.
+  Files: src/app/api/employees/route.ts, e2e/28-employees-query-params.spec.ts (new, 7 tests). DB: none. Tests: e2e 28 7/7; 03-employees + 21-stress regressions green; vitest 194/194; tsc 0.
