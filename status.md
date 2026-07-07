@@ -109,8 +109,8 @@ snapshot here (last regenerated 2026-07-06, TEC-25).
 
 ## EXECUTION STATUS
 
-- Current state: TEC-18…TEC-39 backlog all Done except TEC-19 (deferred, no domain yet), TEC-26 (blocked on user's 29-col template), TEC-38 (this update), TEC-39 (low-priority API gap)
-- Next action: PR + merge TEC-38, then TEC-39 (or await user input on TEC-26/TEC-19)
+- Current state: TEC-18…TEC-39 backlog all Done except TEC-19 (deferred, no domain yet) and TEC-26 (blocked on user's 29-col template)
+- Next action: await user input on TEC-26/TEC-19, or new backlog items
 
 ---
 
@@ -121,7 +121,16 @@ snapshot here (last regenerated 2026-07-06, TEC-25).
 - Files changed: src/app/print/[cycleId]/[formCode]/shop-form-w.tsx
 - Metrics impact: none (view-only change)
 - Validation: vitest 194/194; print regressions (07-print-views, 10-print-pagination, 17-wide-register-split) 16/16; tsc exit 0; visual screenshot confirmed
-- Next step: PR + merge; then TEC-39 (API q/limit gap) or await user on TEC-26/TEC-19
+- Next step: none — both merged; awaiting user on TEC-26/TEC-19
+
+### Task Update — 2026-07-07 07:30 IST
+- Task: TEC-39 — GET /api/employees implements q and limit
+- Status: completed (PR pending)
+- Scope: The route silently ignored q/limit and always returned the full table — the exact gap that let e2e/21-stress.spec.ts's cleanup helper hard-delete every unreferenced employee in the DB (already defended against in that test; this closes the API gap itself). Added name/empId substring search (same OR-contains convention as GET /api/employees/export) and a validated, capped `limit` (400 on non-positive/non-numeric, capped at 500). No q/limit → unchanged full-table default, so the /employees page (direct Prisma query, not this route) is unaffected. Audited every other searchParams-using route (cycles, holidays, form-tasks export, employees/[id]) — none has the same general-list-filter risk.
+- Files changed: src/app/api/employees/route.ts, e2e/28-employees-query-params.spec.ts (new)
+- Metrics impact: +1 e2e spec (7 tests)
+- Validation: e2e/28 7/7; 03-employees + 21-stress regressions green; vitest 194/194; tsc exit 0
+- Next step: merge PR; await user on TEC-26/TEC-19
 
 ### Task Update — 2026-07-06 20:00 IST
 - Task: TEC-24 + TEC-25 + TEC-28 — polish batch (pluralization, repo hygiene, dropdown decision)
