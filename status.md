@@ -109,10 +109,19 @@ snapshot here (last regenerated 2026-07-06, TEC-25).
 
 ## EXECUTION STATUS
 
-- Current state: TEC-18 auth shipped as PR #1 (feat/auth-login) — awaiting review/merge; 16-item backlog created in Linear (TEC-18…TEC-33)
-- Next action: merge PR #1, set APP_PASSWORD + SESSION_SECRET in server .env, redeploy; then TEC-19 (TLS)
+- Current state: TEC-18…TEC-39 backlog all Done except TEC-19 (deferred, no domain yet), TEC-26 (blocked on user's 29-col template), TEC-38 (this update), TEC-39 (low-priority API gap)
+- Next action: PR + merge TEC-38, then TEC-39 (or await user input on TEC-26/TEC-19)
 
 ---
+
+### Task Update — 2026-07-07 07:00 IST
+- Task: TEC-38 — Shop Form W part-2 (statutory columns 15–29)
+- Status: completed (PR pending)
+- Scope: HTML print view for Shop Form W now renders all 29 statutory columns as two form-page sheets — part 1 (cols 1–14, unchanged) and new part 2 (cols 15–29: Advance Recovered, Deduction Made on Damages/Loss/Fines, Any Other Deductions, Total Deductions, Net Wages, Date of Payment, Receipt by Employee/Bank), using the same fragment-per-chunk pattern already proven by Hospital Form IV/V's SplitRegister. Columns with no backing data model (opening/pending balances) render "Nil" rather than invented figures. Total Deductions (24) intentionally repeats PF/ESI/LWF already shown in part 1 so it reconciles arithmetically with Net Wages (25) = Gross Wages (11) − Total Deductions (24); visually verified via screenshot against a seeded test cycle. DOCX export divergence documented on the ticket (not implemented — templates/shop/shop_form_w.docx stays at 14 tagged columns; retagging the binary needs scripts/tag-template.py + Word verification, deferred as a separate ticket if ever needed).
+- Files changed: src/app/print/[cycleId]/[formCode]/shop-form-w.tsx
+- Metrics impact: none (view-only change)
+- Validation: vitest 194/194; print regressions (07-print-views, 10-print-pagination, 17-wide-register-split) 16/16; tsc exit 0; visual screenshot confirmed
+- Next step: PR + merge; then TEC-39 (API q/limit gap) or await user on TEC-26/TEC-19
 
 ### Task Update — 2026-07-06 20:00 IST
 - Task: TEC-24 + TEC-25 + TEC-28 — polish batch (pluralization, repo hygiene, dropdown decision)
