@@ -148,6 +148,11 @@ export default async function CycleDetailPage({
                 className="text-xs px-3 py-1 rounded bg-[#0f2a1a] text-[#40c070] border border-[#1a4a2a] hover:bg-[#1a3a20]">
                 Salary Slips
               </Link>
+              <a href={`/api/cycles/${cycle.id}/detailed-wages`}
+                title="Internal, non-statutory wage breakdown for review"
+                className="text-xs px-3 py-1 rounded bg-[#1a2029] text-[#9fb0c0] border border-[#2e3a48] hover:bg-[#232c38]">
+                Detailed Wages
+              </a>
               <a href={`/api/cycles/${cycle.id}/disbursement`}
                 className="text-xs px-3 py-1 rounded bg-[#2a2010] text-[#c0a040] border border-[#4a3a1a] hover:bg-[#3a2c14]">
                 ₹ Bank Disbursement
