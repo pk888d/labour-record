@@ -109,10 +109,19 @@ snapshot here (last regenerated 2026-07-06, TEC-25).
 
 ## EXECUTION STATUS
 
-- Current state: TEC-18…TEC-39 backlog all Done except TEC-19 (deferred, no domain yet) and TEC-26 (blocked on user's 29-col template)
-- Next action: await user input on TEC-26/TEC-19, or new backlog items
+- Current state: TEC-18…TEC-39 backlog all Done; TEC-26 rescoped and shipped as an internal Detailed Wages export (this update); TEC-19 deferred, no domain yet
+- Next action: await user input on TEC-19, or new backlog items
 
 ---
+
+### Task Update — 2026-07-07 08:15 IST
+- Task: TEC-26 — Detailed Wages export (internal, non-statutory full component breakdown)
+- Status: completed (PR pending)
+- Scope: TEC-26 was originally filed as "rebuild Form XII to 29 columns" on a mistaken premise. Investigation found the actual docx template (forms-template/hospital/Form No XII Register of Wages.docx) has exactly 17 columns under Rule 27(1) Minimum Wages Rules, matching what's already implemented — the printed statutory register was correct all along and was NOT touched. Confirmed with the user: the real need is an internal, non-statutory detailed wage breakdown per employee for the accountant's own review before filing. Built as GET /api/cycles/[id]/detailed-wages (XLSX, sheet "Detailed Wages", no rule citation/Form naming) + pure builder src/lib/export/detailed-wages.ts (TDD) reusing getWagesData for wage figures and getOvertimeData for Overtime Earnings (real per-employee OT data — an early draft hardcoded this to 0, caught in review and fixed) so every figure reconciles with the Wage Register and Overtime register. Deliberately has NO "Leave Wages" column — no such rupee figure exists anywhere in the data model (leave is paid via wage-days proration), and a permanently-zero column would be misleading in a report whose whole purpose is completeness. Neutral-gray "Detailed Wages" button added to the cycle page beside the amber statutory export links.
+- Files changed: src/lib/export/detailed-wages.ts (+test, new), src/app/api/cycles/[id]/detailed-wages/route.ts (new), src/app/cycles/[id]/page.tsx, e2e/29-detailed-wages.spec.ts (new)
+- Metrics impact: +1 API route, +7 unit tests (194→201), +1 e2e spec (5 tests, incl. a seeded overtime record proving the Overtime Earnings column is real data, not hardcoded)
+- Validation: vitest 201/201; e2e 29+23+04 17/17; tsc exit 0
+- Next step: PR + merge; await user on TEC-19
 
 ### Task Update — 2026-07-07 07:00 IST
 - Task: TEC-38 — Shop Form W part-2 (statutory columns 15–29)
