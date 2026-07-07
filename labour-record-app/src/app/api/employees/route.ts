@@ -7,23 +7,41 @@ const EMPLOYEE_DATE_FIELDS = ['dob', 'dateOfEntry', 'completionOf480Days', 'date
 
 const VALID_STATUSES = ['ACTIVE', 'SUSPENDED', 'EXITED']
 
+// Highest limit a caller may request; keeps a stray `?limit=` from ever
+// pulling the whole table by accident (see TEC-39).
+const MAX_LIMIT = 500
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const establishmentId = searchParams.get('establishmentId')
     const status = searchParams.get('status')
+    const q = searchParams.get('q')?.trim() ?? ''
+    const limitParam = searchParams.get('limit')
 
     if (status && !VALID_STATUSES.includes(status)) {
       return NextResponse.json({ error: 'Invalid status value' }, { status: 400 })
+    }
+
+    let limit: number | undefined
+    if (limitParam !== null) {
+      const n = Number(limitParam)
+      if (!Number.isInteger(n) || n <= 0) {
+        return NextResponse.json({ error: 'limit must be a positive integer' }, { status: 400 })
+      }
+      limit = Math.min(n, MAX_LIMIT)
     }
 
     const employees = await prisma.employee.findMany({
       where: {
         ...(establishmentId ? { establishmentId } : {}),
         ...(status ? { status: status as 'ACTIVE' | 'SUSPENDED' | 'EXITED' } : {}),
+        // Matches the same q convention as GET /api/employees/export.
+        ...(q ? { OR: [{ name: { contains: q } }, { empId: { contains: q } }] } : {}),
       },
       orderBy: { name: 'asc' },
       include: { establishment: { select: { name: true, type: true } } },
+      ...(limit ? { take: limit } : {}),
     })
     return NextResponse.json(employees)
   } catch (error) {
