@@ -20,15 +20,39 @@ describe('computeCycleWages', () => {
   })
 
   it('auto-pays a holiday-worked day at 2x (double wage)', () => {
-    const attendance = Array.from({ length: 10 }, () => 'P')
+    // Full 30-day month, all Present (day 5 is also a govt holiday worked) —
+    // wageDays === daysInMonth so proration is a no-op (factor 1), isolating
+    // the holiday-bonus calculation from proration.
+    const attendance = Array.from({ length: 30 }, () => 'P')
     const r = computeCycleWages({
       employee: emp, attendance, holidayDays: new Set([5]),
       holidayMultiplier: 2, esiApplicable: false, daysInMonth: 30,
     })
-    expect(r.daysWorked).toBe(10)
-    expect(r.holidayBonus).toBe(2000)
-    expect(r.grossWages).toBe(22000)
-    expect(r.netWages).toBe(20180)
+    expect(r.daysWorked).toBe(30)
+    // dailyRate = (basic+da) / daysWorked = 20000 / 30 = 666.67; bonus = dailyRate * 1 extra unit
+    expect(r.holidayBonus).toBe(666.67)
+    expect(r.grossWages).toBe(20666.67)
+    expect(r.netWages).toBe(18846.67)
+  })
+
+  it('prorates Basic/DA/HRA by wageDays/daysInMonth for partial attendance', () => {
+    // 20 Present + 5 Leave + 5 Absent out of a 30-day month: wageDays = 25
+    // (worked + leave; paid), so Basic+DA should scale to 25/30 of the full
+    // month figure — this is the TEC-40 fix (gross wages must not silently
+    // pay a full month when attendance is partial).
+    const attendance = [
+      ...Array.from({ length: 20 }, () => 'P'),
+      ...Array.from({ length: 5 }, () => 'L'),
+      ...Array.from({ length: 5 }, () => 'A'),
+    ]
+    const r = computeCycleWages({
+      employee: emp, attendance, esiApplicable: false, daysInMonth: 30,
+    })
+    expect(r.daysWorked).toBe(20)
+    // Full month da=5544, basic=14456 (from the first test) -> * 25/30
+    expect(r.da).toBe(4620) // round2(5544 * 25 / 30)
+    expect(r.basic).toBe(12046.67) // round2(14456 * 25 / 30)
+    expect(r.grossWages).toBe(16666.67)
   })
 
   it('applies ESI at 0.75% when applicable and within threshold', () => {
