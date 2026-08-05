@@ -774,3 +774,22 @@ snapshot here (last regenerated 2026-07-06, TEC-25).
 - Metrics impact: +1 lib file, +3 unit tests (208 total, was 205)
 - Validation: `npx vitest run` → 205/205 → 208/208 passing (25→26 files); `npx tsc --noEmit` clean; `npx playwright test` → 243/245 passing — the 2 failures (`e2e/17-wide-register-split.spec.ts`, form-page count 2 vs 4) are pre-existing and unrelated: reproduced identically on `git stash` (unmodified code), confirmed before attributing them to this change.
 - Next step: on next production deploy, `.env` on the server must set `NEXT_PUBLIC_BASE_PATH=/musterly` (matching the value already hardcoded in the server's uncommitted `next.config.ts` edit) before `man/deploy-server.sh` runs `next build`, or the rebuild will silently drop back to root and reintroduce this exact bug. Recommend committing the server's current uncommitted next.config.ts/nginx state is now superseded by this commit — the next `git pull` + rebuild there will pick up the tracked, env-gated version cleanly as long as `.env` has the var set first.
+
+### Task Update — 2026-08-05 14:15 IST
+- Task: TEC-45 — merge PR #10 to main (user-approved)
+- Status: completed
+- Scope: CI (`build-and-test` + `e2e`) passed on PR #10; squash-merged into `main`. Linear TEC-45 transitioned Backlog → In Review (on PR open) → Done (on merge). Code fix is now on `main`; production still needs the manual redeploy step noted above (`NEXT_PUBLIC_BASE_PATH=/musterly` in server `.env`, then `man/deploy-server.sh`) — not done as part of this task, no server-side deploy action taken.
+- Files changed: none (merge only)
+- Validation: GitHub Actions CI green on both jobs before merge.
+- Next step: production redeploy (ops action, separate from this merge).
+
+### Task Update — 2026-08-05 14:25 IST
+- Task: TEC-48 — Holidays page crashes with "n.map is not a function" when selecting year 2027
+- Status: completed (PR open, not yet merged)
+- Scope: Investigated the ticket's "likely root cause" theory (backend returns non-array for years with no data) and found it doesn't hold — `GET /api/holidays` uses `prisma.govtHoliday.findMany()`, which always returns `[]`, never `null`/undefined, even for empty years. The real bug is entirely client-side: `loadYear()` in `holidays-client.tsx` did `setHolidays(await res.json())` with no `res.ok` check and no `Array.isArray` guard before the `.map()` render — so any non-200/non-array response (a genuine 500, or the raw-HTML 404 nginx returned pre-TEC-45-fix) set `holidays` to a non-array and crashed the whole page. This is a real, independent defensive-coding gap regardless of what specifically triggered it in the field reports.
+- Fix: `loadYear()` now wraps the fetch in try/catch, checks `res.ok` and `Array.isArray(data)` before committing to state; on failure shows an error message (reusing the existing `errors` UI) and falls back to an empty list instead of crashing. Two new e2e cases in `e2e/09-holidays.spec.ts`: (1) a year with no data shows the empty state, not a crash (mocked via `page.route` — the dev DB already has 16 real holidays seeded for 2027 from prior work, so this couldn't rely on real "no data" state); (2) a mocked 500/non-array response shows the error message instead of crashing.
+- Branch: created fresh off `origin/main` (isolated from TEC-45's PR at the time), later rebased onto `main` after TEC-45 merged — one real conflict in `loadYear()` (this fix vs. TEC-45's `apiPath()` wrapping), resolved by combining both (fetch call wrapped in `apiPath(...)`, guarded per this fix).
+- Files changed: `labour-record-app/src/app/holidays/holidays-client.tsx`, `labour-record-app/e2e/09-holidays.spec.ts`
+- Metrics impact: +2 e2e tests (6 total in this spec, was 4)
+- Validation: `npx vitest run` → 205/205; `npx tsc --noEmit` clean; `npx playwright test e2e/09-holidays.spec.ts` → 6/6 passing; full `npx playwright test` → 245/247 passing (same 2 pre-existing/unrelated `17-wide-register-split.spec.ts` failures as TEC-45's run, confirmed not a regression).
+- Next step: open PR against `main`, link on Linear TEC-48, set to In Review (not Done — not yet merged/deployed).
