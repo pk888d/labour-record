@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { apiPath } from '@/lib/api-path'
 
 export function ExportButton({ formTaskId }: { formTaskId: string }) {
   const [state, setState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
@@ -8,7 +9,7 @@ export function ExportButton({ formTaskId }: { formTaskId: string }) {
   async function handleExport() {
     setState('loading')
     setMsg('')
-    const res = await fetch(`/api/form-tasks/${formTaskId}/export`, { method: 'POST' })
+    const res = await fetch(apiPath(`/api/form-tasks/${formTaskId}/export`), { method: 'POST' })
     const data = await res.json() as { fileName?: string; warnings?: string[]; error?: string }
     if (res.ok) {
       setState('done')

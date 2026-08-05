@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Info } from '@/components/info-tooltip'
+import { apiPath } from '@/lib/api-path'
 
 type Establishment = { id: string; name: string; type: string }
 
@@ -51,7 +52,7 @@ export function CycleForm({ establishments }: Props) {
       return
     }
 
-    const res = await fetch('/api/cycles', {
+    const res = await fetch(apiPath('/api/cycles'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),

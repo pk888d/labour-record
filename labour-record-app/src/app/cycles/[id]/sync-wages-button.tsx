@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { apiPath } from '@/lib/api-path'
 
 export function SyncWagesButton({ cycleId }: { cycleId: string }) {
   const router = useRouter()
@@ -10,7 +11,7 @@ export function SyncWagesButton({ cycleId }: { cycleId: string }) {
   async function sync() {
     if (!confirm('Re-pull wages from each employee’s saved salary? Manually-entered fines/advances are kept.')) return
     setBusy(true); setMsg(null)
-    const res = await fetch(`/api/cycles/${cycleId}/sync-wages`, { method: 'POST' })
+    const res = await fetch(apiPath(`/api/cycles/${cycleId}/sync-wages`), { method: 'POST' })
     setBusy(false)
     if (res.ok) {
       const data = (await res.json()) as { synced: number }

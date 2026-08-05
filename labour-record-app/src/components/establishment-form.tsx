@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import type { Establishment } from '@/generated/prisma/client'
 import type { WageFormulaConfig, EstablishmentType } from '@/types'
 import { Info } from '@/components/info-tooltip'
+import { apiPath } from '@/lib/api-path'
 import {
   ESTABLISHMENT_TYPES,
   ESTABLISHMENT_TYPE_LABELS,
@@ -70,7 +71,7 @@ export function EstablishmentForm({ establishment }: Props) {
     if ((form.wageFormulaConfig.lwfRate ?? 0) > 100) clientErrors.push('LWF rate seems unusually high')
     if (clientErrors.length > 0) { setErrors(clientErrors); setSaving(false); return }
 
-    const url = isEdit ? `/api/establishments/${establishment.id}` : '/api/establishments'
+    const url = apiPath(isEdit ? `/api/establishments/${establishment.id}` : '/api/establishments')
     const method = isEdit ? 'PUT' : 'POST'
 
     const res = await fetch(url, {

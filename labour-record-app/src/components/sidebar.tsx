@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { apiPath } from '@/lib/api-path'
 
 const navItems = [
   { section: 'Workspace', items: [
@@ -30,7 +31,7 @@ export function Sidebar() {
 
   async function handleLogout() {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
+      await fetch(apiPath('/api/auth/logout'), { method: 'POST' })
     } catch {
       // Ignore network errors; still send the user to the login screen.
     }

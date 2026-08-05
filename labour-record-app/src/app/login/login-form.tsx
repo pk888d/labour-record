@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { apiPath } from '@/lib/api-path'
 
 export function LoginForm() {
   const router = useRouter()
@@ -14,7 +15,7 @@ export function LoginForm() {
     setError('')
     setSubmitting(true)
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(apiPath('/api/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),

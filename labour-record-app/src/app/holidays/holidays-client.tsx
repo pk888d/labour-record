@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { Info } from '@/components/info-tooltip'
+import { apiPath } from '@/lib/api-path'
 
 type Holiday = { id: string; date: string; name: string; year: number; doubleWage?: boolean }
 
@@ -26,7 +27,7 @@ export function HolidaysClient({
   const [saving, setSaving] = useState(false)
 
   async function loadYear(y: number) {
-    const res = await fetch(`/api/holidays?year=${y}`)
+    const res = await fetch(apiPath(`/api/holidays?year=${y}`))
     const data = await res.json() as Holiday[]
     setHolidays(data)
     setYear(y)
@@ -45,7 +46,7 @@ export function HolidaysClient({
 
     setSaving(true)
     setErrors([])
-    const res = await fetch('/api/holidays', {
+    const res = await fetch(apiPath('/api/holidays'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ date, name: name.trim() }),
@@ -69,7 +70,7 @@ export function HolidaysClient({
   async function loadDefaults() {
     setSaving(true)
     setErrors([])
-    const res = await fetch('/api/holidays/seed-defaults', {
+    const res = await fetch(apiPath('/api/holidays/seed-defaults'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ year }),
@@ -86,7 +87,7 @@ export function HolidaysClient({
   async function deleteHoliday(id: string) {
     setSaving(true)
     setErrors([])
-    const res = await fetch(`/api/holidays/${id}`, { method: 'DELETE' })
+    const res = await fetch(apiPath(`/api/holidays/${id}`), { method: 'DELETE' })
     setSaving(false)
     if (!res.ok) {
       const data = await res.json() as { error?: string }

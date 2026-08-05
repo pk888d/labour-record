@@ -2,6 +2,7 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { CalEvent, CalEventType } from '@/lib/calendar/events'
+import { apiPath } from '@/lib/api-path'
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -134,7 +135,7 @@ function AddEventModal({ date, establishments, onClose, onSaved }: {
 
   async function save() {
     setErrors([]); setSaving(true)
-    const res = await fetch('/api/calendar-events', {
+    const res = await fetch(apiPath('/api/calendar-events'), {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         title: form.title, date: form.date, time: form.time || undefined, type: form.type,

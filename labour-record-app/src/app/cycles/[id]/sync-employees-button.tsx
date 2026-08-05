@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { pluralize } from '@/lib/utils'
+import { apiPath } from '@/lib/api-path'
 
 export function SyncEmployeesButton({ cycleId }: { cycleId: string }) {
   const router = useRouter()
@@ -11,7 +12,7 @@ export function SyncEmployeesButton({ cycleId }: { cycleId: string }) {
   async function handleSync() {
     setSyncing(true)
     setMessage('')
-    const res = await fetch(`/api/cycles/${cycleId}/sync-employees`, { method: 'POST' })
+    const res = await fetch(apiPath(`/api/cycles/${cycleId}/sync-employees`), { method: 'POST' })
     setSyncing(false)
     const data = await res.json()
     if (res.ok) {

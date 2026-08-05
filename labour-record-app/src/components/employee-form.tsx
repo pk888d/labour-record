@@ -6,6 +6,7 @@ import { Info } from '@/components/info-tooltip'
 import { getDaRate } from '@/domain/calculations/da-rates'
 import { computeSalaryBreakdown } from '@/domain/calculations/salary-breakdown'
 import type { PfMode } from '@/domain/calculations/pf-calculator'
+import { apiPath } from '@/lib/api-path'
 
 type Props = {
   employee?: Employee
@@ -176,7 +177,7 @@ export function EmployeeForm({ employee, establishments, defaultEstablishmentId 
       return
     }
 
-    const url = isEdit ? `/api/employees/${employee.id}` : '/api/employees'
+    const url = apiPath(isEdit ? `/api/employees/${employee.id}` : '/api/employees')
     const res = await fetch(url, {
       method: isEdit ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },

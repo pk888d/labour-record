@@ -5,6 +5,7 @@ import { calculateWages } from '@/domain/calculations/wage-calculator'
 import { applyAttendanceDefaults } from '@/domain/calculations/attendance-calculator'
 import type { WageFormulaConfig } from '@/types'
 import { Info } from '@/components/info-tooltip'
+import { apiPath } from '@/lib/api-path'
 
 type Employee = { employeeId: string; empId: string; name: string }
 
@@ -195,7 +196,7 @@ export function FormEntryClient({
   async function saveAttendance() {
     setSaving(true)
     setErrors([])
-    const res = await fetch(`/api/form-tasks/${formTaskId}/attendance`, {
+    const res = await fetch(apiPath(`/api/form-tasks/${formTaskId}/attendance`), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -235,7 +236,7 @@ export function FormEntryClient({
     }
     setSaving(true)
     setErrors([])
-    const res = await fetch(`/api/form-tasks/${formTaskId}/wages`, {
+    const res = await fetch(apiPath(`/api/form-tasks/${formTaskId}/wages`), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -257,7 +258,7 @@ export function FormEntryClient({
   async function transition(to: string, comment?: string) {
     setSaving(true)
     setErrors([])
-    const res = await fetch(`/api/form-tasks/${formTaskId}/transition`, {
+    const res = await fetch(apiPath(`/api/form-tasks/${formTaskId}/transition`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ to, comment }),
@@ -300,7 +301,7 @@ export function FormEntryClient({
   async function saveOt() {
     setSaving(true)
     setErrors([])
-    const res = await fetch(`/api/form-tasks/${formTaskId}/overtime`, {
+    const res = await fetch(apiPath(`/api/form-tasks/${formTaskId}/overtime`), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -322,7 +323,7 @@ export function FormEntryClient({
   async function saveLeave() {
     setSaving(true)
     setErrors([])
-    const res = await fetch(`/api/form-tasks/${formTaskId}/leave`, {
+    const res = await fetch(apiPath(`/api/form-tasks/${formTaskId}/leave`), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -348,7 +349,7 @@ export function FormEntryClient({
     }
     setSaving(true)
     setErrors([])
-    const res = await fetch(`/api/form-tasks/${formTaskId}/fines`, {
+    const res = await fetch(apiPath(`/api/form-tasks/${formTaskId}/fines`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newFine),
@@ -378,7 +379,7 @@ export function FormEntryClient({
   async function deleteFine(fineId: string) {
     setSaving(true)
     setErrors([])
-    const res = await fetch(`/api/fine-records/${fineId}`, { method: 'DELETE' })
+    const res = await fetch(apiPath(`/api/fine-records/${fineId}`), { method: 'DELETE' })
     setSaving(false)
     if (!res.ok) {
       const data = await res.json() as { errors?: string[]; error?: string }
@@ -395,7 +396,7 @@ export function FormEntryClient({
     }
     setSaving(true)
     setErrors([])
-    const res = await fetch(`/api/form-tasks/${formTaskId}/deductions`, {
+    const res = await fetch(apiPath(`/api/form-tasks/${formTaskId}/deductions`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newDeduction),
@@ -425,7 +426,7 @@ export function FormEntryClient({
   async function deleteDeduction(deductionId: string) {
     setSaving(true)
     setErrors([])
-    const res = await fetch(`/api/deduction-records/${deductionId}`, { method: 'DELETE' })
+    const res = await fetch(apiPath(`/api/deduction-records/${deductionId}`), { method: 'DELETE' })
     setSaving(false)
     if (!res.ok) {
       const data = await res.json() as { errors?: string[]; error?: string }

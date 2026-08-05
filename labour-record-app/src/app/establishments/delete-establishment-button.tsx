@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { apiPath } from '@/lib/api-path'
 
 type Props = {
   establishmentId: string
@@ -16,7 +17,7 @@ export function DeleteEstablishmentButton({ establishmentId, name }: Props) {
   async function handleDelete() {
     setDeleting(true)
     setError('')
-    const res = await fetch(`/api/establishments/${establishmentId}`, { method: 'DELETE' })
+    const res = await fetch(apiPath(`/api/establishments/${establishmentId}`), { method: 'DELETE' })
     setDeleting(false)
     if (res.ok) {
       router.refresh()
