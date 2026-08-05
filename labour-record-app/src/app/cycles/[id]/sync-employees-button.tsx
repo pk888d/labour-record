@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { pluralize } from '@/lib/utils'
 import { apiPath } from '@/lib/api-path'
+import { readApiError } from '@/lib/read-api-error'
 
 export function SyncEmployeesButton({ cycleId }: { cycleId: string }) {
   const router = useRouter()
@@ -14,12 +15,13 @@ export function SyncEmployeesButton({ cycleId }: { cycleId: string }) {
     setMessage('')
     const res = await fetch(apiPath(`/api/cycles/${cycleId}/sync-employees`), { method: 'POST' })
     setSyncing(false)
-    const data = await res.json()
     if (res.ok) {
+      const data = await res.json() as { added: number }
       setMessage(data.added === 0 ? 'Already up to date' : `Added ${pluralize(data.added, 'employee')}`)
       if (data.added > 0) router.refresh()
     } else {
-      setMessage(data.error ?? 'Sync failed')
+      const data = await readApiError(res, 'Sync failed')
+      setMessage(data.error)
     }
   }
 

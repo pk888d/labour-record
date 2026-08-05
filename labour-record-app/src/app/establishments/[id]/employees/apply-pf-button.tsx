@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { pluralize } from '@/lib/utils'
 import { apiPath } from '@/lib/api-path'
+import { readApiError } from '@/lib/read-api-error'
 
 export function ApplyPfButton({ establishmentId }: { establishmentId: string }) {
   const router = useRouter()
@@ -27,14 +28,15 @@ export function ApplyPfButton({ establishmentId }: { establishmentId: string }) 
         pfFixedAmount: parseFloat(fixedAmount) || 0,
       }),
     })
-    const data = await res.json()
     setBusy(false)
     if (res.ok) {
+      const data = await res.json() as { updated: number }
       setMsg(`Applied to ${pluralize(data.updated, 'employee')}`)
       router.refresh()
       setTimeout(() => setOpen(false), 1200)
     } else {
-      setMsg(data.error ?? 'Failed')
+      const data = await readApiError(res, 'Failed')
+      setMsg(data.error)
     }
   }
 

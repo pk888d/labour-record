@@ -5,6 +5,7 @@ import type { Establishment } from '@/generated/prisma/client'
 import type { WageFormulaConfig, EstablishmentType } from '@/types'
 import { Info } from '@/components/info-tooltip'
 import { apiPath } from '@/lib/api-path'
+import { readApiError } from '@/lib/read-api-error'
 import {
   ESTABLISHMENT_TYPES,
   ESTABLISHMENT_TYPE_LABELS,
@@ -80,11 +81,11 @@ export function EstablishmentForm({ establishment }: Props) {
       body: JSON.stringify(form),
     })
 
-    const data = await res.json()
     setSaving(false)
 
     if (!res.ok) {
-      setErrors(data.errors ?? [data.error ?? 'Save failed'])
+      const data = await readApiError(res, 'Save failed')
+      setErrors(data.errors ?? [data.error])
       return
     }
 
