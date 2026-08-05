@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { apiPath } from '@/lib/api-path'
 
 export function DeleteEmployeeButton({ employeeId, name }: { employeeId: string; name: string }) {
   const router = useRouter()
@@ -10,7 +11,7 @@ export function DeleteEmployeeButton({ employeeId, name }: { employeeId: string;
   async function remove() {
     if (!confirm(`Permanently delete ${name}? This cannot be undone.`)) return
     setBusy(true); setMsg(null)
-    const res = await fetch(`/api/employees/${employeeId}?mode=remove`, { method: 'DELETE' })
+    const res = await fetch(apiPath(`/api/employees/${employeeId}?mode=remove`), { method: 'DELETE' })
     setBusy(false)
     if (res.ok) { router.push('/employees'); router.refresh(); return }
     const data = (await res.json().catch(() => ({}))) as { error?: string; canSoftDelete?: boolean }
@@ -19,7 +20,7 @@ export function DeleteEmployeeButton({ employeeId, name }: { employeeId: string;
 
   async function markExited() {
     setBusy(true); setMsg(null)
-    const res = await fetch(`/api/employees/${employeeId}`, { method: 'DELETE' })
+    const res = await fetch(apiPath(`/api/employees/${employeeId}`), { method: 'DELETE' })
     setBusy(false)
     if (res.ok) { router.push('/employees'); router.refresh(); return }
     setMsg('Could not mark exited')

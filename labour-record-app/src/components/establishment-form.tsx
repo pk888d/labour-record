@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import type { Establishment } from '@/generated/prisma/client'
 import type { WageFormulaConfig, EstablishmentType } from '@/types'
 import { Info } from '@/components/info-tooltip'
+import { apiPath } from '@/lib/api-path'
 import {
   ESTABLISHMENT_TYPES,
   ESTABLISHMENT_TYPE_LABELS,
@@ -70,7 +71,7 @@ export function EstablishmentForm({ establishment }: Props) {
     if ((form.wageFormulaConfig.lwfRate ?? 0) > 100) clientErrors.push('LWF rate seems unusually high')
     if (clientErrors.length > 0) { setErrors(clientErrors); setSaving(false); return }
 
-    const url = isEdit ? `/api/establishments/${establishment.id}` : '/api/establishments'
+    const url = apiPath(isEdit ? `/api/establishments/${establishment.id}` : '/api/establishments')
     const method = isEdit ? 'PUT' : 'POST'
 
     const res = await fetch(url, {
@@ -229,16 +230,16 @@ export function EstablishmentForm({ establishment }: Props) {
                 <Info text="Additional fixed monthly allowance beyond Basic+DA (hospital only). e.g. ₹360/month as per TN notification." />
               </label>
               <input className={inputClass} type="number" min="0"
-                value={form.wageFormulaConfig.fixedAllowance ?? 0}
-                onChange={(e) => setFormula('fixedAllowance', parseFloat(e.target.value))} />
+                value={form.wageFormulaConfig.fixedAllowance ?? ''}
+                onChange={(e) => setFormula('fixedAllowance', e.target.value === '' ? undefined : parseFloat(e.target.value))} />
             </div>
           )}
           {form.type !== 'HOSPITAL' && (
             <div>
               <label className={labelClass}>HRA (₹)</label>
               <input className={inputClass} type="number" min="0"
-                value={form.wageFormulaConfig.hra ?? 0}
-                onChange={(e) => setFormula('hra', parseFloat(e.target.value))} />
+                value={form.wageFormulaConfig.hra ?? ''}
+                onChange={(e) => setFormula('hra', e.target.value === '' ? undefined : parseFloat(e.target.value))} />
             </div>
           )}
           <div>
@@ -247,8 +248,8 @@ export function EstablishmentForm({ establishment }: Props) {
               <Info text="Labour Welfare Fund deduction per employee per month. TN rate: ₹0.25 employee + ₹0.75 employer." />
             </label>
             <input className={inputClass} type="number" min="0" step="0.01"
-              value={form.wageFormulaConfig.lwfRate ?? 0}
-              onChange={(e) => setFormula('lwfRate', parseFloat(e.target.value))} />
+              value={form.wageFormulaConfig.lwfRate ?? ''}
+              onChange={(e) => setFormula('lwfRate', e.target.value === '' ? undefined : parseFloat(e.target.value))} />
           </div>
           <div className="flex items-center gap-4 pt-4">
             <label className="flex items-center gap-2 text-xs text-[#7a9ab8] cursor-pointer">

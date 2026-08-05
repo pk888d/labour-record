@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { apiPath } from '@/lib/api-path'
 
 type Est = { id: string; name: string }
 
@@ -19,7 +20,7 @@ export function GenerateFyButton({ establishments }: { establishments: Est[] }) 
     if (!estId) return
     setBusy(true)
     setMsg('')
-    const res = await fetch('/api/cycles/generate-fy', {
+    const res = await fetch(apiPath('/api/cycles/generate-fy'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ establishmentId: estId, startYear: parseInt(startYear) }),

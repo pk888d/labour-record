@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Info } from '@/components/info-tooltip'
+import { apiPath } from '@/lib/api-path'
 
 type Establishment = { id: string; name: string; type: string }
 
@@ -13,7 +14,12 @@ export function CycleForm({ establishments }: Props) {
   const router = useRouter()
   const now = new Date()
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    establishmentId: string
+    month: number
+    year: number | ''
+    wagePeriodDays: number | ''
+  }>({
     establishmentId: '',
     month: now.getMonth() + 1,
     year: now.getFullYear(),
@@ -30,12 +36,12 @@ export function CycleForm({ establishments }: Props) {
     setSaving(true)
     setErrors([])
 
-    if (form.year < 2000 || form.year > 9999) {
+    if (form.year === '' || form.year < 2000 || form.year > 9999) {
       setErrors(['Year must be between 2000 and 9999'])
       setSaving(false)
       return
     }
-    if (form.wagePeriodDays < 1 || form.wagePeriodDays > 31) {
+    if (form.wagePeriodDays === '' || form.wagePeriodDays < 1 || form.wagePeriodDays > 31) {
       setErrors(['Wage period days must be between 1 and 31'])
       setSaving(false)
       return
@@ -46,7 +52,7 @@ export function CycleForm({ establishments }: Props) {
       return
     }
 
-    const res = await fetch('/api/cycles', {
+    const res = await fetch(apiPath('/api/cycles'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
@@ -117,7 +123,7 @@ export function CycleForm({ establishments }: Props) {
           </label>
           <input className={inputClass} aria-label="Year" type="number" min="2000" max="9999"
             value={form.year}
-            onChange={(e) => set('year', parseInt(e.target.value))} required />
+            onChange={(e) => set('year', e.target.value === '' ? '' : parseInt(e.target.value))} required />
         </div>
       </div>
 
@@ -128,7 +134,7 @@ export function CycleForm({ establishments }: Props) {
         </label>
         <input className={inputClass} type="number" min="1" max="31"
           value={form.wagePeriodDays}
-          onChange={(e) => set('wagePeriodDays', parseInt(e.target.value))} />
+          onChange={(e) => set('wagePeriodDays', e.target.value === '' ? '' : parseInt(e.target.value))} />
         <p className="text-[10px] text-[#4a6a8a] mt-1">Default: 26 days</p>
       </div>
 

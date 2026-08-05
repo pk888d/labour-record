@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { pluralize } from '@/lib/utils'
+import { apiPath } from '@/lib/api-path'
 
 export function ApplyPfButton({ establishmentId }: { establishmentId: string }) {
   const router = useRouter()
@@ -16,7 +17,7 @@ export function ApplyPfButton({ establishmentId }: { establishmentId: string }) 
   async function apply() {
     setBusy(true)
     setMsg('')
-    const res = await fetch(`/api/establishments/${establishmentId}/apply-pf`, {
+    const res = await fetch(apiPath(`/api/establishments/${establishmentId}/apply-pf`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

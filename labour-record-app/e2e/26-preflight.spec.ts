@@ -79,12 +79,13 @@ test.describe('Compliance Pre-flight (TEC-31)', () => {
     await expect(errorRows.filter({ hasText: EMP_NAME }).filter({ hasText: /UAN/ })).toHaveCount(1)
     await expect(errorRows.filter({ hasText: EMP_NAME }).filter({ hasText: /ESI/ })).toHaveCount(1)
 
-    // Warnings: no attendance for the fixture employee, and pending forms
-    // (a fresh cycle always has every form task NOT_STARTED).
+    // Warnings: pending forms (a fresh cycle always has every form task
+    // NOT_STARTED). Attendance is now auto-generated at cycle creation
+    // (TEC-42), so NO_ATTENDANCE no longer fires for a freshly created cycle.
     const warningRows = panel.locator('[data-testid="preflight-finding"][data-severity="warning"]')
     await expect(
       warningRows.filter({ hasText: EMP_NAME }).filter({ hasText: /no attendance/i })
-    ).toHaveCount(1)
+    ).toHaveCount(0)
     await expect(warningRows.filter({ hasText: /not yet exported/i })).toHaveCount(1)
 
     // No green state on a broken cycle.

@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { apiPath } from '@/lib/api-path'
 
 type Est = { id: string; name: string }
 type RowError = { row: number; messages: string[] }
@@ -18,7 +19,7 @@ export function ImportClient({ establishments }: { establishments: Est[] }) {
     setBusy(true); setError(null); setResult(null)
     const fd = new FormData(e.currentTarget)
     fd.set('establishmentId', establishmentId)
-    const res = await fetch('/api/employees/import', { method: 'POST', body: fd })
+    const res = await fetch(apiPath('/api/employees/import'), { method: 'POST', body: fd })
     setBusy(false)
     const data = await res.json().catch(() => ({}))
     if (!res.ok) { setError(data.error ?? 'Import failed'); return }
@@ -42,7 +43,7 @@ export function ImportClient({ establishments }: { establishments: Est[] }) {
           Emp ID is required for UPDATE and DELETE; auto-generated for ADD.
         </p>
         <a
-          href="/api/employees/import/template"
+          href={apiPath('/api/employees/import/template')}
           download="employee-import-template.xlsx"
           className="inline-block px-4 py-1.5 bg-[#1a3050] text-[#4a9eff] text-xs font-medium rounded hover:bg-[#1a4060] border border-[#2a4060]"
         >

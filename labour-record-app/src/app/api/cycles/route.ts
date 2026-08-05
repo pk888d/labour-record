@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { validateNewCycle } from '@/domain/validations/cycle'
 import { getFormCodes } from '@/domain/workflow/kanban-transitions'
 import { computeCycleWages } from '@/domain/calculations/cycle-wage'
+import { applyRotatingAttendanceDefaults, calculateAttendanceTotals } from '@/domain/calculations/attendance-calculator'
+import { ensureHolidays } from '@/domain/holidays/ensure-holidays'
 import type { WageFormulaConfig } from '@/types'
 
 export async function GET(request: Request) {
@@ -101,11 +103,64 @@ export async function POST(request: Request) {
       })
     }
 
-    // Seed a WageRecord per employee from their saved salary so the wages
-    // register / slips reflect it immediately (#7). No attendance yet at
-    // creation → holidayBonus 0; the Wages tab / Sync recompute later.
-    const cfg = JSON.parse(establishment.wageFormulaConfig) as WageFormulaConfig
+    // Auto-generate attendance for the new cycle (#7 attendance automation):
+    // "6 working days + 1 holiday" per employee, staggered round-robin so the
+    // whole establishment isn't off on the same day, and rotated month to
+    // month by folding the cycle's month number into each employee's rotation
+    // offset — no dependency on the previous cycle's stored data.
     const daysInMonth = new Date(b.year!, b.month!, 0).getDate()
+    try {
+      await ensureHolidays(b.year!)
+    } catch (holidayError) {
+      console.error('ensureHolidays failed (non-fatal):', holidayError)
+    }
+    const govtHolidays = await prisma.govtHoliday.findMany({
+      where: {
+        date: {
+          gte: new Date(b.year!, b.month! - 1, 1),
+          lte: new Date(b.year!, b.month! - 1, daysInMonth),
+        },
+      },
+    })
+    const holidayDaySet = new Set(govtHolidays.map((h) => new Date(h.date).getUTCDate()))
+
+    const attendanceByEmployee = new Map(
+      employees.map((emp, idx) => {
+        const marks = applyRotatingAttendanceDefaults(
+          Array(daysInMonth).fill(''),
+          b.year!,
+          b.month!,
+          holidayDaySet,
+          establishment.workWeekDays,
+          idx + (b.month! - 1)
+        )
+        return [emp.id, marks]
+      })
+    )
+
+    if (employees.length > 0) {
+      await prisma.attendanceRecord.createMany({
+        data: employees.map((emp) => {
+          const marks = attendanceByEmployee.get(emp.id)!
+          const totals = calculateAttendanceTotals(marks)
+          return {
+            cycleId: cycle.id,
+            employeeId: emp.id,
+            dailyMarks: JSON.stringify(marks),
+            daysWorked: totals.daysWorked,
+            leaveDays: totals.leaveDays,
+            absentDays: totals.absentDays,
+            wageDays: totals.wageDays,
+          }
+        }),
+      })
+    }
+
+    // Seed a WageRecord per employee from their saved salary + the
+    // auto-generated attendance above, so the wages register / slips reflect
+    // a correctly prorated figure immediately instead of a full unprorated
+    // month (#7 / gross wages fix).
+    const cfg = JSON.parse(establishment.wageFormulaConfig) as WageFormulaConfig
     const seedRows = employees
       .filter((emp) => emp.defaultTotalSalary > 0)
       .map((emp) => {
@@ -120,6 +175,8 @@ export async function POST(request: Request) {
             pfAmount: emp.pfAmount,
             lwfAmount: emp.lwfAmount,
           },
+          attendance: attendanceByEmployee.get(emp.id),
+          holidayDays: holidayDaySet,
           esiApplicable: !!cfg.esiApplicable,
           preset: cfg.preset,
           fixedAllowance: cfg.fixedAllowance,

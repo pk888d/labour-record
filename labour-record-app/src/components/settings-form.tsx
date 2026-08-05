@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { RawPrintSettings } from '@/lib/print-config'
+import { apiPath } from '@/lib/api-path'
 
 type Props = {
   initial: RawPrintSettings
@@ -24,7 +25,7 @@ export function SettingsForm({ initial, ceilings }: Props) {
     setSaving(true)
     setErrors([])
     setSaved(false)
-    const res = await fetch('/api/settings', {
+    const res = await fetch(apiPath('/api/settings'), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ maxRowsPerSheet, minFillRows }),

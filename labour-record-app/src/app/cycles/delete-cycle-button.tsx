@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { apiPath } from '@/lib/api-path'
 
 type Props = {
   cycleId: string
@@ -14,7 +15,7 @@ export function DeleteCycleButton({ cycleId, label }: Props) {
 
   async function handleDelete() {
     setDeleting(true)
-    const res = await fetch(`/api/cycles/${cycleId}`, { method: 'DELETE' })
+    const res = await fetch(apiPath(`/api/cycles/${cycleId}`), { method: 'DELETE' })
     setDeleting(false)
     if (res.ok) {
       router.refresh()

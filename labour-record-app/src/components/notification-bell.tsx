@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import type { CalEvent } from '@/lib/calendar/events'
+import { apiPath } from '@/lib/api-path'
 
 type Reminders = { overdue: CalEvent[]; upcoming: CalEvent[]; count: number }
 
@@ -12,7 +13,7 @@ export function NotificationBell() {
 
   useEffect(() => {
     let active = true
-    const load = () => fetch('/api/notifications').then((r) => r.json()).then((d) => { if (active) setData(d) }).catch(() => {})
+    const load = () => fetch(apiPath('/api/notifications')).then((r) => r.json()).then((d) => { if (active) setData(d) }).catch(() => {})
     load()
     const t = setInterval(load, 60000) // refresh every minute
     return () => { active = false; clearInterval(t) }
