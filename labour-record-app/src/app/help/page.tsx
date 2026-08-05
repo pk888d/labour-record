@@ -1,6 +1,7 @@
 'use client'
 import { useMemo, useState } from 'react'
 import { PageHeader } from '@/components/page-header'
+import { assetPath } from '@/lib/api-path'
 
 type FieldRow = { field: string; notes: string }
 
@@ -45,11 +46,12 @@ function UseCase({ children }: { children: React.ReactNode }) {
 }
 
 function Shot({ src, alt, caption }: { src: string; alt: string; caption?: string }) {
+  const resolvedSrc = assetPath(src)
   return (
-    <a href={src} target="_blank" rel="noreferrer" className="block my-3 group">
+    <a href={resolvedSrc} target="_blank" rel="noreferrer" className="block my-3 group">
       <div className="rounded border border-[#1e2d3d] overflow-hidden bg-[#050d16]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={alt} className="w-full h-auto block group-hover:opacity-90 transition-opacity" />
+        <img src={resolvedSrc} alt={alt} className="w-full h-auto block group-hover:opacity-90 transition-opacity" />
       </div>
       {caption && <p className="text-[10px] text-[#4a6a8a] mt-1">{caption} — click to view full size</p>}
     </a>
