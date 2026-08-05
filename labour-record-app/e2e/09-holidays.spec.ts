@@ -64,4 +64,27 @@ test.describe('Holidays Page', () => {
     await page.locator('tr', { hasText: 'Delete Me Holiday' }).getByRole('button', { name: 'Delete' }).click()
     await expect(page.getByText('Delete Me Holiday')).not.toBeVisible()
   })
+
+  // TEC-48: a year with no configured holidays must show an empty state, not crash.
+  test('selecting a year with no data shows empty state, not a crash', async ({ page }) => {
+    await page.goto('/holidays')
+    await page.route('**/api/holidays?year=2027', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+    )
+    await page.getByLabel('Year').selectOption('2027')
+    await expect(page.getByText(/No holidays for 2027/i)).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Government Holidays' })).toBeVisible()
+  })
+
+  // TEC-48: loadYear() must not crash on a non-array/error API response
+  // (e.g. a 500, or the raw-HTML 404 seen in production before TEC-45's fix).
+  test('non-array API response degrades to an error message instead of crashing', async ({ page }) => {
+    await page.goto('/holidays')
+    await page.route('**/api/holidays?year=2028', (route) =>
+      route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'boom' }) })
+    )
+    await page.getByLabel('Year').selectOption({ label: '2028' })
+    await expect(page.getByText('boom')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Government Holidays' })).toBeVisible()
+  })
 })

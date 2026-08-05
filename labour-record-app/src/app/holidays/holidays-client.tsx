@@ -27,9 +27,25 @@ export function HolidaysClient({
   const [saving, setSaving] = useState(false)
 
   async function loadYear(y: number) {
-    const res = await fetch(apiPath(`/api/holidays?year=${y}`))
-    const data = await res.json() as Holiday[]
-    setHolidays(data)
+    setErrors([])
+    let data: unknown
+    try {
+      const res = await fetch(apiPath(`/api/holidays?year=${y}`))
+      data = await res.json()
+      if (!res.ok || !Array.isArray(data)) {
+        const message = (data as { error?: string })?.error ?? `Failed to load holidays for ${y}`
+        setErrors([message])
+        setHolidays([])
+        setYear(y)
+        return
+      }
+    } catch {
+      setErrors([`Failed to load holidays for ${y}`])
+      setHolidays([])
+      setYear(y)
+      return
+    }
+    setHolidays(data as Holiday[])
     setYear(y)
   }
 
