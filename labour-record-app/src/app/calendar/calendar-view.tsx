@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { CalEvent, CalEventType } from '@/lib/calendar/events'
 import { apiPath } from '@/lib/api-path'
+import { readApiError } from '@/lib/read-api-error'
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -146,7 +147,7 @@ function AddEventModal({ date, establishments, onClose, onSaved }: {
     })
     setSaving(false)
     if (res.ok) onSaved()
-    else { const d = await res.json(); setErrors(d.errors ?? [d.error ?? 'Failed to save']) }
+    else { const d = await readApiError(res, 'Failed to save'); setErrors(d.errors ?? [d.error]) }
   }
 
   return (

@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { apiPath } from '@/lib/api-path'
+import { readApiError } from '@/lib/read-api-error'
 
 export function ExportButton({ formTaskId }: { formTaskId: string }) {
   const [state, setState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
@@ -10,13 +11,14 @@ export function ExportButton({ formTaskId }: { formTaskId: string }) {
     setState('loading')
     setMsg('')
     const res = await fetch(apiPath(`/api/form-tasks/${formTaskId}/export`), { method: 'POST' })
-    const data = await res.json() as { fileName?: string; warnings?: string[]; error?: string }
     if (res.ok) {
+      const data = await res.json() as { fileName?: string; warnings?: string[] }
       setState('done')
       setMsg(data.warnings?.length ? `Exported (warnings: ${data.warnings.join('; ')})` : `Exported: ${data.fileName}`)
     } else {
+      const data = await readApiError(res, 'Export failed')
       setState('error')
-      setMsg(data.error ?? 'Export failed')
+      setMsg(data.error)
     }
   }
 

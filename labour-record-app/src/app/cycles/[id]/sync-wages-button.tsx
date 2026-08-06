@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { apiPath } from '@/lib/api-path'
+import { readApiError } from '@/lib/read-api-error'
 
 export function SyncWagesButton({ cycleId }: { cycleId: string }) {
   const router = useRouter()
@@ -18,7 +19,8 @@ export function SyncWagesButton({ cycleId }: { cycleId: string }) {
       setMsg(`Synced ${data.synced} employee${data.synced !== 1 ? 's' : ''}.`)
       router.refresh()
     } else {
-      setMsg('Sync failed')
+      const data = await readApiError(res, 'Sync failed')
+      setMsg(data.error)
     }
   }
 

@@ -2,7 +2,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { RawPrintSettings } from '@/lib/print-config'
+import { parseSettingValue } from '@/lib/print-config'
 import { apiPath } from '@/lib/api-path'
+import { readApiError } from '@/lib/read-api-error'
 
 type Props = {
   initial: RawPrintSettings
@@ -22,9 +24,24 @@ export function SettingsForm({ initial, ceilings }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setSaving(true)
     setErrors([])
     setSaved(false)
+
+    // Client-side pre-flight: reuse the same rule the API enforces
+    // (src/app/api/settings/route.ts) so the two layers can't drift.
+    const clientErrors: string[] = []
+    if (!parseSettingValue(maxRowsPerSheet).ok) {
+      clientErrors.push('Max employees per sheet must be a positive whole number (or blank to use the default)')
+    }
+    if (!parseSettingValue(minFillRows).ok) {
+      clientErrors.push('Min fill rows must be a positive whole number (or blank to use the default)')
+    }
+    if (clientErrors.length > 0) {
+      setErrors(clientErrors)
+      return
+    }
+
+    setSaving(true)
     const res = await fetch(apiPath('/api/settings'), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -32,8 +49,8 @@ export function SettingsForm({ initial, ceilings }: Props) {
     })
     setSaving(false)
     if (!res.ok) {
-      const data = (await res.json().catch(() => ({}))) as { errors?: string[]; error?: string }
-      setErrors(data.errors ?? [data.error ?? 'Save failed'])
+      const data = await readApiError(res, 'Save failed')
+      setErrors(data.errors ?? [data.error])
       return
     }
     setSaved(true)
