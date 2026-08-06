@@ -79,15 +79,28 @@ test.describe('Form Entry — Wages Tab', () => {
     await openFirstCycleFormTask(page)
     await page.getByRole('button', { name: 'Wage Data', exact: true }).click()
     await expect(page.getByText('Alagurani')).toBeVisible()
-    await expect(page.getByPlaceholder(/basic|Basic/).first().or(
-      page.locator('input[aria-label*="basic" i]').first()
-    ).or(page.locator('td input').first())).toBeVisible()
+    await expect(page.locator('input[aria-label="Basic"]').first()).toBeVisible()
   })
 
   test('wages tab has save button', async ({ page }) => {
     await openFirstCycleFormTask(page)
     await page.getByRole('button', { name: 'Wage Data', exact: true }).click()
     await expect(page.getByRole('button', { name: /Save Wage/i })).toBeVisible()
+  })
+
+  // Regression guard for TEC-47: numeric fields used to snap back to "0"
+  // synchronously on every keystroke (parseFloat('') || 0), instead of
+  // staying blank until the field is committed on blur.
+  test('basic wage field stays blank while clearing, commits to 0 on blur', async ({ page }) => {
+    await openFirstCycleFormTask(page)
+    await page.getByRole('button', { name: 'Wage Data', exact: true }).click()
+    const basic = page.locator('input[aria-label="Basic"]').first()
+    await basic.fill('500')
+    await expect(basic).toHaveValue('500')
+    await basic.fill('')
+    await expect(basic).toHaveValue('') // must not snap back to "0" before blur
+    await basic.blur()
+    await expect(basic).toHaveValue('0')
   })
 })
 
@@ -96,6 +109,18 @@ test.describe('Form Entry — Overtime Tab', () => {
     await openFirstCycleFormTask(page)
     await page.getByRole('button', { name: 'Overtime', exact: true }).click()
     await expect(page.getByText('Alagurani')).toBeVisible()
+  })
+
+  test('OT rate field stays blank while clearing, commits to 0 on blur', async ({ page }) => {
+    await openFirstCycleFormTask(page)
+    await page.getByRole('button', { name: 'Overtime', exact: true }).click()
+    const otRate = page.locator('input[aria-label="OT Rate"]').first()
+    await otRate.fill('25')
+    await expect(otRate).toHaveValue('25')
+    await otRate.fill('')
+    await expect(otRate).toHaveValue('')
+    await otRate.blur()
+    await expect(otRate).toHaveValue('0')
   })
 })
 
@@ -117,6 +142,18 @@ test.describe('Form Entry — Fines Tab', () => {
     await page.getByRole('button', { name: /Add Fine/i }).click()
     await expect(page.getByText('Late arrival').first()).toBeVisible()
   })
+
+  test('Fine Amount field stays blank while clearing, commits to 0 on blur', async ({ page }) => {
+    await openFirstCycleFormTask(page)
+    await page.getByRole('button', { name: 'Fines', exact: true }).click()
+    const fineAmount = page.getByLabel('Fine Amount')
+    await fineAmount.fill('75')
+    await expect(fineAmount).toHaveValue('75')
+    await fineAmount.fill('')
+    await expect(fineAmount).toHaveValue('')
+    await fineAmount.blur()
+    await expect(fineAmount).toHaveValue('0')
+  })
 })
 
 test.describe('Form Entry — Deductions Tab', () => {
@@ -124,6 +161,18 @@ test.describe('Form Entry — Deductions Tab', () => {
     await openFirstCycleFormTask(page)
     await page.getByRole('button', { name: 'Deductions', exact: true }).click()
     await expect(page.getByRole('button', { name: /Add Deduction/i })).toBeVisible()
+  })
+
+  test('Deduction Amount field stays blank while clearing, commits to 0 on blur', async ({ page }) => {
+    await openFirstCycleFormTask(page)
+    await page.getByRole('button', { name: 'Deductions', exact: true }).click()
+    const deductionAmount = page.getByLabel('Deduction Amount')
+    await deductionAmount.fill('120')
+    await expect(deductionAmount).toHaveValue('120')
+    await deductionAmount.fill('')
+    await expect(deductionAmount).toHaveValue('')
+    await deductionAmount.blur()
+    await expect(deductionAmount).toHaveValue('0')
   })
 })
 
@@ -133,5 +182,17 @@ test.describe('Form Entry — Leave Tab', () => {
     await page.getByRole('button', { name: 'Leave', exact: true }).click()
     await expect(page.getByText('Alagurani')).toBeVisible()
     await expect(page.getByRole('button', { name: /Save/i })).toBeVisible()
+  })
+
+  test('EL Open field stays blank while clearing, commits to 0 on blur', async ({ page }) => {
+    await openFirstCycleFormTask(page)
+    await page.getByRole('button', { name: 'Leave', exact: true }).click()
+    const elOpen = page.locator('input[aria-label="EL Open"]').first()
+    await elOpen.fill('10')
+    await expect(elOpen).toHaveValue('10')
+    await elOpen.fill('')
+    await expect(elOpen).toHaveValue('')
+    await elOpen.blur()
+    await expect(elOpen).toHaveValue('0')
   })
 })
