@@ -7,7 +7,7 @@
  * Token format: "<expiresAtMs>.<base64url HMAC-SHA256 of expiresAtMs>"
  */
 
-export const AUTH_COOKIE = 'musterly_session'
+export const AUTH_COOKIE = 'mustearly_session'
 export const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 
 type Env = Record<string, string | undefined>

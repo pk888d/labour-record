@@ -3,7 +3,7 @@ import { spawn, type ChildProcess } from 'child_process'
 
 /**
  * TEC-46 regression: with NEXT_PUBLIC_BASE_PATH set (production config,
- * mirrors nginx's /musterly reverse-proxy prefix), plain <img src="/..."> tags
+ * mirrors nginx's /mustearly reverse-proxy prefix), plain <img src="/..."> tags
  * for the logo and Help screenshots must be prefixed via assetPath() —
  * next/image auto-prefixing doesn't apply since this app has no next/image
  * usage. Spawns a second `next dev` server (same pattern as e2e/22-auth.spec.ts)
@@ -12,7 +12,7 @@ import { spawn, type ChildProcess } from 'child_process'
  */
 
 const PORT = 3106
-const BASE_PATH = '/musterly'
+const BASE_PATH = '/mustearly'
 const BASE = `http://localhost:${PORT}${BASE_PATH}`
 
 test.describe('Static asset paths under NEXT_PUBLIC_BASE_PATH', () => {

@@ -18,13 +18,13 @@ describe('apiPath', () => {
   })
 
   it('prefixes the path when set (production)', () => {
-    process.env.NEXT_PUBLIC_BASE_PATH = '/musterly'
-    expect(apiPath('/api/employees')).toBe('/musterly/api/employees')
+    process.env.NEXT_PUBLIC_BASE_PATH = '/mustearly'
+    expect(apiPath('/api/employees')).toBe('/mustearly/api/employees')
   })
 
   it('prefixes paths with dynamic segments', () => {
-    process.env.NEXT_PUBLIC_BASE_PATH = '/musterly'
-    expect(apiPath(`/api/cycles/${123}/sync-wages`)).toBe('/musterly/api/cycles/123/sync-wages')
+    process.env.NEXT_PUBLIC_BASE_PATH = '/mustearly'
+    expect(apiPath(`/api/cycles/${123}/sync-wages`)).toBe('/mustearly/api/cycles/123/sync-wages')
   })
 })
 
@@ -45,12 +45,12 @@ describe('assetPath', () => {
   })
 
   it('prefixes the path when set (production)', () => {
-    process.env.NEXT_PUBLIC_BASE_PATH = '/musterly'
-    expect(assetPath('/tech-sakthi-logo.webp')).toBe('/musterly/tech-sakthi-logo.webp')
+    process.env.NEXT_PUBLIC_BASE_PATH = '/mustearly'
+    expect(assetPath('/tech-sakthi-logo.webp')).toBe('/mustearly/tech-sakthi-logo.webp')
   })
 
   it('prefixes nested help-screenshot paths', () => {
-    process.env.NEXT_PUBLIC_BASE_PATH = '/musterly'
-    expect(assetPath('/help/dashboard.png')).toBe('/musterly/help/dashboard.png')
+    process.env.NEXT_PUBLIC_BASE_PATH = '/mustearly'
+    expect(assetPath('/help/dashboard.png')).toBe('/mustearly/help/dashboard.png')
   })
 })
