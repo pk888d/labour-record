@@ -68,4 +68,23 @@ test.describe('Monthly Cycles', () => {
     await page.getByRole('button', { name: /Create Cycle/i }).click()
     await expect(page.getByText(/already exists|duplicate/i)).toBeVisible()
   })
+
+  // TEC-52: Sync Employees used a bare `await res.json()` on the error path
+  // with no try/catch — a non-JSON error body threw an unhandled rejection
+  // and the button silently re-enabled with zero feedback. Mock a raw HTML
+  // error response and assert the generic message shows, proving the shared
+  // readApiError() helper generalizes beyond Settings and doesn't leave the
+  // button stuck silently busy.
+  test('Sync Employees shows a generic message (not a silent failure) on a non-JSON error response', async ({ page }) => {
+    await page.goto('/cycles')
+    await page.locator('tr', { hasText: 'DNV Orthocare' }).getByRole('link', { name: 'View' }).first().click()
+    await page.route('**/api/cycles/*/sync-employees', (route) =>
+      route.fulfill({ status: 502, contentType: 'text/html', body: '<html>Bad Gateway</html>' })
+    )
+    const syncButton = page.getByRole('button', { name: 'Sync Employees' })
+    await syncButton.click()
+    await expect(page.getByText(/sync failed/i)).toBeVisible()
+    // The button must re-enable with visible feedback, not get stuck silently busy.
+    await expect(syncButton).toBeEnabled()
+  })
 })

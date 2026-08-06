@@ -6,6 +6,7 @@ import { applyAttendanceDefaults } from '@/domain/calculations/attendance-calcul
 import type { WageFormulaConfig } from '@/types'
 import { Info } from '@/components/info-tooltip'
 import { apiPath } from '@/lib/api-path'
+import { readApiError } from '@/lib/read-api-error'
 
 type Employee = { employeeId: string; empId: string; name: string }
 
@@ -267,8 +268,8 @@ export function FormEntryClient({
     })
     setSaving(false)
     if (!res.ok) {
-      const data = await res.json() as { errors?: string[]; error?: string }
-      setErrors(data.errors ?? [data.error ?? 'Save failed'])
+      const data = await readApiError(res, 'Save failed')
+      setErrors(data.errors ?? [data.error])
     } else {
       router.refresh()
     }
@@ -300,8 +301,8 @@ export function FormEntryClient({
     })
     setSaving(false)
     if (!res.ok) {
-      const data = await res.json() as { errors?: string[]; error?: string }
-      setErrors(data.errors ?? [data.error ?? 'Save failed'])
+      const data = await readApiError(res, 'Save failed')
+      setErrors(data.errors ?? [data.error])
     } else {
       router.refresh()
     }
@@ -317,8 +318,8 @@ export function FormEntryClient({
     })
     setSaving(false)
     if (!res.ok) {
-      const data = await res.json() as { errors?: string[]; error?: string }
-      setErrors(data.errors ?? [data.error ?? 'Transition failed'])
+      const data = await readApiError(res, 'Transition failed')
+      setErrors(data.errors ?? [data.error])
     } else if (to === 'READY_FOR_REVIEW') {
       router.push('/')
       router.refresh()
@@ -365,8 +366,8 @@ export function FormEntryClient({
     })
     setSaving(false)
     if (!res.ok) {
-      const data = await res.json() as { errors?: string[]; error?: string }
-      setErrors(data.errors ?? [data.error ?? 'Save failed'])
+      const data = await readApiError(res, 'Save failed')
+      setErrors(data.errors ?? [data.error])
     } else {
       router.refresh()
     }
@@ -387,8 +388,8 @@ export function FormEntryClient({
     })
     setSaving(false)
     if (!res.ok) {
-      const data = await res.json() as { errors?: string[]; error?: string }
-      setErrors(data.errors ?? [data.error ?? 'Save failed'])
+      const data = await readApiError(res, 'Save failed')
+      setErrors(data.errors ?? [data.error])
     } else {
       router.refresh()
     }
@@ -408,8 +409,8 @@ export function FormEntryClient({
     })
     setSaving(false)
     if (!res.ok) {
-      const data = await res.json() as { errors?: string[]; error?: string }
-      setErrors(data.errors ?? [data.error ?? 'Add failed'])
+      const data = await readApiError(res, 'Add failed')
+      setErrors(data.errors ?? [data.error])
     } else {
       const created = await res.json() as { id: string }
       const emp = employees.find((e) => e.employeeId === newFine.employeeId)
@@ -434,8 +435,8 @@ export function FormEntryClient({
     const res = await fetch(apiPath(`/api/fine-records/${fineId}`), { method: 'DELETE' })
     setSaving(false)
     if (!res.ok) {
-      const data = await res.json() as { errors?: string[]; error?: string }
-      setErrors(data.errors ?? [data.error ?? 'Delete failed'])
+      const data = await readApiError(res, 'Delete failed')
+      setErrors(data.errors ?? [data.error])
     } else {
       setFines((prev) => prev.filter((f) => f.id !== fineId))
     }
@@ -455,8 +456,8 @@ export function FormEntryClient({
     })
     setSaving(false)
     if (!res.ok) {
-      const data = await res.json() as { errors?: string[]; error?: string }
-      setErrors(data.errors ?? [data.error ?? 'Add failed'])
+      const data = await readApiError(res, 'Add failed')
+      setErrors(data.errors ?? [data.error])
     } else {
       const created = await res.json() as { id: string }
       const emp = employees.find((e) => e.employeeId === newDeduction.employeeId)
@@ -481,8 +482,8 @@ export function FormEntryClient({
     const res = await fetch(apiPath(`/api/deduction-records/${deductionId}`), { method: 'DELETE' })
     setSaving(false)
     if (!res.ok) {
-      const data = await res.json() as { errors?: string[]; error?: string }
-      setErrors(data.errors ?? [data.error ?? 'Delete failed'])
+      const data = await readApiError(res, 'Delete failed')
+      setErrors(data.errors ?? [data.error])
     } else {
       setDeductions((prev) => prev.filter((d) => d.id !== deductionId))
     }
