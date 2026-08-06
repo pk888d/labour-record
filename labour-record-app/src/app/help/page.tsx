@@ -1,5 +1,5 @@
 'use client'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { PageHeader } from '@/components/page-header'
 import { assetPath } from '@/lib/api-path'
 
@@ -725,12 +725,30 @@ function Section({
 
 export default function HelpPage() {
   const [query, setQuery] = useState('')
+  // The debounced copy of `query` drives filtering/open-state so a fast burst of keystrokes
+  // doesn't force every section open/closed on every single character (TEC-51).
+  const [debouncedQuery, setDebouncedQuery] = useState('')
   const [manualOpen, setManualOpen] = useState<Record<string, boolean>>({ overview: true })
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const searching = query.trim().length > 0
+  function handleQueryChange(value: string) {
+    setQuery(value)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => setDebouncedQuery(value), 300)
+  }
+
+  function handleClear() {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    setQuery('')
+    setDebouncedQuery('') // flush immediately — Clear must not wait out the debounce
+  }
+
+  useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current) }, [])
+
+  const searching = debouncedQuery.trim().length > 0
   const matches = useMemo(
-    () => (searching ? SECTIONS.filter((s) => matchesQuery(s, query)) : SECTIONS),
-    [query, searching]
+    () => (searching ? SECTIONS.filter((s) => matchesQuery(s, debouncedQuery)) : SECTIONS),
+    [debouncedQuery, searching]
   )
   const matchIds = useMemo(() => new Set(matches.map((s) => s.id)), [matches])
 
@@ -753,14 +771,14 @@ export default function HelpPage() {
             <input
               type="text"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => handleQueryChange(e.target.value)}
               placeholder="Search the guide — e.g. ESI, wage days, import, salary slip…"
               aria-label="Search help"
               className="w-full bg-[#0f1923] border border-[#2a3a50] rounded-lg pl-9 pr-9 py-2 text-sm text-[#c8d8e8] focus:outline-none focus:border-[#4a9eff]"
             />
             {query && (
               <button
-                onClick={() => setQuery('')}
+                onClick={handleClear}
                 aria-label="Clear search"
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5a8ab8] hover:text-[#c8d8e8] text-sm"
               >
@@ -778,10 +796,12 @@ export default function HelpPage() {
         </div>
 
         <div className="rounded border border-[#1e2d3d] bg-[#0a1520] overflow-hidden">
+          {/* Every section's summary row stays mounted and visible at all times — only its
+              `open` (expanded) state responds to the query — so the results container can
+              never collapse to near-nothing while the debounced match set is momentarily
+              small (TEC-51). */}
           {SECTIONS.map((section) => (
-            <div key={section.id} style={{ display: searching && !matchIds.has(section.id) ? 'none' : undefined }}>
-              <Section section={section} open={isOpen(section.id)} onToggle={handleToggle} />
-            </div>
+            <Section key={section.id} section={section} open={isOpen(section.id)} onToggle={handleToggle} />
           ))}
           {searching && matches.length === 0 && (
             <p className="px-6 py-8 text-sm text-[#5a8ab8] text-center">
