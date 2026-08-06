@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { apiPath } from '@/lib/api-path'
+import { apiPath, assetPath } from '@/lib/api-path'
 
 const navItems = [
   { section: 'Workspace', items: [
@@ -42,7 +42,7 @@ export function Sidebar() {
     <aside className="w-48 min-h-screen bg-[var(--ts-navy-mid)] border-r border-[var(--ts-border)] flex flex-col">
       <div className="flex items-center gap-2 px-4 py-4 border-b border-[var(--ts-border)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/tech-sakthi-logo.webp" alt="Tech Sakthi" className="w-8 h-8 object-contain" />
+        <img src={assetPath('/tech-sakthi-logo.webp')} alt="Tech Sakthi" className="w-8 h-8 object-contain" />
         <div>
           <p className="text-sm font-bold text-[var(--ts-gold)]" style={{ fontFamily: 'var(--font-heading)' }}>Mustearly</p>
           <p className="text-[10px] text-[var(--ts-text-muted)] mt-0.5">by Tech Sakthi</p>
