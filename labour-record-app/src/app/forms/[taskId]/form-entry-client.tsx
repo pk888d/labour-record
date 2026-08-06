@@ -1,5 +1,5 @@
 'use client'
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { calculateWages } from '@/domain/calculations/wage-calculator'
 import { applyAttendanceDefaults } from '@/domain/calculations/attendance-calculator'
@@ -105,17 +105,69 @@ const MARK_STYLE: Record<string, string> = {
   '':  'bg-[#0f1923] text-[#2a3a4a]',
 }
 
-function numInput(value: number, onChange: (v: number) => void) {
+type NumberFieldProps = {
+  value: number
+  onChange: (v: number) => void
+  step?: string
+  min?: string
+  max?: string
+  ariaLabel?: string
+  className?: string
+}
+
+/**
+ * Controlled numeric input that buffers the raw text the user is typing
+ * instead of round-tripping every keystroke through parseFloat(...) || 0.
+ *
+ * Without this buffer, clearing the field (or leaving it as "-" / "1.")
+ * produces NaN, which `|| 0` collapses back to 0 immediately — snapping the
+ * field to "0" mid-edit. Here, an empty/incomplete string is kept as-is in
+ * local state and only coerced to a committed number on blur.
+ */
+function NumberField({ value, onChange, step = '0.01', min = '0', max, ariaLabel, className }: NumberFieldProps) {
+  const [text, setText] = useState(String(value))
+  const [focused, setFocused] = useState(false)
+
+  // Resync the local buffer when the value changes from outside this field
+  // (e.g. reset/save), but never fight the user while they're mid-edit.
+  useEffect(() => {
+    if (!focused) {
+      setText(String(value))
+    }
+  }, [value, focused])
+
   return (
     <input
       type="number"
-      step="0.01"
-      min="0"
-      value={value}
-      onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
-      className="w-20 bg-[#1a2a3a] border border-[#2a3a50] rounded px-1 py-0.5 text-xs text-[#c8d8e8] text-right"
+      step={step}
+      min={min}
+      max={max}
+      aria-label={ariaLabel}
+      value={text}
+      onFocus={() => setFocused(true)}
+      onChange={(e) => {
+        const raw = e.target.value
+        setText(raw)
+        // Defer commit on empty / transiently-invalid strings so the field
+        // can stay blank while the user is still typing.
+        if (raw === '' || raw === '-' || raw === '.' || raw.endsWith('.')) return
+        const parsed = parseFloat(raw)
+        if (!Number.isNaN(parsed)) onChange(parsed)
+      }}
+      onBlur={() => {
+        setFocused(false)
+        const parsed = parseFloat(text)
+        const committed = Number.isNaN(parsed) ? 0 : parsed
+        setText(String(committed))
+        onChange(committed)
+      }}
+      className={className ?? 'w-20 bg-[#1a2a3a] border border-[#2a3a50] rounded px-1 py-0.5 text-xs text-[#c8d8e8] text-right'}
     />
   )
+}
+
+function numInput(value: number, onChange: (v: number) => void, ariaLabel?: string) {
+  return <NumberField value={value} onChange={onChange} ariaLabel={ariaLabel} />
 }
 
 export function FormEntryClient({
@@ -677,7 +729,7 @@ export function FormEntryClient({
                         {numInput(w.daysWorked, (v) => setWageField(emp.employeeId, 'daysWorked', Math.round(v)))}
                       </td>
                       <td className="px-1 py-1">
-                        {numInput(w.basic, (v) => setWageField(emp.employeeId, 'basic', v))}
+                        {numInput(w.basic, (v) => setWageField(emp.employeeId, 'basic', v), 'Basic')}
                       </td>
                       <td className="px-1 py-1">
                         {numInput(w.da, (v) => setWageField(emp.employeeId, 'da', v))}
@@ -767,20 +819,19 @@ export function FormEntryClient({
                       </td>
                       {days.map((d) => (
                         <td key={d} className="p-0.5 border-r border-[#1a2332]">
-                          <input
-                            type="number"
+                          <NumberField
+                            value={row.dailyOt[d - 1] ?? 0}
+                            onChange={(v) => setOtDay(emp.employeeId, d - 1, v)}
                             step="0.5"
                             min="0"
                             max="24"
-                            value={row.dailyOt[d - 1] ?? 0}
-                            onChange={(e) => setOtDay(emp.employeeId, d - 1, parseFloat(e.target.value) || 0)}
                             className="w-9 bg-[#1a2a3a] border border-[#2a3a50] rounded px-0.5 py-0.5 text-xs text-[#c8d8e8] text-right"
                           />
                         </td>
                       ))}
                       <td className="px-2 py-1 text-right text-[#c087f0]">{totalOtHours.toFixed(1)}</td>
                       <td className="px-1 py-1">
-                        {numInput(row.otRate, (v) => setOtField(emp.employeeId, 'otRate', v))}
+                        {numInput(row.otRate, (v) => setOtField(emp.employeeId, 'otRate', v), 'OT Rate')}
                       </td>
                       <td className="px-1 py-1">
                         {numInput(row.normalEarnings, (v) => setOtField(emp.employeeId, 'normalEarnings', v))}
@@ -883,13 +934,12 @@ export function FormEntryClient({
               </div>
               <div>
                 <label className="block text-[10px] text-[#5a8ab8] mb-1">Fine Amount</label>
-                <input
-                  type="number"
-                  aria-label="Fine Amount"
+                <NumberField
+                  ariaLabel="Fine Amount"
                   step="0.01"
                   min="0"
                   value={newFine.fineAmount}
-                  onChange={(e) => setNewFine((p) => ({ ...p, fineAmount: parseFloat(e.target.value) || 0 }))}
+                  onChange={(v) => setNewFine((p) => ({ ...p, fineAmount: v }))}
                   className="w-full bg-[#1a2a3a] border border-[#2a3a50] rounded px-2 py-1 text-xs text-[#c8d8e8]"
                 />
               </div>
@@ -981,12 +1031,12 @@ export function FormEntryClient({
               </div>
               <div>
                 <label className="block text-[10px] text-[#5a8ab8] mb-1">Deduction Amount</label>
-                <input
-                  type="number"
+                <NumberField
+                  ariaLabel="Deduction Amount"
                   step="0.01"
                   min="0"
                   value={newDeduction.deductionAmount}
-                  onChange={(e) => setNewDeduction((p) => ({ ...p, deductionAmount: parseFloat(e.target.value) || 0 }))}
+                  onChange={(v) => setNewDeduction((p) => ({ ...p, deductionAmount: v }))}
                   className="w-full bg-[#1a2a3a] border border-[#2a3a50] rounded px-2 py-1 text-xs text-[#c8d8e8]"
                 />
               </div>
@@ -1031,7 +1081,7 @@ export function FormEntryClient({
                         <div className="text-[10px] text-[#4a6a8a]">{emp.empId}</div>
                       </td>
                       <td className="px-1 py-1">
-                        {numInput(row.earnedLeaveOpening, (v) => setLeaveField(emp.employeeId, 'earnedLeaveOpening', Math.round(v)))}
+                        {numInput(row.earnedLeaveOpening, (v) => setLeaveField(emp.employeeId, 'earnedLeaveOpening', Math.round(v)), 'EL Open')}
                       </td>
                       <td className="px-1 py-1">
                         {numInput(row.earnedDuring, (v) => setLeaveField(emp.employeeId, 'earnedDuring', Math.round(v)))}
