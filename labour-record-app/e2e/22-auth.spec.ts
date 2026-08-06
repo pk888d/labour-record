@@ -113,7 +113,7 @@ test.describe('Auth enabled (second server on :3105)', () => {
     expect(res.status()).toBe(200)
     expect(await res.json()).toEqual({ ok: true })
     const setCookie = res.headers()['set-cookie'] ?? ''
-    expect(setCookie).toContain('musterly_session=')
+    expect(setCookie).toContain('mustearly_session=')
     expect(setCookie.toLowerCase()).toContain('httponly')
   })
 

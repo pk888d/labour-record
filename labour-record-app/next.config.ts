@@ -6,7 +6,8 @@ const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR || '.next',
 
   // Unset in dev/test (localhost:3000 at root). Production sets it to
-  // '/musterly' to match the nginx reverse-proxy path prefix (TEC-45) —
+  // '/mustearly' to match the nginx reverse-proxy path prefix (TEC-45,
+  // renamed from '/musterly' in TEC-50 to match the app's own branding) —
   // basePath auto-prefixes next/link, useRouter and next/image, but NOT
   // manual fetch() calls; those go through apiPath() in src/lib/api-path.ts.
   ...(process.env.NEXT_PUBLIC_BASE_PATH ? { basePath: process.env.NEXT_PUBLIC_BASE_PATH } : {}),

@@ -78,7 +78,7 @@ describe('isAuthEnabled', () => {
 
 describe('constants', () => {
   it('exposes the cookie name and a 7-day TTL', () => {
-    expect(AUTH_COOKIE).toBe('musterly_session')
+    expect(AUTH_COOKIE).toBe('mustearly_session')
     expect(SESSION_TTL_MS).toBe(7 * 24 * 60 * 60 * 1000)
   })
 })

@@ -35,10 +35,10 @@ if ! grep -q '^APP_PASSWORD=.\+' .env 2>/dev/null; then
   echo -e "${YELLOW}[!]${NC} APP_PASSWORD not set in .env — auth is DISABLED. Set APP_PASSWORD (and SESSION_SECRET) for production."
 fi
 # Reverse-proxy path prefix (TEC-45): must match nginx's location block
-# (man/musterly.nginx.conf uses /musterly) or every client-side fetch()
+# (man/musterly.nginx.conf uses /mustearly) or every client-side fetch()
 # 404s against the proxy. Unset = app expects to be served at root.
 if ! grep -q '^NEXT_PUBLIC_BASE_PATH=.\+' .env 2>/dev/null; then
-  echo -e "${YELLOW}[!]${NC} NEXT_PUBLIC_BASE_PATH not set in .env — app will be built expecting root '/'. If nginx proxies this under a path prefix (e.g. /musterly), set NEXT_PUBLIC_BASE_PATH to match before building, or every save/export/sync action will 404 (TEC-45)."
+  echo -e "${YELLOW}[!]${NC} NEXT_PUBLIC_BASE_PATH not set in .env — app will be built expecting root '/'. If nginx proxies this under a path prefix (e.g. /mustearly), set NEXT_PUBLIC_BASE_PATH to match before building, or every save/export/sync action will 404 (TEC-45)."
 fi
 # PDF export shells out to LibreOffice's `soffice` binary. If it's missing,
 # the app still runs fine — exports just fall back to DOCX-only (501 on PDF).

@@ -1,4 +1,4 @@
-// Prefixes an absolute app path with NEXT_PUBLIC_BASE_PATH (e.g. '/musterly'
+// Prefixes an absolute app path with NEXT_PUBLIC_BASE_PATH (e.g. '/mustearly'
 // in production, unset in dev/test). Next.js auto-prefixes next/link,
 // useRouter and next/image with basePath, but not manual fetch() calls to
 // absolute paths — every client-side fetch('/api/...') must go through this
