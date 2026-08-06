@@ -793,3 +793,12 @@ snapshot here (last regenerated 2026-07-06, TEC-25).
 - Metrics impact: +2 e2e tests (6 total in this spec, was 4)
 - Validation: `npx vitest run` → 205/205; `npx tsc --noEmit` clean; `npx playwright test e2e/09-holidays.spec.ts` → 6/6 passing; full `npx playwright test` → 245/247 passing (same 2 pre-existing/unrelated `17-wide-register-split.spec.ts` failures as TEC-45's run, confirmed not a regression).
 - Next step: open PR against `main`, link on Linear TEC-48, set to In Review (not Done — not yet merged/deployed).
+
+### Task Update — 2026-08-06 05:55 IST
+- Task: TEC-50 — Brand name inconsistency: "Mustearly" (UI) vs "musterly" (URL)
+- Status: completed (PR open, not yet merged); URL-path/canonical-brand-name question left OPEN, needs product decision
+- Scope: the ticket's core question (should the URL path change to match the canonical brand name) is a product/branding decision requiring the user's explicit sign-off — not touched here. Grepped brand-name strings across `src/` and found the app is inconsistent with ITSELF regardless of that question: `src/app/login/page.tsx` rendered "Musterly" while every other UI surface (`layout.tsx` page title, `sidebar.tsx`, `help/page.tsx`) renders "Mustearly". Fixed only that in-app typo, matching the app's own established spelling.
+- Files changed: `labour-record-app/src/app/login/page.tsx`, `labour-record-app/e2e/22-auth.spec.ts` (new regression case)
+- Metrics impact: +1 e2e test
+- Validation: `npx tsc --noEmit` clean; `npx vitest run` → 205/205; `npx playwright test e2e/22-auth.spec.ts` → 11/11 passing; full `npx playwright test` → 248/248 passing. Note: this worktree's `dev.db` had accumulated junk data from partial/interrupted e2e runs earlier in this session (4 duplicate "Test Clinic" establishments, missing the real seed fixtures) and had to be reset (`rm dev.db* && npx prisma migrate deploy && npx tsx prisma/seed.ts`) before the full suite would pass — not a code defect, an artifact of this session running many parallel worktree test suites.
+- Next step: open PR against `main`, link on Linear TEC-50, set to In Review. In the PR/Linear comment, explicitly flag that the URL-path canonical-name question remains open pending a product decision from the user.

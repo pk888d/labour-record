@@ -12,7 +12,7 @@ export default function LoginPage() {
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/tech-sakthi-logo.webp" alt="Tech Sakthi" className="w-14 h-14 object-contain mb-4" />
       <h1 className="text-3xl font-bold text-[var(--ts-gold)]" style={{ fontFamily: 'var(--font-heading)' }}>
-        Musterly
+        Mustearly
       </h1>
       <p className="text-sm text-[var(--ts-text-muted)] mt-2">Paperless. Fearless. Audit-ready.</p>
       <Suspense>

@@ -19,6 +19,11 @@ test.describe('Auth disabled (default server) — escape hatch', () => {
     await expect(page.locator('aside')).toBeVisible()
   })
 
+  test('login page heading uses the correct brand spelling (TEC-50)', async ({ page }) => {
+    await page.goto('/login')
+    await expect(page.getByRole('heading', { name: 'Mustearly', exact: true })).toBeVisible()
+  })
+
   test('POST /api/auth/login returns ok without a password check', async ({ request }) => {
     const res = await request.post('/api/auth/login', { data: { password: 'anything' } })
     expect(res.status()).toBe(200)
