@@ -50,7 +50,7 @@ export function EmployeeFilters({ establishments, initialQ, initialEstablishment
   const inputClass = 'bg-[#1a2a3a] border border-[#2a3a50] rounded px-2 py-1 text-xs text-[#c8d8e8]'
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 flex-wrap">
       <input
         type="text"
         value={q}

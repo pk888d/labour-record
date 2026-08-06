@@ -39,7 +39,7 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="w-48 min-h-screen bg-[var(--ts-navy-mid)] border-r border-[var(--ts-border)] flex flex-col">
+    <aside className="w-full md:w-48 md:min-h-screen bg-[var(--ts-navy-mid)] border-r border-[var(--ts-border)] flex flex-col">
       <div className="flex items-center gap-2 px-4 py-4 border-b border-[var(--ts-border)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={assetPath('/tech-sakthi-logo.webp')} alt="Tech Sakthi" className="w-8 h-8 object-contain" />

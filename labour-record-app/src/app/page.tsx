@@ -57,9 +57,9 @@ export default async function KanbanPage({
 
   return (
     <div className="flex flex-col h-screen">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-[#1e2d3d] bg-[#0f1923]">
+      <div className="flex items-center justify-between flex-wrap gap-3 px-6 py-4 border-b border-[#1e2d3d] bg-[#0f1923]">
         <h1 className="text-base font-semibold text-white">Kanban Board</h1>
-        <form method="GET" className="flex items-center gap-2">
+        <form method="GET" className="flex items-center gap-2 flex-wrap">
           <select name="establishmentId" defaultValue={establishmentId ?? ''}
             className="bg-[#1a2a3a] border border-[#2a3a50] rounded px-2 py-1 text-xs text-[#c8d8e8]">
             <option value="">All Establishments</option>

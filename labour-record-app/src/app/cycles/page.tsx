@@ -50,9 +50,9 @@ export default async function CyclesPage({
         action={{ label: '+ New Cycle', href: '/cycles/new' }}
       />
       {establishments.length > 0 && (
-        <div className="px-6 pt-3 flex items-center gap-4">
+        <div className="px-6 pt-3 flex items-center flex-wrap gap-4">
           <GenerateFyButton establishments={establishments} />
-          <form method="GET" className="flex gap-2">
+          <form method="GET" className="flex gap-2 flex-wrap">
             <select
               name="establishmentId"
               defaultValue={establishmentId ?? ''}

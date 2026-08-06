@@ -13,7 +13,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return <>{children}</>
   }
   return (
-    <div className="flex min-h-screen">
+    <div className="flex flex-col md:flex-row min-h-screen">
       <div className="print:hidden"><Sidebar /></div>
       <main className="flex-1 overflow-auto print:w-full flex flex-col min-w-0">
         <TopNav />

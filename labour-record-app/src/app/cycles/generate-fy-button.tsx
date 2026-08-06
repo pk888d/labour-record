@@ -50,7 +50,7 @@ export function GenerateFyButton({ establishments }: { establishments: Est[] }) 
   }
 
   return (
-    <div className="flex items-center gap-2 bg-[#0a1520] border border-[#1e2d3d] rounded p-2">
+    <div className="flex items-center flex-wrap gap-2 bg-[#0a1520] border border-[#1e2d3d] rounded p-2">
       <select value={estId} onChange={(e) => setEstId(e.target.value)} className={inputClass}>
         {establishments.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
       </select>

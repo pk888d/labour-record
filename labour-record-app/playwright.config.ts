@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
 const isCI = !!process.env.CI
+const port = process.env.PW_PORT ?? '3000'
 
 export default defineConfig({
   testDir: './e2e',
@@ -9,7 +10,7 @@ export default defineConfig({
   workers: 1,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: `http://localhost:${port}`,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -27,8 +28,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
+    command: `npm run dev -- -p ${port}`,
+    url: `http://localhost:${port}`,
     reuseExistingServer: isCI ? false : true,
     timeout: 60000,
   },

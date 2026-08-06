@@ -814,6 +814,17 @@ snapshot here (last regenerated 2026-07-06, TEC-25).
 - Validation: `npx tsc --noEmit` clean; `npx vitest run` → 208/208; `npx playwright test e2e/30-asset-path.spec.ts` → 2/2 passing; full `npx playwright test` → 249/249 passing (the previously-seen `17-wide-register-split.spec.ts` failures did not reproduce this run — confirmed flaky, not a regression from this change).
 - Next step: open PR against `main`, link on Linear TEC-46, set to In Review (not Done).
 
+### Task Update — 2026-08-05 15:55 IST
+- Task: TEC-49 — Mobile responsive layout issues and split-screen filter misalignment
+- Status: completed (PR open, not yet merged)
+- Scope: Layout containers used fixed-width flex rows with no wrap handling, so filter bars (Kanban board, Cycles list, Audit log, Employees list, Generate-FY control) and the sidebar/content shell broke down at mobile (375px) and split-screen (~700px) widths — controls clipped off-screen or the sidebar crushed the main content column instead of stacking.
+- Fix: added `flex-wrap` to every filter-bar container listed above; `AppShell` now stacks sidebar-above-content (`flex-col`) below the `md` breakpoint and reverts to side-by-side (`flex-row`) at/above it; `Sidebar` goes full-width when stacked (`w-full md:w-48`). `playwright.config.ts` gains a `PW_PORT` env override (defaults to 3000, unchanged behavior) so concurrent test runs against different branches don't collide on the same port — needed because several other tickets' fixes were being validated in parallel worktrees during this session.
+- New e2e spec `e2e/30-responsive-layout.spec.ts` (14 tests): no-horizontal-overflow checks across 5 pages at both viewport widths, filter-control in-viewport bounding-box checks, and sidebar stacking/side-by-side assertions at the `md` breakpoint boundary.
+- Files changed: `labour-record-app/src/components/app-shell.tsx`, `labour-record-app/src/components/sidebar.tsx`, `labour-record-app/src/app/page.tsx`, `labour-record-app/src/app/cycles/page.tsx`, `labour-record-app/src/app/cycles/generate-fy-button.tsx`, `labour-record-app/src/app/audit/page.tsx`, `labour-record-app/src/app/employees/employee-filters.tsx`, `labour-record-app/playwright.config.ts`, `labour-record-app/e2e/30-responsive-layout.spec.ts` (new)
+- Metrics impact: +14 e2e tests
+- Validation: `npx tsc --noEmit` clean; `npx vitest run` → 205/205; `PW_PORT=3105 npx playwright test e2e/30-responsive-layout.spec.ts` → 14/14 passing; full `npx playwright test` → 261/261 passing (0 failures — the previously-seen `17-wide-register-split.spec.ts` failures did not reproduce this run, confirmed flaky/environment-dependent rather than a regression).
+- Next step: open PR against `main`, link on Linear TEC-49, set to In Review (not Done).
+
 ### Task Update — 2026-08-05 21:01 IST
 - Task: TEC-52 — Raw "Not Found" shown to users instead of meaningful error/validation messages
 - Status: completed (PR open, not yet merged)

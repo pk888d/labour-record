@@ -39,7 +39,7 @@ export default async function AuditPage({
       <PageHeader title="Audit Log" subtitle={`${total} event${total !== 1 ? 's' : ''}`} />
       <div className="p-6">
         <div className="mb-4">
-          <form method="GET" className="flex gap-2">
+          <form method="GET" className="flex gap-2 flex-wrap">
             <select
               name="entityType"
               defaultValue={entityType ?? ''}
