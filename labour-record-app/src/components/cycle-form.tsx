@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Info } from '@/components/info-tooltip'
 import { apiPath } from '@/lib/api-path'
+import { readApiError } from '@/lib/read-api-error'
 
 type Establishment = { id: string; name: string; type: string }
 
@@ -58,11 +59,11 @@ export function CycleForm({ establishments }: Props) {
       body: JSON.stringify(form),
     })
 
-    const data = await res.json()
     setSaving(false)
 
     if (!res.ok) {
-      setErrors(data.errors ?? [data.error ?? 'Save failed'])
+      const data = await readApiError(res, 'Save failed')
+      setErrors(data.errors ?? [data.error])
       return
     }
 

@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { Info } from '@/components/info-tooltip'
 import { apiPath } from '@/lib/api-path'
+import { readApiError } from '@/lib/read-api-error'
 
 type Holiday = { id: string; date: string; name: string; year: number; doubleWage?: boolean }
 
@@ -69,8 +70,8 @@ export function HolidaysClient({
     })
     setSaving(false)
     if (!res.ok) {
-      const data = await res.json() as { errors?: string[]; error?: string }
-      setErrors(data.errors ?? [data.error ?? 'Failed to add holiday'])
+      const data = await readApiError(res, 'Failed to add holiday')
+      setErrors(data.errors ?? [data.error])
       return
     }
     const created = await res.json() as Holiday
@@ -93,8 +94,8 @@ export function HolidaysClient({
     })
     setSaving(false)
     if (!res.ok) {
-      const data = await res.json() as { error?: string }
-      setErrors([data.error ?? 'Failed to load defaults'])
+      const data = await readApiError(res, 'Failed to load defaults')
+      setErrors([data.error])
       return
     }
     await loadYear(year)
@@ -106,8 +107,8 @@ export function HolidaysClient({
     const res = await fetch(apiPath(`/api/holidays/${id}`), { method: 'DELETE' })
     setSaving(false)
     if (!res.ok) {
-      const data = await res.json() as { error?: string }
-      setErrors([data.error ?? 'Delete failed'])
+      const data = await readApiError(res, 'Delete failed')
+      setErrors([data.error])
       return
     }
     setHolidays((prev) => prev.filter((h) => h.id !== id))

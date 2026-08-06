@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { apiPath } from '@/lib/api-path'
+import { readApiError } from '@/lib/read-api-error'
 
 type Est = { id: string; name: string }
 
@@ -25,13 +26,14 @@ export function GenerateFyButton({ establishments }: { establishments: Est[] }) 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ establishmentId: estId, startYear: parseInt(startYear) }),
     })
-    const data = await res.json()
     setBusy(false)
     if (res.ok) {
+      const data = await res.json() as { financialYear: string; created: number; skipped: number }
       setMsg(`FY ${data.financialYear}: ${data.created} created, ${data.skipped} existed`)
       router.refresh()
     } else {
-      setMsg(data.error ?? data.errors?.join(', ') ?? 'Failed')
+      const data = await readApiError(res, 'Failed')
+      setMsg(data.error)
     }
   }
 

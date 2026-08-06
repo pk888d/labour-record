@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { apiPath } from '@/lib/api-path'
+import { readApiError } from '@/lib/read-api-error'
 
 type Props = {
   establishmentId: string
@@ -22,8 +23,8 @@ export function DeleteEstablishmentButton({ establishmentId, name }: Props) {
     if (res.ok) {
       router.refresh()
     } else {
-      const data = await res.json()
-      setError(data.error ?? 'Delete failed')
+      const data = await readApiError(res, 'Delete failed')
+      setError(data.error)
       setConfirming(false)
     }
   }

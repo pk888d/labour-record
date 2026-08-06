@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { apiPath } from '@/lib/api-path'
+import { readApiError } from '@/lib/read-api-error'
 
 type Est = { id: string; name: string }
 type RowError = { row: number; messages: string[] }
@@ -21,8 +22,12 @@ export function ImportClient({ establishments }: { establishments: Est[] }) {
     fd.set('establishmentId', establishmentId)
     const res = await fetch(apiPath('/api/employees/import'), { method: 'POST', body: fd })
     setBusy(false)
-    const data = await res.json().catch(() => ({}))
-    if (!res.ok) { setError(data.error ?? 'Import failed'); return }
+    if (!res.ok) {
+      const data = await readApiError(res, 'Import failed')
+      setError(data.error)
+      return
+    }
+    const data = await res.json() as Result
     setResult(data)
     router.refresh()
   }

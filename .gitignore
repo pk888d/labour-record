@@ -31,6 +31,7 @@ labour-record-app/playwright-report/
 labour-record-app/test-results/
 test-results/
 labour-record-app/.next-auth-e2e/
+labour-record-app/.next-asset-e2e/
 
 # Logs
 *.log
